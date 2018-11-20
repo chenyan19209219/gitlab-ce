@@ -12,9 +12,6 @@ class ClusterPlatformConfigureWorker
         configure_for_group_projects(cluster, cluster.group)
       end
     end
-
-  rescue ::Kubeclient::HttpError => err
-    Rails.logger.error "Failed to create/update Kubernetes namespace for cluster_id: #{cluster_id} with error: #{err.message}"
   end
 
   private

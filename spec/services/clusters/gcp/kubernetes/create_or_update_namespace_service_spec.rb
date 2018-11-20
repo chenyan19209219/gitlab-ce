@@ -127,4 +127,23 @@ describe Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService, '#execute' d
       end
     end
   end
+
+  context 'when kubeclient raises error' do
+    let(:kubernetes_namespace) do
+      create(:cluster_kubernetes_namespace,
+             cluster: cluster,
+             project: cluster_project.project,
+             cluster_project: cluster_project)
+    end
+
+    it 'rescues and logs the error' do
+      allow_any_instance_of(Clusters::Gcp::Kubernetes::CreateServiceAccountService).to receive(:execute).and_raise(::Kubeclient::HttpError.new(500, 'something baaaad happened', ''))
+
+      expect(Rails.logger)
+        .to receive(:error)
+        .with("Failed to create/update Kubernetes namespace for cluster_id: #{cluster.id} with error: something baaaad happened")
+
+      subject
+    end
+  end
 end

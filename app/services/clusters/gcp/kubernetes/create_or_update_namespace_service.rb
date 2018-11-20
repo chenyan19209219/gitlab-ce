@@ -16,6 +16,10 @@ module Clusters
           configure_kubernetes_token
 
           kubernetes_namespace.save!
+        rescue ::Kubeclient::HttpError => err
+          Rails.logger.error "Failed to create/update Kubernetes namespace for cluster_id: #{cluster.id} with error: #{err.message}"
+
+          # no-op
         end
 
         private
