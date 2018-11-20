@@ -107,6 +107,12 @@ export default {
       >
         stuck
       </span>
+      <span
+        v-if="pipeline.flags.merge_request"
+        class="js-pipeline-url-merge-request badge badge-info"
+      >
+        merge request
+      </span>
     </div>
   </div>
 </template>
