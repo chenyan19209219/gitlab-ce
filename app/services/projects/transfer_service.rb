@@ -78,6 +78,10 @@ module Projects
         # Move pages
         Gitlab::PagesTransfer.new.move_project(project.path, @old_namespace.full_path, @new_namespace.full_path)
 
+        delete_old_group_cluster_project_namespaces
+
+        configure_group_clusters_for_project
+
         project.old_path_with_namespace = @old_path
 
         write_repository_config(@new_path)
@@ -161,6 +165,29 @@ module Projects
         @old_namespace.full_path,
         @new_namespace.full_path
       )
+    end
+
+    # No need to delete namespaces associated with groups we are still part of.
+    # E.g. when transferring within the same group hierarchy
+    # rubocop: disable CodeReuse/ActiveRecord
+    def delete_old_group_cluster_project_namespaces
+      clusters = ::Clusters::Cluster.belonging_to_old_parent_group_but_not_new_group(@old_group, project.group)
+
+      ::Clusters::KubernetesNamespace.where(cluster_id: clusters, project_id: project).each do |kubernetes_namespace|
+        kubernetes_namespace.update!(pending_delete: true)
+      end
+    end
+    # rubocop: enable CodeReuse/ActiveRecord
+
+    def configure_group_clusters_for_project
+      ::Clusters::Cluster.belonging_to_parent_group_of_project(project.id).each do |cluster|
+        kubernetes_namespace = cluster.find_or_initialize_kubernetes_namespace_by_project(project)
+
+        ::Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService.new(
+          cluster: cluster,
+          kubernetes_namespace: kubernetes_namespace
+        ).execute
+      end
     end
   end
 end

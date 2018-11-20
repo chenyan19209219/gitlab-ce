@@ -86,6 +86,14 @@ module Clusters
 
     scope :default_environment, -> { where(environment_scope: DEFAULT_ENVIRONMENT) }
 
+    scope :belonging_to_old_parent_group_but_not_new_group, -> (old_group, new_group) {
+      old_group_and_ancestor_ids = old_group ? old_group.self_and_ancestors_ids : []
+      new_group_and_ancestor_ids = new_group ? new_group.self_and_ancestors_ids : []
+      group_ids = old_group_and_ancestor_ids - new_group_and_ancestor_ids
+
+      joins(:groups).where(namespaces: { id: group_ids })
+    }
+
     def self.belonging_to_parent_group_of_project(project_id, cluster_scope = all)
       project_groups = ::Group.joins(:projects).where(projects: { id: project_id })
       hierarchy_groups = Gitlab::GroupHierarchy.new(project_groups)
