@@ -55,6 +55,7 @@ module QA
     autoload :Runner, 'qa/resource/runner'
     autoload :PersonalAccessToken, 'qa/resource/personal_access_token'
     autoload :KubernetesCluster, 'qa/resource/kubernetes_cluster'
+    autoload :GroupKubernetesCluster, 'qa/resource/group_kubernetes_cluster'
     autoload :User, 'qa/resource/user'
     autoload :ProjectMilestone, 'qa/resource/project_milestone'
     autoload :Wiki, 'qa/resource/wiki'
@@ -141,6 +142,16 @@ module QA
     module Group
       autoload :New, 'qa/page/group/new'
       autoload :Show, 'qa/page/group/show'
+      autoload :Menu, 'qa/page/group/menu'
+
+      module Kubernetes
+        module Kubernetes
+          autoload :Index, 'qa/page/group/kubernetes/kubernetes/index'
+          autoload :Add, 'qa/page/group/kubernetes/kubernetes/add'
+          autoload :AddExisting, 'qa/page/group/kubernetes/kubernetes/add_existing'
+          autoload :Show, 'qa/page/group/kubernetes/kubernetes/show'
+        end
+      end
     end
 
     module File
@@ -149,6 +160,15 @@ module QA
 
       module Shared
         autoload :CommitMessage, 'qa/page/file/shared/commit_message'
+      end
+    end
+
+    module Clusters
+      module Shared
+        autoload :Index, 'qa/page/clusters/shared/index'
+        autoload :Add, 'qa/page/clusters/shared/add'
+        autoload :AddExisting, 'qa/page/clusters/shared/add_existing'
+        autoload :Show, 'qa/page/clusters/shared/show'
       end
     end
 

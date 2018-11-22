@@ -118,7 +118,7 @@
 
       - if group_sidebar_link?(:kubernetes)
         = nav_link(controller: [:clusters]) do
-          = link_to group_clusters_path(@group) do
+          = link_to group_clusters_path(@group), class: 'qa-kubernetes-kubernetes-link' do
             .nav-icon-container
               = sprite_icon('cloud-gear')
             %span.nav-item-name

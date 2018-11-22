@@ -1,7 +1,7 @@
 module QA
   module Page
-    module Project
-      module Operations
+    module Group
+      module Kubernetes
         module Kubernetes
           class Add < Page::Base
             include QA::Page::Clusters::Shared::Add
