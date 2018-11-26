@@ -122,14 +122,7 @@ module Projects
     end
 
     def configure_group_clusters_for_project
-      ::Clusters::Cluster.belonging_to_parent_group_of_project(@project.id).each do |cluster|
-        kubernetes_namespace = cluster.find_or_initialize_kubernetes_namespace_by_project(@project)
-
-        ::Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService.new(
-          cluster: cluster,
-          kubernetes_namespace: kubernetes_namespace
-        ).execute
-      end
+      ::Clusters::RefreshService.new.create_or_update_namespaces_for_project(@project)
     end
 
     def skip_wiki?

@@ -63,30 +63,7 @@ describe Projects::TransferService do
       expect(rugged_config['gitlab.fullpath']).to eq "#{group.full_path}/#{project.path}"
     end
 
-    shared_context 'project in a group with a kubernetes cluster' do
-      let!(:old_kubernetes_namespace) { create(:cluster_kubernetes_namespace, cluster: old_group_cluster, project: project) }
-
-      let(:old_group_cluster) { create(:cluster, :group, :provided_by_user) }
-      let(:old_group) { old_group_cluster.group }
-      let(:project) { create(:project, :repository, group: old_group) }
-
-      before do
-        old_group.add_owner(user)
-      end
-    end
-
-    context 'old group with cluster' do
-      include_context 'project in a group with a kubernetes cluster'
-
-      it 'marks the kubernetes namespace as pending delete' do
-        transfer_project(project, user, group)
-
-        old_kubernetes_namespace.reload
-        expect(old_kubernetes_namespace).to be_pending_delete
-      end
-    end
-
-    context 'group has a kubernetes cluster' do
+    context 'new group has a kubernetes cluster' do
       let(:group_cluster) { create(:cluster, :group, :provided_by_gcp) }
       let(:group) { group_cluster.group }
 
@@ -94,32 +71,21 @@ describe Projects::TransferService do
       let(:service_account_creator) { double(Clusters::Gcp::Kubernetes::CreateServiceAccountService, execute: true) }
       let(:secrets_fetcher) { double(Clusters::Gcp::Kubernetes::FetchKubernetesTokenService, execute: token) }
 
+      subject { transfer_project(project, user, group) }
+
       before do
         expect(Clusters::Gcp::Kubernetes::CreateServiceAccountService).to receive(:namespace_creator).and_return(service_account_creator)
         expect(Clusters::Gcp::Kubernetes::FetchKubernetesTokenService).to receive(:new).and_return(secrets_fetcher)
       end
 
       it 'creates kubernetes namespace for the project' do
-        transfer_project(project, user, group)
+        subject
+
+        expect(project.kubernetes_namespaces.count).to eq(1)
 
         kubernetes_namespace = group_cluster.kubernetes_namespaces.first
         expect(kubernetes_namespace).to be_present
         expect(kubernetes_namespace.project).to eq(project)
-      end
-
-      context 'old group with cluster' do
-        include_context 'project in a group with a kubernetes cluster'
-
-        before do
-          old_group.update!(parent: group)
-        end
-
-        it 'marks the kubernetes namespace as pending delete' do
-          transfer_project(project, user, group)
-
-          old_kubernetes_namespace.reload
-          expect(old_kubernetes_namespace).to be_pending_delete
-        end
       end
     end
   end

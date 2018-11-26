@@ -6,39 +6,7 @@ class ClusterPlatformConfigureWorker
 
   def perform(cluster_id)
     Clusters::Cluster.find_by_id(cluster_id).try do |cluster|
-      if cluster.project_type?
-        configure_for_project(cluster)
-      elsif cluster.group_type?
-        configure_for_group_projects(cluster, cluster.group)
-      end
-    end
-  end
-
-  private
-
-  def configure_for_project(cluster)
-    return unless cluster.cluster_project
-
-    kubernetes_namespace = cluster.find_or_initialize_kubernetes_namespace_by_cluster_project(cluster.cluster_project)
-
-    Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService.new(
-      cluster: cluster,
-      kubernetes_namespace: kubernetes_namespace
-    ).execute
-  end
-
-  def configure_for_group_projects(cluster, group)
-    group.projects.each do |project|
-      kubernetes_namespace = cluster.find_or_initialize_kubernetes_namespace_by_project(project)
-
-      Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService.new(
-        cluster: cluster,
-        kubernetes_namespace: kubernetes_namespace
-      ).execute
-    end
-
-    group.children.each do |subgroup|
-      configure_for_group_projects(cluster, subgroup)
+      Clusters::RefreshService.new.create_or_update_namespaces_for_cluster(cluster)
     end
   end
 end

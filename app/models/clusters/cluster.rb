@@ -87,13 +87,11 @@ module Clusters
 
     scope :default_environment, -> { where(environment_scope: DEFAULT_ENVIRONMENT) }
 
-    scope :belonging_to_old_parent_group_but_not_new_group, -> (old_group, new_group) {
-      old_group_and_ancestor_ids = old_group ? old_group.self_and_ancestors_ids : []
-      new_group_and_ancestor_ids = new_group ? new_group.self_and_ancestors_ids : []
-      group_ids = old_group_and_ancestor_ids - new_group_and_ancestor_ids
+    scope :missing_kubernetes_namespace, -> (kubernetes_namespaces) do
+      subquery = kubernetes_namespaces.select('1').where('clusters_kubernetes_namespaces.cluster_id = clusters.id')
 
-      joins(:groups).where(namespaces: { id: group_ids })
-    }
+      where('NOT EXISTS (?)', subquery)
+    end
 
     def self.belonging_to_parent_group_of_project(project_id, cluster_scope = all)
       project_groups = ::Group.joins(:projects).where(projects: { id: project_id })
@@ -170,21 +168,17 @@ module Clusters
       platform_kubernetes.kubeclient if kubernetes?
     end
 
-    def find_or_initialize_kubernetes_namespace_by_cluster_project(cluster_project)
-      return unless project_type?
-
-      kubernetes_namespaces.find_or_initialize_by(
-        project: cluster_project.project,
-        cluster_project: cluster_project
-      )
-    end
-
-    def find_or_initialize_kubernetes_namespace_by_project(project)
-      return unless group_type?
-
-      kubernetes_namespaces.find_or_initialize_by(
-        project: project
-      )
+    def find_or_initialize_kubernetes_namespace_for_project(project)
+      if project_type?
+        kubernetes_namespaces.find_or_initialize_by(
+          project: project,
+          cluster_project: project.cluster_project
+        )
+      else
+        kubernetes_namespaces.find_or_initialize_by(
+          project: project
+        )
+      end
     end
 
     def allow_user_defined_namespace?
