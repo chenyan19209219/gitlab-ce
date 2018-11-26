@@ -9,19 +9,18 @@ module Ci
     include Presentable
     include Importable
     include Gitlab::Utils::StrongMemoize
+    include Deployable
 
     belongs_to :project, inverse_of: :builds
     belongs_to :runner
     belongs_to :trigger_request
     belongs_to :erased_by, class_name: 'User'
 
-    has_many :deployments, as: :deployable
-
     RUNNER_FEATURES = {
       upload_multiple_artifacts: -> (build) { build.publishes_artifacts_reports? }
     }.freeze
 
-    has_one :last_deployment, -> { order('deployments.id DESC') }, as: :deployable, class_name: 'Deployment'
+    has_one :deployment, as: :deployable, class_name: 'Deployment'
     has_many :trace_sections, class_name: 'Ci::BuildTraceSection'
     has_many :trace_chunks, class_name: 'Ci::BuildTraceChunk', foreign_key: :build_id
 
@@ -92,13 +91,14 @@ module Ci
     scope :with_artifacts_not_expired, ->() { with_artifacts_archive.where('artifacts_expire_at IS NULL OR artifacts_expire_at > ?', Time.now) }
     scope :with_expired_artifacts, ->() { with_artifacts_archive.where('artifacts_expire_at < ?', Time.now) }
     scope :last_month, ->() { where('created_at > ?', Date.today - 1.month) }
-    scope :manual_actions, ->() { where(when: :manual, status: COMPLETED_STATUSES + [:manual]) }
+    scope :manual_actions, ->() { where(when: :manual, status: COMPLETED_STATUSES + %i[manual]) }
+    scope :scheduled_actions, ->() { where(when: :delayed, status: COMPLETED_STATUSES + %i[scheduled]) }
     scope :ref_protected, -> { where(protected: true) }
     scope :with_live_trace, -> { where('EXISTS (?)', Ci::BuildTraceChunk.where('ci_builds.id = ci_build_trace_chunks.build_id').select(1)) }
 
     scope :matches_tag_ids, -> (tag_ids) do
       matcher = ::ActsAsTaggableOn::Tagging
-        .where(taggable_type: CommitStatus)
+        .where(taggable_type: CommitStatus.name)
         .where(context: 'tags')
         .where('taggable_id = ci_builds.id')
         .where.not(tag_id: tag_ids).select('1')
@@ -108,7 +108,7 @@ module Ci
 
     scope :with_any_tags, -> do
       matcher = ::ActsAsTaggableOn::Tagging
-        .where(taggable_type: CommitStatus)
+        .where(taggable_type: CommitStatus.name)
         .where(context: 'tags')
         .where('taggable_id = ci_builds.id').select('1')
 
@@ -159,6 +159,34 @@ module Ci
         transition created: :manual
       end
 
+      event :schedule do
+        transition created: :scheduled
+      end
+
+      event :unschedule do
+        transition scheduled: :manual
+      end
+
+      event :enqueue_scheduled do
+        transition scheduled: :pending, if: ->(build) do
+          build.scheduled_at && build.scheduled_at < Time.now
+        end
+      end
+
+      before_transition scheduled: any do |build|
+        build.scheduled_at = nil
+      end
+
+      before_transition created: :scheduled do |build|
+        build.scheduled_at = build.options_scheduled_at
+      end
+
+      after_transition created: :scheduled do |build|
+        build.run_after_commit do
+          Ci::BuildScheduleWorker.perform_at(build.scheduled_at, build.id)
+        end
+      end
+
       after_transition any => [:pending] do |build|
         build.run_after_commit do
           BuildQueueWorker.perform_async(id)
@@ -166,6 +194,8 @@ module Ci
       end
 
       after_transition pending: :running do |build|
+        build.deployment&.run
+
         build.run_after_commit do
           BuildHooksWorker.perform_async(id)
         end
@@ -178,6 +208,8 @@ module Ci
       end
 
       after_transition any => [:success] do |build|
+        build.deployment&.succeed
+
         build.run_after_commit do
           BuildSuccessWorker.perform_async(id)
           PagesWorker.perform_async(:deploy, id) if build.pages_generator?
@@ -186,9 +218,10 @@ module Ci
 
       before_transition any => [:failed] do |build|
         next unless build.project
-        next if build.retries_max.zero?
 
-        if build.retries_count < build.retries_max
+        build.deployment&.drop
+
+        if build.retry_failure?
           begin
             Ci::Build.retry(build, build.user)
           rescue Gitlab::Access::AccessDeniedError => ex
@@ -204,6 +237,10 @@ module Ci
       after_transition running: any do |build|
         Ci::BuildRunnerSession.where(build: build).delete_all
       end
+
+      after_transition any => [:skipped, :canceled] do |build|
+        build.deployment&.cancel
+      end
     end
 
     def ensure_metadata
@@ -216,8 +253,12 @@ module Ci
         .fabricate!
     end
 
-    def other_actions
+    def other_manual_actions
       pipeline.manual_actions.where.not(name: name)
+    end
+
+    def other_scheduled_actions
+      pipeline.scheduled_actions.where.not(name: name)
     end
 
     def pages_generator?
@@ -225,12 +266,36 @@ module Ci
         self.name == 'pages'
     end
 
+    # degenerated build is one that cannot be run by Runner
+    def degenerated?
+      self.options.nil?
+    end
+
+    def degenerate!
+      self.update!(options: nil, yaml_variables: nil, commands: nil)
+    end
+
+    def archived?
+      return true if degenerated?
+
+      archive_builds_older_than = Gitlab::CurrentSettings.current_application_settings.archive_builds_older_than
+      archive_builds_older_than.present? && created_at < archive_builds_older_than
+    end
+
     def playable?
-      action? && (manual? || retryable?)
+      action? && !archived? && (manual? || scheduled? || retryable?)
+    end
+
+    def schedulable?
+      self.when == 'delayed' && options[:start_in].present?
+    end
+
+    def options_scheduled_at
+      ChronicDuration.parse(options[:start_in])&.seconds&.from_now
     end
 
     def action?
-      self.when == 'manual'
+      %w[manual delayed].include?(self.when)
     end
 
     # rubocop: disable CodeReuse/ServiceClass
@@ -246,7 +311,7 @@ module Ci
     end
 
     def retryable?
-      success? || failed? || canceled?
+      !archived? && (success? || failed? || canceled?)
     end
 
     def retries_count
@@ -254,7 +319,17 @@ module Ci
     end
 
     def retries_max
-      self.options.fetch(:retry, 0).to_i
+      normalized_retry.fetch(:max, 0)
+    end
+
+    def retry_when
+      normalized_retry.fetch(:when, ['always'])
+    end
+
+    def retry_failure?
+      return false if retries_max.zero? || retries_count >= retries_max
+
+      retry_when.include?('always') || retry_when.include?(failure_reason.to_s)
     end
 
     def latest?
@@ -285,8 +360,12 @@ module Ci
       self.options.fetch(:environment, {}).fetch(:action, 'start') if self.options
     end
 
+    def has_deployment?
+      !!self.deployment
+    end
+
     def outdated_deployment?
-      success? && !last_deployment.try(:last?)
+      success? && !deployment.try(:last?)
     end
 
     def depends_on_builds
@@ -299,6 +378,10 @@ module Ci
 
     def triggered_by?(current_user)
       user == current_user
+    end
+
+    def on_stop
+      options&.dig(:environment, :on_stop)
     end
 
     # A slugified version of the build ref, suitable for inclusion in URLs and
@@ -381,7 +464,9 @@ module Ci
     end
 
     def repo_url
-      auth = "gitlab-ci-token:#{ensure_token!}@"
+      return unless token
+
+      auth = "gitlab-ci-token:#{token}@"
       project.http_url_to_repo.sub(%r{^https?://}) do |prefix|
         prefix + auth
       end
@@ -555,11 +640,11 @@ module Ci
     def secret_group_variables
       return [] unless project.group
 
-      project.group.secret_variables_for(ref, project)
+      project.group.ci_variables_for(ref, project)
     end
 
     def secret_project_variables(environment: persisted_environment)
-      project.secret_variables_for(ref: ref, environment: environment)
+      project.ci_variables_for(ref: ref, environment: environment)
     end
 
     def steps
@@ -642,7 +727,7 @@ module Ci
 
       trace = trace.dup
       Gitlab::Ci::MaskSecret.mask!(trace, project.runners_token) if project
-      Gitlab::Ci::MaskSecret.mask!(trace, token)
+      Gitlab::Ci::MaskSecret.mask!(trace, token) if token
       trace
     end
 
@@ -668,7 +753,7 @@ module Ci
 
       if success?
         return successful_deployment_status
-      elsif complete? && !success?
+      elsif failed?
         return :failed
       end
 
@@ -685,13 +770,11 @@ module Ci
     end
 
     def successful_deployment_status
-      if success? && last_deployment&.last?
-        return :last
-      elsif success? && last_deployment.present?
-        return :out_of_date
+      if deployment&.last?
+        :last
+      else
+        :out_of_date
       end
-
-      :creating
     end
 
     def each_report(report_types)
@@ -733,23 +816,26 @@ module Ci
           .concat(pipeline.persisted_variables)
           .append(key: 'CI_JOB_ID', value: id.to_s)
           .append(key: 'CI_JOB_URL', value: Gitlab::Routing.url_helpers.project_job_url(project, self))
-          .append(key: 'CI_JOB_TOKEN', value: token, public: false)
+          .append(key: 'CI_JOB_TOKEN', value: token.to_s, public: false)
           .append(key: 'CI_BUILD_ID', value: id.to_s)
-          .append(key: 'CI_BUILD_TOKEN', value: token, public: false)
+          .append(key: 'CI_BUILD_TOKEN', value: token.to_s, public: false)
           .append(key: 'CI_REGISTRY_USER', value: CI_REGISTRY_USER)
-          .append(key: 'CI_REGISTRY_PASSWORD', value: token, public: false)
-          .append(key: 'CI_REPOSITORY_URL', value: repo_url, public: false)
+          .append(key: 'CI_REGISTRY_PASSWORD', value: token.to_s, public: false)
+          .append(key: 'CI_REPOSITORY_URL', value: repo_url.to_s, public: false)
           .concat(deploy_token_variables)
       end
     end
 
-    def predefined_variables
+    def predefined_variables # rubocop:disable Metrics/AbcSize
       Gitlab::Ci::Variables::Collection.new.tap do |variables|
         variables.append(key: 'CI', value: 'true')
         variables.append(key: 'GITLAB_CI', value: 'true')
         variables.append(key: 'GITLAB_FEATURES', value: project.licensed_features.join(','))
         variables.append(key: 'CI_SERVER_NAME', value: 'GitLab')
         variables.append(key: 'CI_SERVER_VERSION', value: Gitlab::VERSION)
+        variables.append(key: 'CI_SERVER_VERSION_MAJOR', value: Gitlab.version_info.major.to_s)
+        variables.append(key: 'CI_SERVER_VERSION_MINOR', value: Gitlab.version_info.minor.to_s)
+        variables.append(key: 'CI_SERVER_VERSION_PATCH', value: Gitlab.version_info.patch.to_s)
         variables.append(key: 'CI_SERVER_REVISION', value: Gitlab.revision)
         variables.append(key: 'CI_JOB_NAME', value: name)
         variables.append(key: 'CI_JOB_STAGE', value: stage)
@@ -760,6 +846,8 @@ module Ci
         variables.append(key: "CI_COMMIT_TAG", value: ref) if tag?
         variables.append(key: "CI_PIPELINE_TRIGGERED", value: 'true') if trigger_request
         variables.append(key: "CI_JOB_MANUAL", value: 'true') if action?
+        variables.append(key: "CI_NODE_INDEX", value: self.options[:instance].to_s) if self.options&.include?(:instance)
+        variables.append(key: "CI_NODE_TOTAL", value: (self.options&.dig(:parallel) || 1).to_s)
         variables.concat(legacy_variables)
       end
     end
@@ -802,6 +890,16 @@ module Ci
 
     def environment_url
       options&.dig(:environment, :url) || persisted_environment&.external_url
+    end
+
+    # The format of the retry option changed in GitLab 11.5: Before it was
+    # integer only, after it is a hash. New builds are created with the new
+    # format, but builds created before GitLab 11.5 and saved in database still
+    # have the old integer only format. This method returns the retry option
+    # normalized as a hash in 11.5+ format.
+    def normalized_retry
+      value = options&.dig(:retry)
+      value.is_a?(Integer) ? { max: value } : value.to_h
     end
 
     def build_attributes_from_config

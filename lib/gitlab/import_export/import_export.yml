@@ -92,6 +92,7 @@ excluded_attributes:
     - :path
     - :namespace_id
     - :creator_id
+    - :pool_repository_id
     - :import_url
     - :import_status
     - :avatar
@@ -153,6 +154,8 @@ excluded_attributes:
     - :encrypted_token_iv
     - :encrypted_url
     - :encrypted_url_iv
+  services:
+    - :template
 
 methods:
   labels:

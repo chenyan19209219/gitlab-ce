@@ -3,8 +3,10 @@ import createStore from '~/notes/stores';
 import noteableDiscussion from '~/notes/components/noteable_discussion.vue';
 import '~/behaviors/markdown/render_gfm';
 import { noteableDataMock, discussionMock, notesDataMock } from '../mock_data';
+import mockDiffFile from '../../diffs/mock_data/diff_file';
 
 const discussionWithTwoUnresolvedNotes = 'merge_requests/resolved_diff_discussion.json';
+const diffDiscussionFixture = 'merge_requests/diff_discussion.json';
 
 describe('noteable_discussion component', () => {
   const Component = Vue.extend(noteableDiscussion);
@@ -33,9 +35,20 @@ describe('noteable_discussion component', () => {
     expect(vm.$el.querySelector('.user-avatar-link')).not.toBeNull();
   });
 
+  it('should not render discussion header for non diff discussions', () => {
+    expect(vm.$el.querySelector('.discussion-header')).toBeNull();
+  });
+
   it('should render discussion header', () => {
-    expect(vm.$el.querySelector('.discussion-header')).not.toBeNull();
-    expect(vm.$el.querySelector('.notes').children.length).toEqual(discussionMock.notes.length);
+    const discussion = { ...discussionMock };
+    discussion.diff_file = mockDiffFile;
+    discussion.diff_discussion = true;
+    const diffDiscussionVm = new Component({
+      store,
+      propsData: { discussion },
+    }).$mount();
+
+    expect(diffDiscussionVm.$el.querySelector('.discussion-header')).not.toBeNull();
   });
 
   describe('actions', () => {
@@ -103,6 +116,49 @@ describe('noteable_discussion component', () => {
           .catch(done.fail);
       });
     });
+
+    describe('isRepliesCollapsed', () => {
+      it('should return false for diff discussions', done => {
+        const diffDiscussion = getJSONFixture(diffDiscussionFixture)[0];
+        vm.$store.dispatch('setInitialNotes', [diffDiscussion]);
+
+        Vue.nextTick()
+          .then(() => {
+            expect(vm.isRepliesCollapsed).toEqual(false);
+            expect(vm.$el.querySelector('.js-toggle-replies')).not.toBeNull();
+            expect(vm.$el.querySelector('.discussion-reply-holder')).not.toBeNull();
+          })
+          .then(done)
+          .catch(done.fail);
+      });
+
+      it('should return false if discussion does not have a reply', () => {
+        const discussion = { ...discussionMock, resolved: true };
+        discussion.notes = discussion.notes.slice(0, 1);
+        const noRepliesVm = new Component({
+          store,
+          propsData: { discussion },
+        }).$mount();
+
+        expect(noRepliesVm.isRepliesCollapsed).toEqual(false);
+        expect(noRepliesVm.$el.querySelector('.js-toggle-replies')).toBeNull();
+        expect(vm.$el.querySelector('.discussion-reply-holder')).not.toBeNull();
+        noRepliesVm.$destroy();
+      });
+
+      it('should return true for resolved non-diff discussion which has replies', () => {
+        const discussion = { ...discussionMock, resolved: true };
+        const resolvedDiscussionVm = new Component({
+          store,
+          propsData: { discussion },
+        }).$mount();
+
+        expect(resolvedDiscussionVm.isRepliesCollapsed).toEqual(true);
+        expect(resolvedDiscussionVm.$el.querySelector('.js-toggle-replies')).not.toBeNull();
+        expect(vm.$el.querySelector('.discussion-reply-holder')).not.toBeNull();
+        resolvedDiscussionVm.$destroy();
+      });
+    });
   });
 
   describe('methods', () => {
@@ -138,23 +194,21 @@ describe('noteable_discussion component', () => {
     it('should return first note object for placeholder note', () => {
       const data = {
         isPlaceholderNote: true,
-        notes: [
-          { body: 'hello world!' },
-        ],
+        notes: [{ body: 'hello world!' }],
       };
 
       const note = vm.componentData(data);
+
       expect(note).toEqual(data.notes[0]);
     });
 
     it('should return given note for nonplaceholder notes', () => {
       const data = {
-        notes: [
-          { id: 12 },
-        ],
+        notes: [{ id: 12 }],
       };
 
       const note = vm.componentData(data);
+
       expect(note).toEqual(data);
     });
   });

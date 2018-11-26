@@ -20,7 +20,7 @@ class Import::GithubController < Import::BaseController
   end
 
   def personal_access_token
-    session[access_token_key] = params[:personal_access_token]
+    session[access_token_key] = params[:personal_access_token]&.strip
     redirect_to status_import_url
   end
 
@@ -103,7 +103,7 @@ class Import::GithubController < Import::BaseController
     { github_access_token: session[access_token_key] }
   end
 
-  # The following methods are overriden in subclasses
+  # The following methods are overridden in subclasses
   def provider
     :github
   end

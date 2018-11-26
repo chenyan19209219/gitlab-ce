@@ -19,15 +19,17 @@ describe Projects::ArtifactsController do
   end
 
   describe 'GET download' do
-    subject { get :download, namespace_id: project.namespace, project_id: project, job_id: job, file_type: file_type }
+    def download_artifact(extra_params = {})
+      params = { namespace_id: project.namespace, project_id: project, job_id: job }.merge(extra_params)
+
+      get :download, params
+    end
 
     context 'when no file type is supplied' do
-      let(:file_type) { nil }
-
       it 'sends the artifacts file' do
         expect(controller).to receive(:send_file).with(job.artifacts_file.path, hash_including(disposition: 'attachment')).and_call_original
 
-        subject
+        download_artifact
       end
     end
 
@@ -36,7 +38,7 @@ describe Projects::ArtifactsController do
         let(:file_type) { 'invalid' }
 
         it 'returns 404' do
-          subject
+          download_artifact(file_type: file_type)
 
           expect(response).to have_gitlab_http_status(404)
         end
@@ -45,14 +47,37 @@ describe Projects::ArtifactsController do
       context 'when codequality file type is supplied' do
         let(:file_type) { 'codequality' }
 
-        before do
-          create(:ci_job_artifact, :codequality, job: job)
+        context 'when file is stored locally' do
+          before do
+            create(:ci_job_artifact, :codequality, job: job)
+          end
+
+          it 'sends the codequality report' do
+            expect(controller).to receive(:send_file).with(job.job_artifacts_codequality.file.path, hash_including(disposition: 'attachment')).and_call_original
+
+            download_artifact(file_type: file_type)
+          end
         end
 
-        it 'sends the codequality report' do
-          expect(controller).to receive(:send_file).with(job.job_artifacts_codequality.file.path, hash_including(disposition: 'attachment')).and_call_original
+        context 'when file is stored remotely' do
+          before do
+            stub_artifacts_object_storage
+            create(:ci_job_artifact, :remote_store, :codequality, job: job)
+          end
 
-          subject
+          it 'sends the codequality report' do
+            expect(controller).to receive(:redirect_to).and_call_original
+
+            download_artifact(file_type: file_type)
+          end
+
+          context 'when proxied' do
+            it 'sends the codequality report' do
+              expect(Gitlab::Workhorse).to receive(:send_url).and_call_original
+
+              download_artifact(file_type: file_type, proxy: true)
+            end
+          end
         end
       end
     end

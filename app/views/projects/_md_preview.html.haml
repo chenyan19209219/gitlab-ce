@@ -11,10 +11,10 @@
   .md-header
     %ul.nav.nav-tabs.nav-links.clearfix
       %li.md-header-tab.active
-        %a.js-md-write-button{ href: "#md-write-holder", tabindex: -1 }
+        %button.js-md-write-button{ tabindex: -1 }
           Write
       %li.md-header-tab
-        %a.js-md-preview-button{ href: "#md-preview-holder", tabindex: -1 }
+        %button.js-md-preview-button{ tabindex: -1 }
           Preview
 
       %li.md-header-toolbar.active
@@ -26,6 +26,7 @@
         = markdown_toolbar_button({ icon: "list-bulleted", data: { "md-tag" => "* ", "md-prepend" => true }, title: s_("MarkdownToolbar|Add a bullet list") })
         = markdown_toolbar_button({ icon: "list-numbered", data: { "md-tag" => "1. ", "md-prepend" => true }, title: s_("MarkdownToolbar|Add a numbered list") })
         = markdown_toolbar_button({ icon: "task-done", data: { "md-tag" => "* [ ] ", "md-prepend" => true }, title: s_("MarkdownToolbar|Add a task list") })
+        = markdown_toolbar_button({ icon: "table", data: { "md-tag" => "| header | header |\n| ------ | ------ |\n| cell | cell |\n| cell | cell |", "md-prepend" => true }, title: s_("MarkdownToolbar|Add a table") })
         %button.toolbar-btn.toolbar-fullscreen-btn.js-zen-enter.has-tooltip{ type: "button", tabindex: -1, "aria-label": "Go full screen", title: s_("MarkdownToolbar|Go full screen"), data: { container: "body" } }
           = sprite_icon("screen-full")
 

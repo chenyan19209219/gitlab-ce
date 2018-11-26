@@ -14,14 +14,13 @@ Sidekiq.default_worker_options = { retry: 3 }
 enable_json_logs = Gitlab.config.sidekiq.log_format == 'json'
 
 Sidekiq.configure_server do |config|
-  require 'rbtrace' if ENV['ENABLE_RBTRACE']
-
   config.redis = queues_config_hash
 
   config.server_middleware do |chain|
     chain.add Gitlab::SidekiqMiddleware::ArgumentsLogger if ENV['SIDEKIQ_LOG_ARGUMENTS'] && !enable_json_logs
     chain.add Gitlab::SidekiqMiddleware::Shutdown
     chain.add Gitlab::SidekiqMiddleware::RequestStoreMiddleware unless ENV['SIDEKIQ_REQUEST_STORE'] == '0'
+    chain.add Gitlab::SidekiqMiddleware::BatchLoader
     chain.add Gitlab::SidekiqStatus::ServerMiddleware
   end
 

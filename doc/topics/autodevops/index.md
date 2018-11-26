@@ -2,40 +2,54 @@
 
 > [Introduced][ce-37115] in GitLab 10.0. Generally available on GitLab 11.0.
 
-Auto DevOps automatically detects, builds, tests, deploys, and monitors your
-applications.
+Auto DevOps provides pre-defined CI/CD configuration which allows you to automatically detect, build, test,
+deploy, and monitor your applications. Leveraging CI/CD best practices and tools, Auto DevOps aims
+to simplify the setup and execution of a mature & modern software development lifecycle.
 
 ## Overview
 
+NOTE: **Enabled by default:**
+Starting with GitLab 11.3, the Auto DevOps pipeline is enabled by default for all
+projects. If it has not been explicitly enabled for the project, Auto DevOps will be automatically
+disabled on the first pipeline failure. Your project will continue to use an alternative
+[CI/CD configuration file](../../ci/yaml/README.md) if one is found. A GitLab
+administrator can [change this setting](../../user/admin_area/settings/continuous_integration.html#auto-devops)
+in the admin area.
+
 With Auto DevOps, the software development process becomes easier to set up
 as every project can have a complete workflow from verification to monitoring
-without needing to configure anything. Just push your code and GitLab takes
+with minimal configuration. Just push your code and GitLab takes
 care of everything else. This makes it easier to start new projects and brings
 consistency to how applications are set up throughout a company.
 
 ## Quick start
 
 If you are using GitLab.com, see the [quick start guide](quick_start_guide.md)
-for using Auto DevOps with GitLab.com and a Kubernetes cluster on Google Kubernetes
-Engine.
+for how to use Auto DevOps with GitLab.com and a Kubernetes cluster on Google Kubernetes
+Engine (GKE).
+
+If you are using a self-hosted instance of GitLab, you will need to configure the
+[Google OAuth2 OmniAuth Provider](../../integration/google.md) before
+you can configure a cluster on GKE. Once this is set up, you can follow the steps on the
+[quick start guide](quick_start_guide.md) to get started.
 
 ## Comparison to application platforms and PaaS
 
-Auto DevOps provides functionality described by others as an application
-platform or as a Platform as a Service (PaaS). It takes inspiration from the
+Auto DevOps provides functionality that is often included in an application
+platform or a Platform as a Service (PaaS). It takes inspiration from the
 innovative work done by [Heroku](https://www.heroku.com/) and goes beyond it
-in a couple of ways:
+in multiple ways:
 
-1. Auto DevOps works with any Kubernetes cluster, you're not limited to running
-   on GitLab's infrastructure (note that many features also work without Kubernetes).
+1. Auto DevOps works with any Kubernetes cluster; you're not limited to running
+   on GitLab's infrastructure. (Note that many features also work without Kubernetes.)
 1. There is no additional cost (no markup on the infrastructure costs), and you
    can use a self-hosted Kubernetes cluster or Containers as a Service on any
-   public cloud (for example [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/)).
+   public cloud (for example, [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine/)).
 1. Auto DevOps has more features including security testing, performance testing,
    and code quality testing.
-1. It offers an incremental graduation path. If you need advanced customizations
+1. Auto DevOps offers an incremental graduation path. If you need advanced customizations,
    you can start modifying the templates without having to start over on a
-   completely different platform.
+   completely different platform. Review the [customizing](#customizing) section for more information.
 
 ## Features
 
@@ -189,23 +203,38 @@ and verifying that your app is deployed as a review app in the Kubernetes
 cluster with the `review/*` environment scope. Similarly, you can check the
 other environments.
 
-## Enabling Auto DevOps
+## Enabling/Disabling Auto DevOps
 
-If you haven't done already, read the [requirements](#requirements) to make
-full use of Auto DevOps. If this is your fist time, we recommend you follow the
+When first using Auto Devops, review the [requirements](#requirements) to ensure all necessary components to make
+full use of Auto DevOps are available. If this is your fist time, we recommend you follow the
 [quick start guide](quick_start_guide.md).
 
-To enable Auto DevOps to your project:
+GitLab.com users can enable/disable Auto DevOps at the project-level only. Self-managed users
+can enable/disable Auto DevOps at either the project-level or instance-level.
 
-1. Check that your project doesn't have a `.gitlab-ci.yml`, or remove it otherwise
-1. Go to your project's **Settings > CI/CD > Auto DevOps**
-1. Select "Enable Auto DevOps"
-1. Optionally, but recommended, add in the [base domain](#auto-devops-base-domain)
-   that will be used by Kubernetes to [deploy your application](#auto-deploy)
-   and choose the [deployment strategy](#deployment-strategy)
-1. Hit **Save changes** for the changes to take effect
+### Enabling/disabling Auto DevOps at the instance-level (Administrators only)
 
-Once saved, an Auto DevOps pipeline will be triggered on the default branch.
+1. Go to **Admin area > Settings > Continuous Integration and Deployment**.
+1. Toggle the checkbox labeled **Default to Auto DevOps pipeline for all projects**.
+1. If enabling, optionally set up the Auto DevOps [base domain](#auto-devops-base-domain) which will be used for Auto Deploy and Auto Review Apps.
+1. Click **Save changes** for the changes to take effect.
+
+NOTE: **Note:**
+Even when disabled at the instance level, project maintainers are still able to enable
+Auto DevOps at the project level.
+
+### Enabling/disabling Auto DevOps at the project-level
+
+If enabling, check that your project doesn't have a `.gitlab-ci.yml`, or if one exists, remove it.
+
+1. Go to your project's **Settings > CI/CD > Auto DevOps**.
+1. Toggle the **Default to Auto DevOps pipeline** checkbox (checked to enable, unchecked to disable)
+1. When enabling, it's optional but recommended to add in the [base domain](#auto-devops-base-domain)
+   that will be used by Auto DevOps to [deploy your application](#auto-deploy)
+   and choose the [deployment strategy](#deployment-strategy).
+1. Click **Save changes** for the changes to take effect.
+
+When the feature has been enabled, an Auto DevOps pipeline is triggered on the default branch.
 
 NOTE: **Note:**
 For GitLab versions 10.0 - 10.2, when enabling Auto DevOps, a pipeline needs to be
@@ -214,21 +243,9 @@ manually triggered either by pushing a new commit to the repository or by visiti
 a new pipeline for your default branch, generally `master`.
 
 NOTE: **Note:**
-If you are a GitLab Administrator, you can enable Auto DevOps instance wide
-in **Admin Area > Settings > Continuous Integration and Deployment**. Doing that,
-all the projects that haven't explicitly set an option will have Auto DevOps
-enabled by default.
-
-NOTE: **Note:**
 There is also a feature flag to enable Auto DevOps to a percentage of projects
 which can be enabled from the console with
 `Feature.get(:force_autodevops_on_by_default).enable_percentage_of_actors(10)`.
-
-NOTE: **Enabled by default:**
-Starting with GitLab 11.3, the Auto DevOps pipeline will be enabled by default for all
-projects. If it's not explicitly enabled for the project, Auto DevOps will be automatically
-disabled on the first pipeline failure. Your project will continue to use an alternative
-[CI/CD configuration file](../../ci/yaml/README.md) if one is found.
 
 ### Deployment strategy
 
@@ -239,14 +256,19 @@ project's **Settings > CI/CD > Auto DevOps**.
 
 The available options are:
 
-- **Continuous deployment to production** - enables [Auto Deploy](#auto-deploy)
-  by setting the [`STAGING_ENABLED`](#deploy-policy-for-staging-and-production-environments) and
-  [`INCREMENTAL_ROLLOUT_ENABLED`](#incremental-rollout-to-production) variables
-  to false.
-- **Automatic deployment to staging, manual deployment to production** - sets the
+- **Continuous deployment to production**: Enables [Auto Deploy](#auto-deploy)
+  with `master` branch directly deployed to production.
+- **Continuous deployment to production using timed incremental rollout**: Sets the
+  [`INCREMENTAL_ROLLOUT_MODE`](#timed-incremental-rollout-to-production) variable
+  to `timed`, and production deployment will be executed with a 5 minute delay between
+  each increment in rollout.
+- **Automatic deployment to staging, manual deployment to production**: Sets the
   [`STAGING_ENABLED`](#deploy-policy-for-staging-and-production-environments) and
-  [`INCREMENTAL_ROLLOUT_ENABLED`](#incremental-rollout-to-production) variables
-  to true, and the user is responsible for manually deploying to staging and production.
+  [`INCREMENTAL_ROLLOUT_MODE`](#incremental-rollout-to-production) variables
+  to `1` and `manual`. This means:
+
+  - `master` branch is directly deployed to staging.
+  - Manual actions are provided for incremental rollout to production.
 
 ## Stages of Auto DevOps
 
@@ -292,8 +314,7 @@ static analysis and other code checks on the current code. The report is
 created, and is uploaded as an artifact which you can later download and check
 out.
 
-In GitLab Starter, differences between the source and
-target branches are also
+Any differences between the source and target branches are also
 [shown in the merge request widget](https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html).
 
 ### Auto SAST **[ULTIMATE]**
@@ -306,8 +327,11 @@ analysis on the current code and checks for potential security issues. Once the
 report is created, it's uploaded as an artifact which you can later download and
 check out.
 
-In GitLab Ultimate, any security warnings are also
+Any security warnings are also
 [shown in the merge request widget](https://docs.gitlab.com/ee//user/project/merge_requests/sast.html).
+
+NOTE: **Note:**
+The Auto SAST stage will be skipped on licenses other than Ultimate.
 
 ### Auto Dependency Scanning **[ULTIMATE]**
 
@@ -322,6 +346,9 @@ check out.
 Any security warnings are also
 [shown in the merge request widget](https://docs.gitlab.com/ee//user/project/merge_requests/dependency_scanning.html).
 
+NOTE: **Note:**
+The Auto Dependency Scanning stage will be skipped on licenses other than Ultimate.
+
 ### Auto License Management **[ULTIMATE]**
 
 > Introduced in [GitLab Ultimate][ee] 11.0.
@@ -335,6 +362,9 @@ check out.
 Any licenses are also
 [shown in the merge request widget](https://docs.gitlab.com/ee//user/project/merge_requests/license_management.html).
 
+NOTE: **Note:**
+The Auto License Management stage will be skipped on licenses other than Ultimate.
+
 ### Auto Container Scanning
 
 > Introduced in GitLab 10.4.
@@ -345,8 +375,11 @@ Docker image and checks for potential security issues. Once the report is
 created, it's uploaded as an artifact which you can later download and
 check out.
 
-In GitLab Ultimate, any security warnings are also
+Any security warnings are also
 [shown in the merge request widget](https://docs.gitlab.com/ee//user/project/merge_requests/container_scanning.html).
+
+NOTE: **Note:**
+The Auto Container Scanning stage will be skipped on licenses other than Ultimate.
 
 ### Auto Review Apps
 
@@ -367,6 +400,9 @@ branch's code so developers, designers, QA, product managers, and other
 reviewers can actually see and interact with code changes as part of the review
 process. Auto Review Apps create a Review App for each branch.
 
+Auto Review Apps will deploy your app to your Kubernetes cluster only. When no cluster
+is available, no deployment will occur.
+
 The Review App will have a unique URL based on the project name, the branch
 name, and a unique number, combined with the Auto DevOps base domain. For
 example, `user-project-branch-1234.example.com`. A link to the Review App shows
@@ -384,8 +420,11 @@ to perform an analysis on the current code and checks for potential security
 issues. Once the report is created, it's uploaded as an artifact which you can
 later download and check out.
 
-In GitLab Ultimate, any security warnings are also
+Any security warnings are also
 [shown in the merge request widget](https://docs.gitlab.com/ee//user/project/merge_requests/dast.html).
+
+NOTE: **Note:**
+The Auto DAST stage will be skipped on licenses other than Ultimate.
 
 ### Auto Browser Performance Testing **[PREMIUM]**
 
@@ -399,8 +438,8 @@ Auto Browser Performance Testing utilizes the [Sitespeed.io container](https://h
 /direction
 ```
 
-In GitLab Premium, performance differences between the source
-and target branches are [shown in the merge request widget](https://docs.gitlab.com/ee//user/project/merge_requests/browser_performance_testing.html).
+Any performance differences between the source and target branches are also
+[shown in the merge request widget](https://docs.gitlab.com/ee//user/project/merge_requests/browser_performance_testing.html).
 
 ### Auto Deploy
 
@@ -547,7 +586,7 @@ repo or by specifying a project variable:
   file in it, Auto DevOps will detect the chart and use it instead of the [default
   one](https://gitlab.com/charts/auto-deploy-app).
   This can be a great way to control exactly how your application is deployed.
-- **Project variable** - Create a [project variable](../../ci/variables/README.md#secret-variables)
+- **Project variable** - Create a [project variable](../../ci/variables/README.md#variables)
   `AUTO_DEVOPS_CHART` with the URL of a custom chart to use.
 
 ### Customizing `.gitlab-ci.yml`
@@ -609,7 +648,7 @@ also be customized, and you can easily use a [custom buildpack](#custom-buildpac
 | `DB_MIGRATE`                 | From GitLab 11.4, this variable can be used to specify the command to run to migrate the application's PostgreSQL database. It runs inside the application pod. |
 | `STAGING_ENABLED`            | From GitLab 10.8, this variable can be used to define a [deploy policy for staging and production environments](#deploy-policy-for-staging-and-production-environments). |
 | `CANARY_ENABLED`             | From GitLab 11.0, this variable can be used to define a [deploy policy for canary environments](#deploy-policy-for-canary-environments). |
-| `INCREMENTAL_ROLLOUT_ENABLED`| From GitLab 10.8, this variable can be used to enable an [incremental rollout](#incremental-rollout-to-production) of your application for the production environment. |
+| `INCREMENTAL_ROLLOUT_MODE`| From GitLab 11.4, this variable, if present, can be used to enable an [incremental rollout](#incremental-rollout-to-production) of your application for the production environment.<br/>Set to: <ul><li>`manual`, for manual deployment jobs.</li><li>`timed`, for automatic rollout deployments with a 5 minute delay each one.</li></ul> |
 | `TEST_DISABLED`              | From GitLab 11.0, this variable can be used to disable the `test` job. If the variable is present, the job will not be created. |
 | `CODE_QUALITY_DISABLED`       | From GitLab 11.0, this variable can be used to disable the `codequality` job. If the variable is present, the job will not be created. |
 | `SAST_DISABLED`              | From GitLab 11.0, this variable can be used to disable the `sast` job. If the variable is present, the job will not be created. |
@@ -618,10 +657,12 @@ also be customized, and you can easily use a [custom buildpack](#custom-buildpac
 | `REVIEW_DISABLED`            | From GitLab 11.0, this variable can be used to disable the `review` and the manual `review:stop` job. If the variable is present, these jobs will not be created. |
 | `DAST_DISABLED`              | From GitLab 11.0, this variable can be used to disable the `dast` job. If the variable is present, the job will not be created. |
 | `PERFORMANCE_DISABLED`       | From GitLab 11.0, this variable can be used to disable the `performance` job. If the variable is present, the job will not be created. |
+| `OLD_REPORTS_DISABLED`       | From GitLab 11.5, this variable can be used to disable the `sast` job. If the variable is present, the job will not be created. |
+| `NEW_REPORTS_DISABLED`       | From GitLab 11.5, this variable can be used to disable the `sast_dashboard` job. If the variable is present, the job will not be created. |
 
 TIP: **Tip:**
 Set up the replica variables using a
-[project variable](../../ci/variables/README.md#secret-variables)
+[project variable](../../ci/variables/README.md#variables)
 and scale your application by just redeploying it!
 
 CAUTION: **Caution:**
@@ -699,7 +740,7 @@ staging environment and deploy to production manually. For this scenario, the
 `STAGING_ENABLED` environment variable was introduced.
 
 If `STAGING_ENABLED` is defined in your project (e.g., set `STAGING_ENABLED` to
-`1` as a secret variable), then the application will be automatically deployed
+`1` as a CI/CD variable), then the application will be automatically deployed
 to a `staging` environment, and a  `production_manual` job will be created for
 you when you're ready to manually deploy to production.
 
@@ -712,7 +753,7 @@ A [canary environment](https://docs.gitlab.com/ee/user/project/canary_deployment
 before any changes are deployed to production.
 
 If `CANARY_ENABLED` is defined in your project (e.g., set `CANARY_ENABLED` to
-`1` as a secret variable) then two manual jobs will be created:
+`1` as a CI/CD variable) then two manual jobs will be created:
 
 - `canary` which will deploy the application to the canary environment
 - `production_manual` which is to be used by you when you're ready to manually
@@ -730,9 +771,8 @@ to use an incremental rollout to replace just a few pods with the latest code.
 This will allow you to first check how the app is behaving, and later manually
 increasing the rollout up to 100%.
 
-If `INCREMENTAL_ROLLOUT_ENABLED` is defined in your project (e.g., set
-`INCREMENTAL_ROLLOUT_ENABLED` to `1` as a secret variable), then instead of the
-standard `production` job, 4 different
+If `INCREMENTAL_ROLLOUT_MODE` is set to `manual` in your project, then instead
+of the standard `production` job, 4 different
 [manual jobs](../../ci/pipelines.md#manual-actions-from-the-pipeline-graph)
 will be created:
 
@@ -756,21 +796,45 @@ environment page.
 Below, you can see how the pipeline will look if the rollout or staging
 variables are defined.
 
-- **Without `INCREMENTAL_ROLLOUT_ENABLED` and without `STAGING_ENABLED`**
+Without `INCREMENTAL_ROLLOUT_MODE` and without `STAGING_ENABLED`:
 
-    ![Staging and rollout disabled](img/rollout_staging_disabled.png)
+![Staging and rollout disabled](img/rollout_staging_disabled.png)
 
-- **Without `INCREMENTAL_ROLLOUT_ENABLED` and with `STAGING_ENABLED`**
+Without `INCREMENTAL_ROLLOUT_MODE` and with `STAGING_ENABLED`:
 
-    ![Staging enabled](img/staging_enabled.png)
+![Staging enabled](img/staging_enabled.png)
 
-- **With `INCREMENTAL_ROLLOUT_ENABLED` and without `STAGING_ENABLED`**
+With `INCREMENTAL_ROLLOUT_MODE` set to `manual` and without `STAGING_ENABLED`:
 
-    ![Rollout enabled](img/rollout_enabled.png)
+![Rollout enabled](img/rollout_enabled.png)
 
-- **With `INCREMENTAL_ROLLOUT_ENABLED` and with `STAGING_ENABLED`**
+With `INCREMENTAL_ROLLOUT_MODE` set to `manual` and with `STAGING_ENABLED`
 
-    ![Rollout and staging enabled](img/rollout_staging_enabled.png)
+![Rollout and staging enabled](img/rollout_staging_enabled.png)
+
+CAUTION: **Caution:**
+Before GitLab 11.4 this feature was enabled by the presence of the
+`INCREMENTAL_ROLLOUT_ENABLED` environment variable.
+This configuration is deprecated and will be removed in the future.
+
+#### Timed incremental rollout to production **[PREMIUM]**
+
+> [Introduced](https://gitlab.com/gitlab-org/gitlab-ee/issues/7545) in GitLab 11.4.
+
+TIP: **Tip:**
+You can also set this inside your [project's settings](#deployment-strategy).
+
+This configuration based on
+[incremental rollout to production](#incremental-rollout-to-production).
+
+Everything behaves the same way, except:
+
+- It's enabled by setting the `INCREMENTAL_ROLLOUT_MODE` variable to `timed`.
+- Instead of the standard `production` job, the following jobs with a 5 minute delay between each are created:
+    1. `timed rollout 10%`
+    1. `timed rollout 25%`
+    1. `timed rollout 50%`
+    1. `timed rollout 100%`
 
 ## Currently supported languages
 

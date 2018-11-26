@@ -43,34 +43,25 @@ export default {
         {
           show: this.currentMergeRequestId,
           title: __('Merge Request'),
-          views: [
-            rightSidebarViews.mergeRequestInfo,
-          ],
+          views: [rightSidebarViews.mergeRequestInfo],
           icon: 'text-description',
         },
         {
           show: true,
           title: __('Pipelines'),
-          views: [
-            rightSidebarViews.pipelines,
-            rightSidebarViews.jobsDetail,
-          ],
+          views: [rightSidebarViews.pipelines, rightSidebarViews.jobsDetail],
           icon: 'rocket',
         },
         {
           show: this.showLivePreview,
           title: __('Live preview'),
-          views: [
-            rightSidebarViews.clientSidePreview,
-          ],
+          views: [rightSidebarViews.clientSidePreview],
           icon: 'live-preview',
         },
       ];
     },
     tabs() {
-      return this.defaultTabs
-        .concat(this.extensionTabs)
-        .filter(tab => tab.show);
+      return this.defaultTabs.concat(this.extensionTabs).filter(tab => tab.show);
     },
     tabViews() {
       return _.flatten(this.tabs.map(tab => tab.views));
@@ -98,9 +89,7 @@ export default {
 </script>
 
 <template>
-  <div
-    class="multi-file-commit-panel ide-right-sidebar"
-  >
+  <div class="multi-file-commit-panel ide-right-sidebar">
     <resizable-panel
       v-show="isOpen"
       :collapsible="false"
@@ -121,27 +110,21 @@ export default {
     </resizable-panel>
     <nav class="ide-activity-bar">
       <ul class="list-unstyled">
-        <li
-          v-for="tab of tabs"
-          :key="tab.title"
-        >
+        <li v-for="tab of tabs" :key="tab.title">
           <button
             v-tooltip
             :title="tab.title"
             :aria-label="tab.title"
             :class="{
-              active: isActiveTab(tab) && isOpen
+              active: isActiveTab(tab) && isOpen,
             }"
             data-container="body"
             data-placement="left"
             class="ide-sidebar-link is-right"
             type="button"
-            @click="clickTab($event, tab)"
+            @click="clickTab($event, tab);"
           >
-            <icon
-              :size="16"
-              :name="tab.icon"
-            />
+            <icon :size="16" :name="tab.icon" />
           </button>
         </li>
       </ul>

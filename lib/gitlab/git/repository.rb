@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'tempfile'
 require 'forwardable'
 require "rubygems/package"
@@ -6,6 +8,7 @@ module Gitlab
   module Git
     class Repository
       include Gitlab::Git::RepositoryMirroring
+      include Gitlab::Git::WrapsGitalyErrors
       include Gitlab::EncodingHelper
       include Gitlab::Utils::StrongMemoize
 
@@ -94,10 +97,6 @@ module Gitlab
         raise NoRepository.new(e.message)
       rescue GRPC::Unknown => e
         raise Gitlab::Git::CommandError.new(e.message)
-      end
-
-      def circuit_breaker
-        @circuit_breaker ||= Gitlab::Git::Storage::CircuitBreaker.for_storage(storage)
       end
 
       def exists?
@@ -386,9 +385,9 @@ module Gitlab
       end
 
       # Returns the SHA of the most recent common ancestor of +from+ and +to+
-      def merge_base(from, to)
+      def merge_base(*commits)
         wrapped_gitaly_errors do
-          gitaly_repository_client.find_merge_base(from, to)
+          gitaly_repository_client.find_merge_base(*commits)
         end
       end
 
@@ -422,13 +421,17 @@ module Gitlab
       end
 
       def diff_stats(left_id, right_id)
+        if [left_id, right_id].any? { |ref| ref.blank? || Gitlab::Git.blank_ref?(ref) }
+          return empty_diff_stats
+        end
+
         stats = wrapped_gitaly_errors do
           gitaly_commit_client.diff_stats(left_id, right_id)
         end
 
         Gitlab::Git::DiffStatsCollection.new(stats)
       rescue CommandError, TypeError
-        Gitlab::Git::DiffStatsCollection.new([])
+        empty_diff_stats
       end
 
       # Returns a RefName for a given SHA
@@ -438,7 +441,7 @@ module Gitlab
         gitaly_ref_client.find_ref_name(sha, ref_path)
       end
 
-      # Get refs hash which key is is the commit id
+      # Get refs hash which key is the commit id
       # and value is a Gitlab::Git::Tag or Gitlab::Git::Branch
       # Note that both inherit from Gitlab::Git::Ref
       def refs_hash
@@ -571,6 +574,20 @@ module Gitlab
 
         wrapped_gitaly_errors do
           gitaly_operation_client.user_cherry_pick(args)
+        end
+      end
+
+      def update_submodule(user:, submodule:, commit_sha:, message:, branch:)
+        args = {
+          user: user,
+          submodule: submodule,
+          commit_sha: commit_sha,
+          branch: branch,
+          message: message
+        }
+
+        wrapped_gitaly_errors do
+          gitaly_operation_client.user_update_submodule(args)
         end
       end
 
@@ -723,6 +740,26 @@ module Gitlab
         end
       end
 
+      # Fetch remote for repository
+      #
+      # remote - remote name
+      # ssh_auth - SSH known_hosts data and a private key to use for public-key authentication
+      # forced - should we use --force flag?
+      # no_tags - should we use --no-tags flag?
+      # prune - should we use --prune flag?
+      def fetch_remote(remote, ssh_auth: nil, forced: false, no_tags: false, prune: true)
+        wrapped_gitaly_errors do
+          gitaly_repository_client.fetch_remote(
+            remote,
+            ssh_auth: ssh_auth,
+            forced: forced,
+            no_tags: no_tags,
+            prune: prune,
+            timeout: GITLAB_PROJECTS_TIMEOUT
+          )
+        end
+      end
+
       def blob_at(sha, path)
         Gitlab::Git::Blob.find(self, sha, path) unless Gitlab::Git.blank_ref?(sha)
       end
@@ -848,26 +885,6 @@ module Gitlab
         Gitlab::GitalyClient::ConflictsService.new(self, our_commit_oid, their_commit_oid)
       end
 
-      def gitaly_migrate(method, status: Gitlab::GitalyClient::MigrationStatus::OPT_IN, &block)
-        Gitlab::GitalyClient.migrate(method, status: status, &block)
-      rescue GRPC::NotFound => e
-        raise NoRepository.new(e)
-      rescue GRPC::InvalidArgument => e
-        raise ArgumentError.new(e)
-      rescue GRPC::BadStatus => e
-        raise CommandError.new(e)
-      end
-
-      def wrapped_gitaly_errors(&block)
-        yield block
-      rescue GRPC::NotFound => e
-        raise NoRepository.new(e)
-      rescue GRPC::InvalidArgument => e
-        raise ArgumentError.new(e)
-      rescue GRPC::BadStatus => e
-        raise CommandError.new(e)
-      end
-
       def clean_stale_repository_files
         wrapped_gitaly_errors do
           gitaly_repository_client.cleanup if exists?
@@ -944,6 +961,10 @@ module Gitlab
       end
 
       private
+
+      def empty_diff_stats
+        Gitlab::Git::DiffStatsCollection.new([])
+      end
 
       def uncached_has_local_branches?
         wrapped_gitaly_errors do

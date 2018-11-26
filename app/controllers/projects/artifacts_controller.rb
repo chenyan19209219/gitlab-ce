@@ -10,13 +10,13 @@ class Projects::ArtifactsController < Projects::ApplicationController
   before_action :authorize_update_build!, only: [:keep]
   before_action :extract_ref_name_and_path
   before_action :set_request_format, only: [:file]
-  before_action :validate_artifacts!
+  before_action :validate_artifacts!, except: [:download]
   before_action :entry, only: [:file]
 
   def download
     return render_404 unless artifacts_file
 
-    send_upload(artifacts_file, attachment: artifacts_file.filename)
+    send_upload(artifacts_file, attachment: artifacts_file.filename, proxy: params[:proxy])
   end
 
   def browse
@@ -102,7 +102,7 @@ class Projects::ArtifactsController < Projects::ApplicationController
   # rubocop: enable CodeReuse/ActiveRecord
 
   def artifacts_file
-    @artifacts_file ||= build.artifacts_file_for_type(params[:file_type] || :archive)
+    @artifacts_file ||= build&.artifacts_file_for_type(params[:file_type] || :archive)
   end
 
   def entry

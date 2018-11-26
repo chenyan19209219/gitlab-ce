@@ -1,13 +1,12 @@
 # --- Special code for migrating to Rails 5.0 ---
 def rails5?
-  %w[1 true].include?(ENV["RAILS5"])
+  !%w[0 false].include?(ENV["RAILS5"])
 end
 
 gem_versions = {}
-gem_versions['activerecord_sane_schema_dumper'] = rails5? ? '1.0'      : '0.2'
-gem_versions['default_value_for']               = rails5? ? '~> 3.0.5' : '~> 3.0.0'
-gem_versions['rails']                           = rails5? ? '5.0.7'    : '4.2.10'
-gem_versions['rails-i18n']                      = rails5? ? '~> 5.1'   : '~> 4.0.9'
+gem_versions['activerecord_sane_schema_dumper'] = rails5? ? '1.0'    : '0.2'
+gem_versions['rails']                           = rails5? ? '5.0.7'  : '4.2.10'
+gem_versions['rails-i18n']                      = rails5? ? '~> 5.1' : '~> 4.0.9'
 # --- The end of special code for migrating to Rails 5.0 ---
 
 source 'https://rubygems.org'
@@ -15,13 +14,20 @@ source 'https://rubygems.org'
 gem 'rails', gem_versions['rails']
 gem 'rails-deprecated_sanitizer', '~> 1.0.3'
 
+# Improves copy-on-write performance for MRI
+gem 'nakayoshi_fork', '~> 0.0.4'
+
 # Responders respond_to and respond_with
 gem 'responders', '~> 2.0'
 
 gem 'sprockets', '~> 3.7.0'
 
 # Default values for AR models
-gem 'default_value_for', gem_versions['default_value_for']
+if rails5?
+  gem 'gitlab-default_value_for', '~> 3.1.1', require: 'default_value_for'
+else
+  gem 'default_value_for', '~> 3.0.0'
+end
 
 # Supported DBs
 gem 'mysql2', '~> 0.4.10', group: :mysql
@@ -79,13 +85,6 @@ gem 'gpgme'
 gem 'gitlab_omniauth-ldap', '~> 2.0.4', require: 'omniauth-ldap'
 gem 'net-ldap'
 
-# Git Wiki
-# Only used to compute wiki page slugs
-gem 'gitlab-gollum-lib', '~> 4.2', require: false
-
-# Language detection
-gem 'github-linguist', '~> 5.3.3', require: 'linguist'
-
 # API
 gem 'grape', '~> 1.1'
 gem 'grape-entity', '~> 0.7.1'
@@ -131,7 +130,7 @@ gem 'seed-fu', '~> 2.3.7'
 # Markdown and HTML processing
 gem 'html-pipeline', '~> 2.8'
 gem 'deckar01-task_list', '2.0.0'
-gem 'gitlab-markup', '~> 1.6.4'
+gem 'gitlab-markup', '~> 1.6.5'
 gem 'github-markup', '~> 1.7.0', require: 'github/markup'
 gem 'redcarpet', '~> 3.4'
 gem 'commonmarker', '~> 0.17'
@@ -140,12 +139,13 @@ gem 'rdoc', '~> 6.0'
 gem 'org-ruby', '~> 0.9.12'
 gem 'creole', '~> 0.5.0'
 gem 'wikicloth', '0.8.1'
-gem 'asciidoctor', '~> 1.5.6'
+gem 'asciidoctor', '~> 1.5.8'
 gem 'asciidoctor-plantuml', '0.0.8'
 gem 'rouge', '~> 3.1'
 gem 'truncato', '~> 0.7.9'
 gem 'bootstrap_form', '~> 2.7.0'
 gem 'nokogiri', '~> 1.8.2'
+gem 'escape_utils', '~> 1.1'
 
 # Calendar rendering
 gem 'icalendar'
@@ -157,6 +157,11 @@ gem 'diffy', '~> 3.1.0'
 group :unicorn do
   gem 'unicorn', '~> 5.1.0'
   gem 'unicorn-worker-killer', '~> 0.4.4'
+end
+
+group :puma do
+  gem 'puma', '~> 3.12', require: false
+  gem 'puma_worker_killer', require: false
 end
 
 # State machine
@@ -205,6 +210,9 @@ gem 'redis-rails', '~> 5.0.2'
 gem 'redis', '~> 3.2'
 gem 'connection_pool', '~> 2.0'
 
+# Discord integration
+gem 'discordrb-webhooks-blackst0ne', '~> 3.3', require: false
+
 # HipChat integration
 gem 'hipchat', '~> 1.5.0'
 
@@ -212,7 +220,7 @@ gem 'hipchat', '~> 1.5.0'
 gem 'jira-ruby', '~> 1.4'
 
 # Flowdock integration
-gem 'gitlab-flowdock-git-hook', '~> 1.0.1'
+gem 'flowdock', '~> 0.7'
 
 # Slack integration
 gem 'slack-notifier', '~> 1.5.1'
@@ -221,7 +229,7 @@ gem 'slack-notifier', '~> 1.5.1'
 gem 'hangouts-chat', '~> 0.0.5'
 
 # Asana integration
-gem 'asana', '~> 0.6.0'
+gem 'asana', '~> 0.8.1'
 
 # FogBugz integration
 gem 'ruby-fogbugz', '~> 0.2.1'
@@ -244,9 +252,6 @@ gem 'rack-attack', '~> 4.4.1'
 
 # Ace editor
 gem 'ace-rails-ap', '~> 4.1.0'
-
-# Keyboard shortcuts
-gem 'mousetrap-rails', '~> 1.4.6'
 
 # Detect and convert string character encoding
 gem 'charlock_holmes', '~> 0.7.5'
@@ -316,7 +321,7 @@ group :development do
 
   # Better errors handler
   gem 'better_errors', '~> 2.1.0'
-  gem 'binding_of_caller', '~> 0.7.2'
+  gem 'binding_of_caller', '~> 0.8.0'
 
   # thin instead webrick
   gem 'thin', '~> 1.7.0'
@@ -343,7 +348,7 @@ group :development, :test do
   gem 'minitest', '~> 5.7.0'
 
   # Generate Fake data
-  gem 'ffaker', '~> 2.4'
+  gem 'ffaker', '~> 2.10'
 
   gem 'capybara', '~> 2.15'
   gem 'capybara-screenshot', '~> 1.0.0'
@@ -358,14 +363,14 @@ group :development, :test do
   gem 'rubocop-rspec', '~> 1.22.1'
 
   gem 'scss_lint', '~> 0.56.0', require: false
-  gem 'haml_lint', '~> 0.26.0', require: false
+  gem 'haml_lint', '~> 0.28.0', require: false
   gem 'simplecov', '~> 0.14.0', require: false
   gem 'bundler-audit', '~> 0.5.0', require: false
 
   gem 'benchmark-ips', '~> 2.3.0', require: false
 
   gem 'license_finder', '~> 5.4', require: false
-  gem 'knapsack', '~> 1.16'
+  gem 'knapsack', '~> 1.17'
 
   gem 'activerecord_sane_schema_dumper', gem_versions['activerecord_sane_schema_dumper']
 
@@ -384,7 +389,7 @@ group :test do
   gem 'rails-controller-testing' if rails5? # Rails5 only gem.
   gem 'test_after_commit', '~> 1.1' unless rails5? # Remove this gem when migrated to rails 5.0. It's been integrated to rails 5.0.
   gem 'sham_rack', '~> 1.3.6'
-  gem 'concurrent-ruby', '~> 1.0.5'
+  gem 'concurrent-ruby', '~> 1.1'
   gem 'test-prof', '~> 0.2.5'
   gem 'rspec_junit_formatter'
 end
@@ -420,11 +425,10 @@ group :ed25519 do
 end
 
 # Gitaly GRPC client
-gem 'gitaly-proto', '~> 0.118.1', require: 'gitaly'
-gem 'grpc', '~> 1.11.0'
+gem 'gitaly-proto', '~> 0.123.0', require: 'gitaly'
+gem 'grpc', '~> 1.15.0'
 
-# Locked until https://github.com/google/protobuf/issues/4210 is closed
-gem 'google-protobuf', '= 3.5.1'
+gem 'google-protobuf', '~> 3.6'
 
 gem 'toml-rb', '~> 1.0.0', require: false
 
@@ -436,6 +440,3 @@ gem 'flipper-active_support_cache_store', '~> 0.13.0'
 # Structured logging
 gem 'lograge', '~> 0.5'
 gem 'grape_logging', '~> 1.7'
-
-# Asset synchronization
-gem 'asset_sync', '~> 2.4'

@@ -3,6 +3,7 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import Icon from '~/vue_shared/components/icon.vue';
 import { __ } from '~/locale';
 import createFlash from '~/flash';
+import { GlLoadingIcon } from '@gitlab/ui';
 import eventHub from '../../notes/event_hub';
 import CompareVersions from './compare_versions.vue';
 import DiffFile from './diff_file.vue';
@@ -21,6 +22,7 @@ export default {
     HiddenFilesWarning,
     CommitWidget,
     TreeList,
+    GlLoadingIcon,
   },
   props: {
     endpoint: {
@@ -41,6 +43,11 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      assignedDiscussions: false,
+    };
+  },
   computed: {
     ...mapState({
       isLoading: state => state.diffs.isLoading,
@@ -48,8 +55,6 @@ export default {
       diffViewType: state => state.diffs.diffViewType,
       mergeRequestDiffs: state => state.diffs.mergeRequestDiffs,
       mergeRequestDiff: state => state.diffs.mergeRequestDiff,
-      latestVersionPath: state => state.diffs.latestVersionPath,
-      startVersion: state => state.diffs.startVersion,
       commit: state => state.diffs.commit,
       targetBranchName: state => state.diffs.targetBranchName,
       renderOverflowWarning: state => state.diffs.renderOverflowWarning,
@@ -58,9 +63,9 @@ export default {
       plainDiffPath: state => state.diffs.plainDiffPath,
       emailPatchPath: state => state.diffs.emailPatchPath,
     }),
-    ...mapState('diffs', ['showTreeList']),
+    ...mapState('diffs', ['showTreeList', 'isLoading']),
     ...mapGetters('diffs', ['isParallelView']),
-    ...mapGetters(['isNotesFetched', 'discussionsStructuredByLineCode']),
+    ...mapGetters(['isNotesFetched', 'getNoteableData']),
     targetBranch() {
       return {
         branchName: this.targetBranchName,
@@ -68,26 +73,8 @@ export default {
         path: '',
       };
     },
-    notAllCommentsDisplayed() {
-      if (this.commit) {
-        return __('Only comments from the following commit are shown below');
-      } else if (this.startVersion) {
-        return __(
-          "Not all comments are displayed because you're comparing two versions of the diff.",
-        );
-      }
-      return __(
-        "Not all comments are displayed because you're viewing an old version of the diff.",
-      );
-    },
-    showLatestVersion() {
-      if (this.commit) {
-        return __('Show latest version of the diff');
-      }
-      return __('Show latest version');
-    },
     canCurrentUserFork() {
-      return this.currentUser.canFork === true && this.currentUser.canCreateMergeRequest;
+      return this.currentUser.can_fork === true && this.currentUser.can_create_merge_request;
     },
     showCompareVersions() {
       return this.mergeRequestDiffs && this.mergeRequestDiff;
@@ -121,13 +108,13 @@ export default {
     eventHub.$once('fetchedNotesData', this.setDiscussions);
   },
   methods: {
+    ...mapActions(['startTaskList']),
     ...mapActions('diffs', [
       'setBaseConfig',
       'fetchDiffFiles',
       'startRenderDiffsQueue',
       'assignDiscussionsToDiff',
     ]),
-
     fetchData() {
       this.fetchDiffFiles()
         .then(() => {
@@ -148,11 +135,14 @@ export default {
       }
     },
     setDiscussions() {
-      if (this.isNotesFetched) {
+      if (this.isNotesFetched && !this.assignedDiscussions && !this.isLoading) {
+        this.assignedDiscussions = true;
+
         requestIdleCallback(
-          () => {
-            this.assignDiscussionsToDiff(this.discussionsStructuredByLineCode);
-          },
+          () =>
+            this.assignDiscussionsToDiff()
+              .then(this.$nextTick)
+              .then(this.startTaskList),
           { timeout: 1000 },
         );
       }
@@ -171,23 +161,11 @@ export default {
 
 <template>
   <div v-show="shouldShow">
-    <div
-      v-if="isLoading"
-      class="loading"
-    >
-      <gl-loading-icon />
-    </div>
-    <div
-      v-else
-      id="diffs"
-      :class="{ active: shouldShow }"
-      class="diffs tab-pane"
-    >
+    <div v-if="isLoading" class="loading"><gl-loading-icon /></div>
+    <div v-else id="diffs" :class="{ active: shouldShow }" class="diffs tab-pane">
       <compare-versions
-        v-if="showCompareVersions"
         :merge-request-diffs="mergeRequestDiffs"
         :merge-request-diff="mergeRequestDiff"
-        :start-version="startVersion"
         :target-branch="targetBranch"
       />
 
@@ -200,47 +178,22 @@ export default {
       />
 
       <div
-        v-if="commit || startVersion || (mergeRequestDiff && !mergeRequestDiff.latest)"
-        class="mr-version-controls"
+        :data-can-create-note="getNoteableData.current_user.can_create_note"
+        class="files d-flex prepend-top-default"
       >
-        <div class="content-block comments-disabled-notif clearfix">
-          <i class="fa fa-info-circle"></i>
-          {{ notAllCommentsDisplayed }}
-          <div class="pull-right">
-            <a
-              :href="latestVersionPath"
-              class="btn btn-sm"
-            >
-              {{ showLatestVersion }}
-            </a>
-          </div>
+        <div v-show="showTreeList" class="diff-tree-list"><tree-list /></div>
+        <div class="diff-files-holder">
+          <commit-widget v-if="commit" :commit="commit" />
+          <template v-if="diffFiles.length > 0">
+            <diff-file
+              v-for="file in diffFiles"
+              :key="file.newPath"
+              :file="file"
+              :can-current-user-fork="canCurrentUserFork"
+            />
+          </template>
+          <no-changes v-else />
         </div>
-      </div>
-
-      <commit-widget
-        v-if="commit"
-        :commit="commit"
-      />
-
-      <div class="files d-flex prepend-top-default">
-        <div
-          v-show="showTreeList"
-          class="diff-tree-list"
-        >
-          <tree-list />
-        </div>
-        <div
-          v-if="diffFiles.length > 0"
-          class="diff-files-holder"
-        >
-          <diff-file
-            v-for="file in diffFiles"
-            :key="file.newPath"
-            :file="file"
-            :can-current-user-fork="canCurrentUserFork"
-          />
-        </div>
-        <no-changes v-else />
       </div>
     </div>
   </div>

@@ -11,14 +11,12 @@ import bp from './breakpoints';
 import { parseUrlPathname, handleLocationHash, isMetaClick } from './lib/utils/common_utils';
 import { isInVueNoteablePage } from './lib/utils/dom_utils';
 import { getLocationHash } from './lib/utils/url_utility';
-import initDiscussionTab from './image_diff/init_discussion_tab';
 import Diff from './diff';
 import { localTimeAgo } from './lib/utils/datetime_utility';
 import syntaxHighlight from './syntax_highlight';
 import Notes from './notes';
 import { polyfillSticky } from './lib/utils/sticky';
 
-/* eslint-disable max-len */
 // MergeRequestTabs
 //
 // Handles persisting and restoring the current tab selection and lazily-loading
@@ -62,7 +60,6 @@ import { polyfillSticky } from './lib/utils/sticky';
 //     </div>
 //   </div>
 //
-/* eslint-enable max-len */
 
 // Store the `location` object, allowing for easier stubbing in tests
 let { location } = window;
@@ -209,8 +206,6 @@ export default class MergeRequestTabs {
         }
         this.resetViewContainer();
         this.destroyPipelinesView();
-
-        initDiscussionTab();
       }
       if (this.setUrl) {
         this.setCurrentAction(action);
@@ -421,7 +416,7 @@ export default class MergeRequestTabs {
     if (this.diffViewType() === 'parallel' || removeLimited) {
       $wrapper.removeClass('container-limited');
     } else {
-      $wrapper.addClass('container-limited');
+      $wrapper.toggleClass('container-limited', this.fixedLayoutPref);
     }
   }
 

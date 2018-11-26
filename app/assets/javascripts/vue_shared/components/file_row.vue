@@ -34,10 +34,21 @@ export default {
       required: false,
       default: false,
     },
+    displayTextKey: {
+      type: String,
+      required: false,
+      default: 'name',
+    },
+    shouldTruncateStart: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
       mouseOver: false,
+      truncateStart: 0,
     };
   },
   computed: {
@@ -60,6 +71,15 @@ export default {
         'is-open': this.file.opened,
       };
     },
+    outputText() {
+      const text = this.file[this.displayTextKey];
+
+      if (this.truncateStart === 0) {
+        return text;
+      }
+
+      return `...${text.substring(this.truncateStart, text.length)}`;
+    },
   },
   watch: {
     'file.active': function fileActiveWatch(active) {
@@ -71,6 +91,15 @@ export default {
   mounted() {
     if (this.hasPathAtCurrentRoute()) {
       this.scrollIntoView(true);
+    }
+
+    if (this.shouldTruncateStart) {
+      const { scrollWidth, offsetWidth } = this.$refs.textOutput;
+      const textOverflow = scrollWidth - offsetWidth;
+
+      if (textOverflow > 0) {
+        this.truncateStart = Math.ceil(textOverflow / 5) + 3;
+      }
     }
   },
   methods: {
@@ -132,16 +161,11 @@ export default {
       class="file-row"
       role="button"
       @click="clickFile"
-      @mouseover="toggleHover(true)"
-      @mouseout="toggleHover(false)"
+      @mouseover="toggleHover(true);"
+      @mouseout="toggleHover(false);"
     >
-      <div
-        class="file-row-name-container"
-      >
-        <span
-          :style="levelIndentation"
-          class="file-row-name str-truncated"
-        >
+      <div class="file-row-name-container">
+        <span ref="textOutput" :style="levelIndentation" class="file-row-name str-truncated">
           <file-icon
             v-if="!showChangedIcon || file.type === 'tree'"
             :file-name="file.name"
@@ -150,13 +174,8 @@ export default {
             :opened="file.opened"
             :size="16"
           />
-          <changed-file-icon
-            v-else
-            :file="file"
-            :size="16"
-            class="append-right-5"
-          />
-          {{ file.name }}
+          <changed-file-icon v-else :file="file" :size="16" class="append-right-5" />
+          {{ outputText }}
         </span>
         <component
           :is="extraComponent"
@@ -175,6 +194,8 @@ export default {
         :hide-extra-on-tree="hideExtraOnTree"
         :extra-component="extraComponent"
         :show-changed-icon="showChangedIcon"
+        :display-text-key="displayTextKey"
+        :should-truncate-start="shouldTruncateStart"
         @toggleTreeOpen="toggleTreeOpen"
         @clickFile="clickedFile"
       />

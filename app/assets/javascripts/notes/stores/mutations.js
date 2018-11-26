@@ -102,7 +102,7 @@ export default {
     discussionsData.forEach(discussion => {
       if (discussion.diff_file) {
         Object.assign(discussion, {
-          fileHash: discussion.diff_file.file_hash,
+          file_hash: discussion.diff_file.file_hash,
           truncated_diff_lines: discussion.truncated_diff_lines || [],
         });
       }
@@ -195,7 +195,7 @@ export default {
     const selectedDiscussion = state.discussions.find(disc => disc.id === note.id);
     note.expanded = true; // override expand flag to prevent collapse
     if (note.diff_file) {
-      Object.assign(note, { fileHash: note.diff_file.file_hash });
+      Object.assign(note, { file_hash: note.diff_file.file_hash });
     }
     Object.assign(selectedDiscussion, { ...note });
   },
@@ -216,9 +216,17 @@ export default {
     Object.assign(state, { isNotesFetched: value });
   },
 
+  [types.SET_NOTES_LOADING_STATE](state, value) {
+    state.isLoading = value;
+  },
+
   [types.SET_DISCUSSION_DIFF_LINES](state, { discussionId, diffLines }) {
     const discussion = utils.findNoteObjectById(state.discussions, discussionId);
 
     discussion.truncated_diff_lines = diffLines;
+  },
+
+  [types.DISABLE_COMMENTS](state, value) {
+    state.commentsDisabled = value;
   },
 };

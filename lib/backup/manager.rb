@@ -164,7 +164,7 @@ module Backup
 
     def tar_version
       tar_version, _ = Gitlab::Popen.popen(%w(tar --version))
-      tar_version.force_encoding('locale').split("\n").first
+      tar_version.dup.force_encoding('locale').split("\n").first
     end
 
     def skipped?(item)
@@ -243,6 +243,7 @@ module Backup
         backup_created_at: Time.now,
         gitlab_version: Gitlab::VERSION,
         tar_version: tar_version,
+        installation_type: Gitlab::INSTALLATION_TYPE,
         skipped: ENV["SKIP"]
       }
     end

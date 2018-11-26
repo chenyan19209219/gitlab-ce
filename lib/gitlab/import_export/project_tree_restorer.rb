@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Gitlab
   module ImportExport
     class ProjectTreeRestorer
@@ -154,7 +156,7 @@ module Gitlab
           Project.transaction do
             process_sub_relation(relation, relation_item)
 
-            # For every subrelation that hangs from Project, save the associated records alltogether
+            # For every subrelation that hangs from Project, save the associated records altogether
             # This effectively batches all records per subrelation item, only keeping those in memory
             # We have to keep in mind that more batch granularity << Memory, but >> Slowness
             if save

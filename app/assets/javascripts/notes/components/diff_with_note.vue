@@ -1,15 +1,17 @@
 <script>
 import { mapState, mapActions } from 'vuex';
-import imageDiffHelper from '~/image_diff/helpers/index';
-import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import DiffFileHeader from '~/diffs/components/diff_file_header.vue';
-import { SkeletonLoading } from '@gitlab-org/gitlab-ui';
-import { trimFirstCharOfLineContent } from '~/diffs/store/utils';
+import DiffViewer from '~/vue_shared/components/diff_viewer/diff_viewer.vue';
+import ImageDiffOverlay from '~/diffs/components/image_diff_overlay.vue';
+import { GlSkeletonLoading } from '@gitlab/ui';
+import { trimFirstCharOfLineContent, getDiffMode } from '~/diffs/store/utils';
 
 export default {
   components: {
     DiffFileHeader,
-    SkeletonLoading,
+    GlSkeletonLoading,
+    DiffViewer,
+    ImageDiffOverlay,
   },
   props: {
     discussion: {
@@ -25,9 +27,15 @@ export default {
   computed: {
     ...mapState({
       noteableData: state => state.notes.noteableData,
+      projectPath: state => state.diffs.projectPath,
     }),
+    diffMode() {
+      return getDiffMode(this.diffFile);
+    },
     hasTruncatedDiffLines() {
-      return this.discussion.truncatedDiffLines && this.discussion.truncatedDiffLines.length !== 0;
+      return (
+        this.discussion.truncated_diff_lines && this.discussion.truncated_diff_lines.length !== 0
+      );
     },
     isDiscussionsExpanded() {
       return true; // TODO: @fatihacet - Fix this.
@@ -43,30 +51,24 @@ export default {
       return text ? 'text-file' : 'js-image-file';
     },
     diffFile() {
-      return convertObjectPropsToCamelCase(this.discussion.diffFile, { deep: true });
+      return this.discussion.diff_file;
     },
     imageDiffHtml() {
-      return this.discussion.imageDiffHtml;
+      return this.discussion.image_diff_html;
     },
     userColorScheme() {
       return window.gon.user_color_scheme;
     },
     normalizedDiffLines() {
-      if (this.discussion.truncatedDiffLines) {
-        return this.discussion.truncatedDiffLines.map(line =>
-          trimFirstCharOfLineContent(convertObjectPropsToCamelCase(line)),
-        );
+      if (this.discussion.truncated_diff_lines) {
+        return this.discussion.truncated_diff_lines.map(line => trimFirstCharOfLineContent(line));
       }
 
       return [];
     },
   },
   mounted() {
-    if (this.isImageDiff) {
-      const canCreateNote = false;
-      const renderCommentBadge = true;
-      imageDiffHelper.initImageDiff(this.$refs.fileHolder, canCreateNote, renderCommentBadge);
-    } else if (!this.hasTruncatedDiffLines) {
+    if (!this.hasTruncatedDiffLines) {
       this.fetchDiff();
     }
   },
@@ -88,47 +90,25 @@ export default {
 </script>
 
 <template>
-  <div
-    ref="fileHolder"
-    :class="diffFileClass"
-    class="diff-file file-holder"
-  >
+  <div ref="fileHolder" :class="diffFileClass" class="diff-file file-holder">
     <diff-file-header
+      :discussion-path="discussion.discussion_path"
       :diff-file="diffFile"
       :can-current-user-fork="false"
       :discussions-expanded="isDiscussionsExpanded"
       :expanded="!isCollapsed"
     />
-    <div
-      v-if="diffFile.text"
-      :class="userColorScheme"
-      class="diff-content code"
-    >
+    <div v-if="diffFile.text" :class="userColorScheme" class="diff-content code">
       <table>
-        <tr
-          v-for="line in normalizedDiffLines"
-          :key="line.lineCode"
-          class="line_holder"
-        >
-          <td class="diff-line-num old_line">{{ line.oldLine }}</td>
-          <td class="diff-line-num new_line">{{ line.newLine }}</td>
-          <td
-            :class="line.type"
-            class="line_content"
-            v-html="line.richText"
-          >
-          </td>
+        <tr v-for="line in normalizedDiffLines" :key="line.line_code" class="line_holder">
+          <td class="diff-line-num old_line">{{ line.old_line }}</td>
+          <td class="diff-line-num new_line">{{ line.new_line }}</td>
+          <td :class="line.type" class="line_content" v-html="line.rich_text"></td>
         </tr>
-        <tr
-          v-if="!hasTruncatedDiffLines"
-          class="line_holder line-holder-placeholder"
-        >
+        <tr v-if="!hasTruncatedDiffLines" class="line_holder line-holder-placeholder">
           <td class="old_line diff-line-num"></td>
           <td class="new_line diff-line-num"></td>
-          <td
-            v-if="error"
-            class="js-error-lazy-load-diff diff-loading-error-block"
-          >
+          <td v-if="error" class="js-error-lazy-load-diff diff-loading-error-block">
             Unable to load the diff
             <button
               class="btn-link btn-link-retry btn-no-padding js-toggle-lazy-diff-retry-button"
@@ -137,29 +117,36 @@ export default {
               Try again
             </button>
           </td>
-          <td
-            v-else
-            class="line_content js-success-lazy-load"
-          >
+          <td v-else class="line_content js-success-lazy-load">
             <span></span>
-            <skeleton-loading />
+            <gl-skeleton-loading />
             <span></span>
           </td>
         </tr>
         <tr class="notes_holder">
-          <td
-            class="notes_content"
-            colspan="3"
-          >
-            <slot></slot>
-          </td>
+          <td class="notes_content" colspan="3"><slot></slot></td>
         </tr>
       </table>
     </div>
-    <div
-      v-else
-    >
-      <div v-html="imageDiffHtml"></div>
+    <div v-else>
+      <diff-viewer
+        :diff-mode="diffMode"
+        :new-path="diffFile.new_path"
+        :new-sha="diffFile.diff_refs.head_sha"
+        :old-path="diffFile.old_path"
+        :old-sha="diffFile.diff_refs.base_sha"
+        :file-hash="diffFile.file_hash"
+        :project-path="projectPath"
+      >
+        <image-diff-overlay
+          slot="image-overlay"
+          :discussions="discussion"
+          :file-hash="diffFile.file_hash"
+          :show-comment-icon="true"
+          :should-toggle-discussion="false"
+          badge-class="image-comment-badge"
+        />
+      </diff-viewer>
       <slot></slot>
     </div>
   </div>
