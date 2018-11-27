@@ -231,12 +231,11 @@ describe Clusters::Cluster do
     end
   end
 
-  describe '.belonging_to_parent_group_of_project' do
-    let(:cluster_scope) { described_class.all }
+  describe '.ordered_group_clusters_for_project' do
     let(:group_cluster) { create(:cluster, :provided_by_gcp, :group) }
     let(:group) { group_cluster.group }
 
-    subject { described_class.belonging_to_parent_group_of_project(project.id, cluster_scope) }
+    subject { described_class.ordered_group_clusters_for_project(project.id) }
 
     context 'when project does not belong to this group' do
       let(:project) { create(:project, group: create(:group)) }
@@ -269,8 +268,9 @@ describe Clusters::Cluster do
     end
 
     context 'cluster_scope arg' do
-      let(:cluster_scope) { described_class.none }
       let(:project) { create(:project, group: group) }
+
+      subject { described_class.none.ordered_group_clusters_for_project(project.id) }
 
       it 'returns nothing' do
         expect(subject).to be_empty

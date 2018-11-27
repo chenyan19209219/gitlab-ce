@@ -32,7 +32,7 @@ module DeploymentPlatform
 
   # EE would override this and utilize environment argument
   def find_group_cluster_platform_kubernetes(environment: nil)
-    group_clusters(Clusters::Cluster.enabled.default_environment)
+    Clusters::Cluster.enabled.default_environment.ordered_group_clusters_for_project(id)
       .last&.platform_kubernetes
   end
 
@@ -69,9 +69,5 @@ module DeploymentPlatform
       token: kubernetes_service_template.token,
       namespace: kubernetes_service_template.namespace
     }
-  end
-
-  def group_clusters(cluster_scope)
-    Clusters::Cluster.belonging_to_parent_group_of_project(id, cluster_scope)
   end
 end
