@@ -109,7 +109,9 @@ export default {
       </span>
       <span
         v-if="pipeline.flags.merge_request"
-        class="js-pipeline-url-merge-request badge badge-info"
+        v-gl-tooltip
+        title="This pipeline is run in a merge request context"
+        class="js-pipeline-url-mergerequest badge badge-info"
       >
         merge request
       </span>
