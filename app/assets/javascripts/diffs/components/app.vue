@@ -42,6 +42,10 @@ export default {
       type: Object,
       required: true,
     },
+    commits: {
+      type: Array,
+      required: false,
+    }
   },
   data() {
     return {

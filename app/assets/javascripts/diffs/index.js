@@ -17,6 +17,7 @@ export default function initDiffsApp(store) {
         endpoint: dataset.endpoint,
         projectPath: dataset.projectPath,
         currentUser: JSON.parse(dataset.currentUserData) || {},
+        commits: JSON.parse(dataset.commits) || [],
       };
     },
     computed: {
@@ -31,6 +32,7 @@ export default function initDiffsApp(store) {
           currentUser: this.currentUser,
           projectPath: this.projectPath,
           shouldShow: this.activeTab === 'diffs',
+          commits: this.commits,
         },
       });
     },
