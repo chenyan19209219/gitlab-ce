@@ -5,7 +5,7 @@ import createFlash from '~/flash';
 import { s__ } from '~/locale';
 import { handleLocationHash, historyPushState } from '~/lib/utils/common_utils';
 import { mergeUrlParams, getLocationHash } from '~/lib/utils/url_utility';
-import { getDiffPositionByLineCode, getNoteFormData } from './utils';
+import { getDiffPositionByLineCode, getNoteFormData, getEndpointWithCommitId } from './utils';
 import * as types from './mutation_types';
 import {
   PARALLEL_DIFF_VIEW_TYPE,
@@ -19,11 +19,18 @@ export const setBaseConfig = ({ commit }, options) => {
   commit(types.SET_BASE_CONFIG, { endpoint, projectPath });
 };
 
-export const fetchDiffFiles = ({ state, commit }) => {
+export const setCommit = ({ commit }, newCommit) => {
+  commit(types.SET_COMMIT, newCommit);
+}
+
+export const fetchDiffFiles = ({ state, commit }, commitId) => {
   commit(types.SET_LOADING, true);
+  const endpoint = commitId
+    ? getEndpointWithCommitId(state.endpoint, commitId)
+    : state.endpoint;
 
   return axios
-    .get(state.endpoint)
+    .get(endpoint)
     .then(res => {
       commit(types.SET_LOADING, false);
       commit(types.SET_MERGE_REQUEST_DIFFS, res.data.merge_request_diffs || []);

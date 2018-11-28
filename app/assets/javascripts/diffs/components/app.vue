@@ -68,7 +68,7 @@ export default {
       emailPatchPath: state => state.diffs.emailPatchPath,
     }),
     ...mapState('diffs', ['showTreeList', 'isLoading']),
-    ...mapGetters('diffs', ['isParallelView']),
+    ...mapGetters('diffs', ['isParallelView', 'commitId']),
     ...mapGetters(['isNotesFetched', 'getNoteableData']),
     targetBranch() {
       return {
@@ -97,6 +97,11 @@ export default {
 
       this.adjustView();
     },
+    commitId(oldCommitId, newCommitId) {
+      if (oldCommitId && newCommitId && oldCommitId !== newCommitId) {
+        this.fetchData(newCommitId);
+      }
+    },
     isLoading: 'adjustView',
     showTreeList: 'adjustView',
   },
@@ -120,7 +125,7 @@ export default {
       'assignDiscussionsToDiff',
     ]),
     fetchData() {
-      this.fetchDiffFiles()
+      this.fetchDiffFiles(this.commitId)
         .then(() => {
           requestIdleCallback(
             () => {
@@ -187,7 +192,7 @@ export default {
       >
         <div v-show="showTreeList" class="diff-tree-list"><tree-list /></div>
         <div class="diff-files-holder">
-          <commit-widget v-if="commit" :commit="commit" />
+          <commit-widget v-if="commit" :commit="commit" :commit-list="commits"/>
           <template v-if="diffFiles.length > 0">
             <diff-file
               v-for="file in diffFiles"

@@ -324,3 +324,16 @@ export const getDiffMode = diffFile => {
   const diffModeKey = Object.keys(diffModes).find(key => diffFile[`${key}_file`]);
   return diffModes[diffModeKey] || diffModes.replaced;
 };
+
+export const getEndpointWithCommitId = (currentEndpoint, commitId) => {
+  const commitIdLocation = currentEndpoint.indexOf("commit_id") + 10;
+  const nextQueryParameter = currentEndpoint.indexOf("&", commitIdLocation);
+
+  if (commitIdLocation) {
+    return currentEndpoint.slice(0, commitIdLocation) + commitId + currentEndpoint.slice(nextQueryParameter);
+  } else if (currentEndpoint.indexOf('?')) {
+    return `${currentEndpoint}&commit_id=${commitId}`
+  }
+
+  return `${currentEndpoint}?commit_id=${commitId}`;
+}

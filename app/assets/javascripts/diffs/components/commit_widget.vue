@@ -23,6 +23,27 @@ export default {
       type: Object,
       required: true,
     },
+    commitList: {
+      type: Array,
+      required: false,
+    },
+  },
+  computed: {
+    currentCommitIndex() {
+      if (this.commitList) {
+        return this.commitList.findIndex(commit => commit.id === this.commit.id);
+      }
+    },
+    nextCommit() {
+      if (this.commitList && this.currentCommitIndex !== (this.commitList.length - 1)) {
+        return this.commitList[this.currentCommitIndex + 1];
+      }
+    },
+    previousCommit() {
+      if (this.commitList && this.currentCommitIndex !== 0) {
+        return this.commitList[this.currentCommitIndex - 1];
+      }
+    }
   },
 };
 </script>
@@ -31,7 +52,7 @@ export default {
   <div class="info-well w-100">
     <div class="well-segment">
       <ul class="blob-commit-info">
-        <commit-item :commit="commit" />
+        <commit-item :commit="commit" :next-commit="nextCommit" :previous-commit="previousCommit"/>
       </ul>
     </div>
   </div>

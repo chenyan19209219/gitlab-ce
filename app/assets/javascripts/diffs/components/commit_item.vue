@@ -1,4 +1,5 @@
 <script>
+import { mapActions } from 'vuex';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import Icon from '~/vue_shared/components/icon.vue';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
@@ -33,6 +34,14 @@ export default {
       type: Object,
       required: true,
     },
+    nextCommit: {
+      type: Object,
+      required: false,
+    },
+    previousCommit: {
+      type: Object,
+      required: false,
+    },
   },
   computed: {
     authorName() {
@@ -49,6 +58,7 @@ export default {
       );
     },
   },
+  methods: mapActions('diffs', ['setCommit']),
 };
 </script>
 
@@ -79,6 +89,9 @@ export default {
         >
           <icon :size="12" name="ellipsis_h" />
         </button>
+
+        <button v-if="nextCommit" @click="setCommit(nextCommit)">{{ __("Next Commit") }}</button>
+        <button v-if="previousCommit" @click="setCommit(previousCommit)">{{ __("Previous Commit") }}</button>
 
         <div class="commiter">
           <a :href="authorUrl" v-text="authorName"></a> {{ s__('CommitWidget|authored') }}
