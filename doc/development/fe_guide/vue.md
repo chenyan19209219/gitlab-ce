@@ -135,76 +135,51 @@ For testing Vue components, we use [Vue Test Utils][vue-test-utils]. To mock net
 
 ### Mounting Components
 
-Vue Test Utils provides the `mount` method, which returns a [Wrapper][vue-test-utils-wrapper].
-
-For complex components, using `shallowMount` stubs child components. This means tests
-can run faster, and we aren't testing with DOM structure of children.
+Vue Test Utils provides the `shallowMount` method, which stubs child components. This means tests
+can run faster, and we aren't testing with DOM structure of children. `shallowMount` returns a [Wrapper][vue-test-utils-wrapper].
 
 Here's how we could test an example Todo App:
 
 ```javascript
 import Vue from 'vue';
-import { mount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import axios from '~/lib/utils/axios_utils';
-import MockAdapter from 'axios-mock-adapter';
 
 describe('Todos App', () => {
   let wrapper;
-  let mock;
 
   beforeEach(() => {
-    // Create a mock adapter for stubbing axios API requests
-    mock = new MockAdapter(axios);
-
     const Component = Vue.extend(component);
 
-    // Mount the Component
-    wrapper = mount(Component);
-  });
-
-  afterEach(() => {
-    // Reset the mock adapter
-    mock.restore();
+    wrapper = shallowMount(Component);
   });
 
   it('should render the loading state while the request is being made', () => {
-    expect(wrapper.find('i.fa-spin').exists()).toBe(true);
+    expect(wrapper.find('loading-icon').exists()).toBe(true);
   });
 
-  it('should render todos returned by the endpoint', done => {
-    // Mock the get request on the API endpoint to return data
-    mock.onGet('/todos').replyOnce(200, [
-      {
-        title: 'This is a todo',
-        text: 'This is the text',
-      },
-    ]);
-
-    Vue.nextTick(() => {
-      const items = wrapper.findAll('.js-todo-list div')
-      expect(items.length).toBe(1);
-      expect(items[0].text()).toContain('This is the text');
-      done();
+  it('renders todos', () => {
+    wrapper.setProps({
+      items: [
+        {
+          text: 'This is the text'
+        },
+      ],
     });
+
+    const items = wrapper.findAll('todo-item')
+    expect(items.length).toBe(1);
+    expect(items[0].text()).toContain('This is the text');
   });
 
-  it('should add a todos on button click', (done) => {
+  it('adds todos on button click', (done) => {
+    const spy = spyOn(wrapper.addTodo)
+    wrapper.find('add-todo').trigger('click');
 
-    // Mock the put request and check that the sent data object is correct
-    mock.onPut('/todos').replyOnce((req) => {
-      expect(req.data).toContain('text');
-      expect(req.data).toContain('title');
-
-      return [201, {}];
+    expect(spy).toHaveBeenCalledWith({
+      text: 'New todo item',
     });
-
-    wrapper.find('.js-add-todo').trigger('click');
-
-    // Add a new interceptor to mock the add Todo request
-    Vue.nextTick(() => {
-      expect(wrapper.findAll('.js-todo-list div').length).toBe(2);
-      done();
-    });
+    expect(wrapper.findAll('todo-item').length).toBe(1);
   });
 });
 ```
