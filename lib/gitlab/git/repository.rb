@@ -80,7 +80,13 @@ module Gitlab
       end
 
       def ==(other)
-        [storage, relative_path] == [other.storage, other.relative_path]
+        other.is_a?(self.class) && [storage, relative_path] == [other.storage, other.relative_path]
+      end
+
+      alias_method :eql?, :==
+
+      def hash
+        [self.class, storage, relative_path].hash
       end
 
       # This method will be removed when Gitaly reaches v1.1.
@@ -717,11 +723,11 @@ module Gitlab
         delete_refs(tmp_ref)
       end
 
-      def write_ref(ref_path, ref, old_ref: nil, shell: true)
+      def write_ref(ref_path, ref, old_ref: nil)
         ref_path = "#{Gitlab::Git::BRANCH_REF_PREFIX}#{ref_path}" unless ref_path.start_with?("refs/") || ref_path == "HEAD"
 
         wrapped_gitaly_errors do
-          gitaly_repository_client.write_ref(ref_path, ref, old_ref, shell)
+          gitaly_repository_client.write_ref(ref_path, ref, old_ref)
         end
       end
 
