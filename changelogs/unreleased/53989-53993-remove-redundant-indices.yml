@@ -1,0 +1,5 @@
+---
+title: Remove index for next_execution_timestamp on project_mirror_data
+merge_request: 23512
+author:
+type: performance
