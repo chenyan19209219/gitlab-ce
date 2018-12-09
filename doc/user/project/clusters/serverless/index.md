@@ -36,27 +36,23 @@ To run Knative on Gitlab, you will need:
 
     ```yaml
     stages:
-    - build
-    - deploy
+      - build
+      - deploy
 
     build:
-    stage: build
-    image:
+      stage: build
+      image:
         name: gcr.io/kaniko-project/executor:debug
         entrypoint: [""]
-    only:
-        - master
-    script:
+      script:
         - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
         - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE
 
     deploy:
-    stage: deploy
-    image: gcr.io/triggermesh/tm@sha256:e3ee74db94d215bd297738d93577481f3e4db38013326c90d57f873df7ab41d5
-    only:
-        - master
-    environment: production
-    script:
+      stage: deploy
+      image: gcr.io/triggermesh/tm@sha256:e3ee74db94d215bd297738d93577481f3e4db38013326c90d57f873df7ab41d5
+      environment: production
+      script:
         - echo "$CI_REGISTRY_IMAGE"
         - tm -n "$KUBE_NAMESPACE" --config "$KUBECONFIG" deploy service "$CI_PROJECT_NAME" --from-image "$CI_REGISTRY_IMAGE" --wait
     ```
