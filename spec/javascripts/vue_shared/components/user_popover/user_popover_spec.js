@@ -112,7 +112,7 @@ describe('User Popover Component', () => {
         target: document.querySelector('.js-user-link'),
       });
 
-      expect(vm.$el.textContent).toContain('Manager & Team Leadyarn run karma -f  at GitLab');
+      expect(vm.$el.textContent).toContain('Manager & Team Lead at GitLab');
     });
   });
 
