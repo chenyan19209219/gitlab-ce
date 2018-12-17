@@ -2,7 +2,6 @@
 import Icon from '~/vue_shared/components/icon.vue';
 import { n__, __ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
-import { StringDecoder } from 'string_decoder';
 
 export default {
   components: {
@@ -35,18 +34,10 @@ export default {
       required: false,
       default: false,
     },
-    latestVersion: {
-      type: String,
-      required: false,
-      default: null,
-    },
   },
   computed: {
     baseVersion() {
-      return {
-        name: 'hii',
-        versionIndex: -1,
-      };
+      return this.otherVersions[0].compare_path.split('&')[0];
     },
     targetVersions() {
       if (this.mergeRequestVersion) {
@@ -69,7 +60,7 @@ export default {
     },
     href(version) {
       if (this.isBase(version)) {
-        return this.latestVersion;
+        return this.baseVersion;
       }
       if (this.showCommitCount) {
         return version.version_path;
