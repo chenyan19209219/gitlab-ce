@@ -1497,6 +1497,9 @@ msgstr ""
 msgid "ClusterIntegration|Choose which of your environments will use this cluster."
 msgstr ""
 
+msgid "ClusterIntegration|Clusters are utilized by selecting the nearest ancestor with a matching environment scope. For example, project clusters will override group clusters."
+msgstr ""
+
 msgid "ClusterIntegration|Copy API URL"
 msgstr ""
 
@@ -1537,6 +1540,15 @@ msgid "ClusterIntegration|Environment scope"
 msgstr ""
 
 msgid "ClusterIntegration|Every new Google Cloud Platform (GCP) account receives $300 in credit upon %{sign_up_link}. In partnership with Google, GitLab is able to offer an additional $200 for both new and existing GCP accounts to get started with GitLab's Google Kubernetes Engine Integration."
+msgstr ""
+
+msgid "ClusterIntegration|Failed to configure Google Kubernetes Engine Cluster: %{message}"
+msgstr ""
+
+msgid "ClusterIntegration|Failed to request to Google Cloud Platform: %{message}"
+msgstr ""
+
+msgid "ClusterIntegration|Failed to run Kubeclient: %{message}"
 msgstr ""
 
 msgid "ClusterIntegration|Fetching machine types"
@@ -2666,6 +2678,9 @@ msgid "Emails"
 msgstr ""
 
 msgid "Embed"
+msgstr ""
+
+msgid "Empty file"
 msgstr ""
 
 msgid "Enable"
