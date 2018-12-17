@@ -37,7 +37,10 @@ export default {
   },
   computed: {
     baseVersion() {
-      return this.otherVersions.length ? this.otherVersions[0].compare_path.split('&')[0] : null;
+      if (this.otherVersions.length && this.otherVersions[0].compare_path) {
+        return this.otherVersions[0].compare_path.split('&')[0];
+      }
+      return null;
     },
     targetVersions() {
       if (this.mergeRequestVersion) {
