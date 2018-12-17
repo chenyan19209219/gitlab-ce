@@ -96,7 +96,6 @@ export default {
         <compare-versions-dropdown
           :other-versions="comparableDiffs"
           :start-version="startVersion"
-          :latest-version="latestVersionPath"
           :target-branch="targetBranch"
           class="mr-version-compare-dropdown"
         />
