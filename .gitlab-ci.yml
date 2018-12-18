@@ -458,16 +458,38 @@ setup-test-env:
     GIT_DEPTH: "1"
     DOCKER_DRIVER: overlay2
     DOCKER_HOST: tcp://docker:2375
-    LATEST_QA_IMAGE: "gitlab/${CI_PROJECT_NAME}-qa:nightly"
+    NIGHTLY_QA_IMAGE: "${CI_REGISTRY}/${CI_PROJECT_PATH}/gitlab/${CI_PROJECT_NAME}-qa:nightly"
     QA_IMAGE: "${CI_REGISTRY}/${CI_PROJECT_PATH}/gitlab/${CI_PROJECT_NAME}-qa:${CI_COMMIT_REF_SLUG}"
 
-build-qa-image:
+build-qa-image:branch:
   <<: *review-docker
   stage: prepare
   script:
-    - time docker build --cache-from ${LATEST_QA_IMAGE} --tag ${QA_IMAGE} ./qa/
+    - time docker build --cache-from ${NIGHTLY_QA_IMAGE} --tag ${QA_IMAGE} ./qa/
     - echo "${CI_JOB_TOKEN}" | docker login --username gitlab-ci-token --password-stdin ${CI_REGISTRY}
     - time docker push ${QA_IMAGE}
+
+build-qa-image:master:
+  extends: build-qa-image:branch
+  stage: prepare
+  only:
+    refs:
+      - master@gitlab-org/gitlab-ce
+      - master@gitlab-org/gitlab-ee
+  before_script:
+    - export QA_IMAGE="${NIGHTLY_QA_IMAGE}"
+
+build-qa-image:tags:
+  extends: build-qa-image:branch
+  stage: prepare
+  before_script:
+    # Transform 11.6.0+rc3.ce.0 into 11.6.0-rc3 and 11.6.0+rc3.ee.0 into 11.6.0-rc3-ee
+    - export QA_IMAGE_TAG="echo "${CI_COMMIT_TAG}" | sed 's/+/-/' | sed -E 's/\.ce\.[0-9]+$//' | sed -E 's/\.ee\.[0-9]+$/-ee/'"
+    - export QA_IMAGE="${CI_REGISTRY}/${CI_PROJECT_PATH}/gitlab/${CI_PROJECT_NAME}-qa:${QA_IMAGE_TAG}"
+  only:
+    refs:
+      - tags@gitlab/gitlabhq
+      - tags@gitlab/gitlab-ee
 
 danger-review:
   <<: *pull-cache
