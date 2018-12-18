@@ -38,7 +38,7 @@ export default {
   computed: {
     baseVersion() {
       if (this.otherVersions.length && this.otherVersions[0].compare_path) {
-        return this.otherVersions[0].compare_path.split('&')[0];
+        return this.otherVersions[0].compare_path.split('&start_sha')[0];
       }
       return null;
     },
