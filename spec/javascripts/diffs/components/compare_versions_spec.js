@@ -98,14 +98,6 @@ describe('CompareVersions', () => {
 
       expect(comparableDiffs).toEqual(comparableDiffsMock);
     });
-
-    it('should have a correct base version link', () => {
-      const { comparableDiffs } = vm;
-      const baseVersionLink = comparableDiffs[0].compare_path.split('&start_sha')[0];
-      const baseVersionLinkMock = diffsMockData[0].compare_path.split('&start_sha')[0];
-
-      expect(baseVersionLink).toEqual(baseVersionLinkMock);
-    });
   });
 
   describe('isWhitespaceVisible', () => {
