@@ -18,6 +18,6 @@ describe('CompareVersionsDropdown', () => {
     const links = vm.$el.querySelectorAll('a');
     const lastLink = links[links.length - 1];
 
-    expect(lastLink).toHaveAttr('href', '/gnuwget/wget2/merge_requests/6/diffs?diff_id=37');
+    expect(lastLink).toHaveAttr('href', vm.otherVersions[0].compare_path.split('&start_sha')[0]);
   });
 });
