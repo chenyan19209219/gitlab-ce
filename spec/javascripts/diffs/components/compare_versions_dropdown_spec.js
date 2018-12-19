@@ -1,13 +1,13 @@
 // TODO: https://gitlab.com/gitlab-org/gitlab-ce/issues/48034
 
 import Vue from 'vue';
-import CompareVersionsDropdownComponent from '~/diffs/components/compare_versions_dropdown.vue';
+import CompareVersionsDropdown from '~/diffs/components/compare_versions_dropdown.vue';
 import mountComponent from 'spec/helpers/vue_mount_component_helper';
 import diffsMockData from '../mock_data/merge_request_diffs';
 
-describe('CompareVersions', () => {
+describe('CompareVersionsDropdown', () => {
   let vm;
-  const Component = Vue.extend(CompareVersionsDropdownComponent);
+  const Component = Vue.extend(CompareVersionsDropdown);
   const targetBranch = { branchName: 'tmp-wine-dev', versionIndex: -1 };
 
   beforeEach(() => {
