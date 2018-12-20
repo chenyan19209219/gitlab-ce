@@ -14,6 +14,10 @@ describe('CompareVersionsDropdown', () => {
     vm = mountComponent(Component, { otherVersions: diffsMockData.slice(1), targetBranch });
   });
 
+  afterEach(() => {
+    vm.$destroy();
+  });
+
   it('should render a correct base version link', () => {
     const links = vm.$el.querySelectorAll('a');
     const lastLink = links[links.length - 1];
