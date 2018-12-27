@@ -1,20 +1,47 @@
 # frozen_string_literal: true
 
 module SnippetsHelper
-  def reliable_snippet_path(snippet, opts = nil)
-    if snippet.project_id?
-      project_snippet_path(snippet.project, snippet, opts)
-    else
-      snippet_path(snippet, opts)
+  def reliable_snippet_path(snippet, opts = {})
+    reliable_snippet_url(snippet, opts, only_path: true)
+  end
+
+  def reliable_raw_snippet_path(snippet, opts = {})
+    reliable_raw_snippet_url(snippet, opts, only_path: true)
+  end
+
+  def reliable_snippet_url(snippet, opts = {}, only_path: false)
+    reliable_snippet_helper(snippet, opts) do |updated_opts|
+      if snippet.project_id?
+        project_snippet_url(snippet.project, snippet, nil, updated_opts.merge({ only_path: only_path }))
+      else
+        snippet_url(snippet, nil, updated_opts.merge({ only_path: only_path }))
+      end
     end
   end
 
-  def download_snippet_path(snippet)
-    if snippet.project_id
-      raw_project_snippet_path(@project, snippet, inline: false)
-    else
-      raw_snippet_path(snippet, inline: false)
+  def reliable_raw_snippet_url(snippet, opts = {}, only_path: false)
+    reliable_snippet_helper(snippet, opts) do |updated_opts|
+      if snippet.project_id?
+        raw_project_snippet_url(snippet.project, snippet, nil, updated_opts.merge({ only_path: only_path }))
+      else
+        raw_snippet_url(snippet, nil, updated_opts.merge({ only_path: only_path }))
+      end
     end
+  end
+
+  def reliable_snippet_helper(snippet, opts)
+    opts[:secret] = snippet.secret if snippet.secret?
+
+    yield(opts)
+  end
+
+  def download_raw_snippet_button(snippet)
+    link_to(icon('download'), reliable_raw_snippet_path(snippet, inline: false), target: '_blank', class: "btn btn-sm has-tooltip", title: 'Download', data: { container: 'body' })
+  end
+
+  def shareable_snippets_link(snippet)
+    url = reliable_snippet_url(snippet)
+    link_to(url, url, id: 'shareable_link_url', title: 'Open')
   end
 
   # Return the path of a snippets index for a user or for a project
@@ -104,10 +131,11 @@ module SnippetsHelper
     { snippet_object: snippet, snippet_chunks: snippet_chunks }
   end
 
-  def snippet_embed
-    "<script src=\"#{url_for(only_path: false, overwrite_params: nil)}.js\"></script>"
+  def snippet_embed(snippet)
+    content_tag(:script, nil, src: reliable_snippet_url(snippet))
   end
 
+  # TODO: I don't think this is in use any longer
   def embedded_snippet_raw_button
     blob = @snippet.blob
     return if blob.empty? || blob.binary? || blob.stored_externally?
@@ -121,6 +149,7 @@ module SnippetsHelper
     link_to external_snippet_icon('doc-code'), snippet_raw_url, class: 'btn', target: '_blank', rel: 'noopener noreferrer', title: 'Open raw'
   end
 
+  # TODO: I don't think this is in use any longer
   def embedded_snippet_download_button
     download_url = if @snippet.is_a?(PersonalSnippet)
                      raw_snippet_url(@snippet, inline: false)

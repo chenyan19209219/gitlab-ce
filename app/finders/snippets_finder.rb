@@ -148,6 +148,8 @@ class SnippetsFinder < UnionFinder
     case scope
     when 'are_private'
       Snippet::PRIVATE
+    when 'are_secret'
+      Snippet::SECRET
     when 'are_internal'
       Snippet::INTERNAL
     when 'are_public'

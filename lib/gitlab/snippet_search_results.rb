@@ -34,13 +34,13 @@ module Gitlab
 
     # rubocop: disable CodeReuse/ActiveRecord
     def snippet_titles
-      limit_snippets.search(query).order('updated_at DESC').includes(:author)
+      limit_snippets.search(query).order('updated_at DESC').inc_relations_for_view
     end
     # rubocop: enable CodeReuse/ActiveRecord
 
     # rubocop: disable CodeReuse/ActiveRecord
     def snippet_blobs
-      limit_snippets.search_code(query).order('updated_at DESC').includes(:author)
+      limit_snippets.search_code(query).order('updated_at DESC').inc_relations_for_view
     end
     # rubocop: enable CodeReuse/ActiveRecord
 

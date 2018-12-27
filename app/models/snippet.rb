@@ -41,17 +41,20 @@ class Snippet < ApplicationRecord
 
   delegate :name, :email, to: :author, prefix: true, allow_nil: true
 
+  before_save :ensure_secret_added_if_needed
+
   validates :author, presence: true
   validates :title, presence: true, length: { maximum: 255 }
   validates :file_name,
     length: { maximum: 255 }
 
   validates :content, presence: true
-  validates :visibility_level, inclusion: { in: Gitlab::VisibilityLevel.values }
+  validates :visibility_level, inclusion: { in: Gitlab::VisibilityLevel.all_values }
 
   # Scopes
-  scope :are_internal, -> { where(visibility_level: Snippet::INTERNAL) }
   scope :are_private, -> { where(visibility_level: Snippet::PRIVATE) }
+  scope :are_secret, -> { where(visibility_level: Snippet::SECRET) }
+  scope :are_internal, -> { where(visibility_level: Snippet::INTERNAL) }
   scope :are_public, -> { where(visibility_level: Snippet::PUBLIC) }
   scope :public_and_internal, -> { where(visibility_level: [Snippet::PUBLIC, Snippet::INTERNAL]) }
   scope :fresh, -> { order("created_at DESC") }
@@ -62,6 +65,12 @@ class Snippet < ApplicationRecord
 
   attr_spammable :title, spam_title: true
   attr_spammable :content, spam_description: true
+
+  attr_encrypted :secret,
+    key:       Gitlab::Application.secrets.otp_key_base,
+    mode:      :per_attribute_iv_and_salt,
+    insecure_mode: true,
+    algorithm: 'aes-256-cbc'
 
   def self.with_optional_visibility(value = nil)
     if value
@@ -176,9 +185,7 @@ class Snippet < ApplicationRecord
   end
 
   def embeddable?
-    ability = project_id? ? :read_project_snippet : :read_personal_snippet
-
-    Ability.allowed?(nil, ability, self)
+    public? || visibility_secret?
   end
 
   def notes_with_associations
@@ -220,5 +227,14 @@ class Snippet < ApplicationRecord
     def parent_class
       ::Project
     end
+  end
+
+  private
+
+  def ensure_secret_added_if_needed
+    return unless visibility_secret?
+    return if self.secret
+
+    self.secret = SecureRandom.hex
   end
 end

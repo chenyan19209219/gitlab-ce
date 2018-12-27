@@ -10,6 +10,10 @@ FactoryBot.define do
       visibility_level Snippet::PUBLIC
     end
 
+    trait :secret do
+      visibility_level Snippet::SECRET
+    end
+
     trait :internal do
       visibility_level Snippet::INTERNAL
     end

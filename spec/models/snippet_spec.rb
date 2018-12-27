@@ -462,4 +462,44 @@ describe Snippet do
       end
     end
   end
+
+  describe '#ensure_secret_added_if_needed' do
+    let(:snippet) { create(:snippet) }
+
+    context 'visibility_level is NOT SECRET' do
+      it 'assigns a random hex value' do
+        snippet.visibility_level = Gitlab::VisibilityLevel::PUBLIC
+        snippet.save
+        expect(snippet.secret).to be_nil
+      end
+    end
+
+    context 'visibility_level is SECRET' do
+      it 'assigns a random hex value' do
+        snippet.visibility_level = Gitlab::VisibilityLevel::SECRET
+        snippet.save
+        expect(snippet.secret).not_to be_nil
+      end
+    end
+  end
+
+  describe '#visibility_secret?' do
+    let(:snippet) { create(:snippet) }
+
+    context 'for a Snippet that is not Secret' do
+      it 'returns false' do
+        snippet.visibility_level = Gitlab::VisibilityLevel::PUBLIC
+        snippet.save
+        expect(snippet.visibility_secret?).to be_falsey
+      end
+    end
+
+    context 'for a Snippet that is Secret' do
+      it 'returns true' do
+        snippet.visibility_level = Gitlab::VisibilityLevel::SECRET
+        snippet.save
+        expect(snippet.visibility_secret?).to be_truthy
+      end
+    end
+  end
 end

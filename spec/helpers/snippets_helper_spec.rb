@@ -3,7 +3,91 @@ require 'spec_helper'
 describe SnippetsHelper do
   include IconsHelper
 
-  describe '#embedded_snippet_raw_button' do
+  describe '.reliable_snippet_path' do
+    context 'personal snippets' do
+      context 'public' do
+        it 'gives a full path' do
+          snippet = create(:personal_snippet, :public)
+
+          expect(reliable_snippet_path(snippet)).to eq("/snippets/#{snippet.id}")
+        end
+      end
+
+      context 'secret' do
+        it 'gives a full path, including secret word' do
+          snippet = create(:personal_snippet, :secret)
+
+          expect(reliable_snippet_path(snippet)).to match(%r{/snippets/#{snippet.id}\?secret=\w+})
+        end
+      end
+    end
+
+    context 'project snippets' do
+      it 'gives a full path' do
+        snippet = create(:project_snippet, :public)
+
+        expect(reliable_snippet_path(snippet)).to eq("/#{snippet.project.full_path}/snippets/#{snippet.id}")
+      end
+    end
+  end
+
+  describe '.reliable_snippet_url' do
+    context 'personal snippets' do
+      context 'public' do
+        it 'gives a full url' do
+          snippet = create(:personal_snippet, :public)
+
+          expect(reliable_snippet_url(snippet)).to eq("http://test.host/snippets/#{snippet.id}")
+        end
+      end
+
+      context 'secret' do
+        it 'gives a full url, including secret word' do
+          snippet = create(:personal_snippet, :secret)
+
+          expect(reliable_snippet_url(snippet)).to match(%r{http://test.host/snippets/#{snippet.id}\?secret=\w+})
+        end
+      end
+    end
+
+    context 'project snippets' do
+      it 'gives a full url' do
+        snippet = create(:project_snippet, :public)
+
+        expect(reliable_snippet_url(snippet)).to eq("http://test.host/#{snippet.project.full_path}/snippets/#{snippet.id}")
+      end
+    end
+  end
+
+  describe '.shareable_snippets_link' do
+    context 'personal snippets' do
+      context 'public' do
+        it 'gives a full link' do
+          snippet = create(:personal_snippet, :public)
+
+          expect(reliable_snippet_url(snippet)).to eq("http://test.host/snippets/#{snippet.id}")
+        end
+      end
+
+      context 'secret' do
+        it 'gives a full link, including secret word' do
+          snippet = create(:personal_snippet, :secret)
+
+          expect(reliable_snippet_url(snippet)).to match(%r{http://test.host/snippets/#{snippet.id}\?secret=\w+})
+        end
+      end
+    end
+
+    context 'project snippets' do
+      it 'gives a full link' do
+        snippet = create(:project_snippet, :public)
+
+        expect(reliable_snippet_url(snippet)).to eq("http://test.host/#{snippet.project.full_path}/snippets/#{snippet.id}")
+      end
+    end
+  end
+
+  describe '.embedded_snippet_raw_button' do
     it 'gives view raw button of embedded snippets for project snippets' do
       @snippet = create(:project_snippet, :public)
 
@@ -17,7 +101,7 @@ describe SnippetsHelper do
     end
   end
 
-  describe '#embedded_snippet_download_button' do
+  describe '.embedded_snippet_download_button' do
     it 'gives download button of embedded snippets for project snippets' do
       @snippet = create(:project_snippet, :public)
 

@@ -94,6 +94,8 @@ module IconsHelper
       case level
       when Gitlab::VisibilityLevel::PRIVATE
         'lock'
+      when Gitlab::VisibilityLevel::SECRET
+        'user-secret'
       when Gitlab::VisibilityLevel::INTERNAL
         'shield'
       else # Gitlab::VisibilityLevel::PUBLIC

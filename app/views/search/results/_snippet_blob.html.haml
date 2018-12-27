@@ -3,14 +3,20 @@
 - snippet_chunks = snippet_blob[:snippet_chunks]
 
 .search-result-row
-  %span
-    = snippet.title
-    by
-    = link_to user_snippets_path(snippet.author) do
-      = image_tag avatar_icon_for_user(snippet.author), class: "avatar avatar-inline s16", alt: ''
-      = snippet.author_name
-    %span.light= time_ago_with_tooltip(snippet.created_at)
   %h4.snippet-title
+    = link_to reliable_snippet_path(snippet) do
+      = snippet.title
+
+  .snippet-box.has-tooltip.inline.append-right-5.append-bottom-10{ title: snippet_visibility_level_description(snippet.visibility_level, snippet), data: { container: "body" } }
+    %span.sr-only
+      = visibility_level_label(snippet.visibility_level)
+    = visibility_level_icon(snippet.visibility_level, fw: false)
+    %span.creator
+      Authored
+      = time_ago_with_tooltip(snippet.created_at, placement: 'bottom', html_class: 'snippet_updated_ago')
+      by #{link_to_member(snippet.project, snippet.author, size: 24, author_class: "author item-title", avatar_class: "d-none d-sm-inline")}
+      = user_status(snippet.author)
+
   - snippet_path = reliable_snippet_path(snippet)
   .file-holder
     .js-file-title.file-title

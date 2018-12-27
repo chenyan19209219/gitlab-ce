@@ -180,12 +180,12 @@ describe Gitlab::VisibilityLevel do
   describe '.string_values' do
     it 'returns an Array of const values (including Secret)' do
       expect(described_class.string_values)
-        .to eq([
-          'private',
-          'secret',
-          'internal',
-          'public'
-        ])
+        .to eq(%w{
+          private
+          secret
+          internal
+          public
+        })
     end
   end
 end
