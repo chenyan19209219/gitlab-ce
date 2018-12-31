@@ -7,8 +7,9 @@ import { discussionFiltersMock, discussionMock } from '../mock_data';
 describe('DiscussionFilter component', () => {
   let vm;
   let store;
+  let eventHub;
 
-  beforeEach(() => {
+  const mountComponent = () => {
     store = createStore();
 
     const discussions = [
@@ -22,7 +23,7 @@ describe('DiscussionFilter component', () => {
     const selectedValue = discussionFiltersMock[0].value;
 
     store.state.discussions = discussions;
-    vm = mountComponentWithStore(Component, {
+    return mountComponentWithStore(Component, {
       el: null,
       store,
       props: {
@@ -30,6 +31,10 @@ describe('DiscussionFilter component', () => {
         selectedValue,
       },
     });
+  };
+
+  beforeEach(() => {
+    vm = mountComponent();
   });
 
   afterEach(() => {
@@ -82,5 +87,27 @@ describe('DiscussionFilter component', () => {
     const defaultFilter = vm.$el.querySelector('.dropdown-menu li:first-child');
 
     expect(defaultFilter.lastChild.classList).toContain('dropdown-divider');
+  });
+
+  describe('Merge request tabs', () => {
+    eventHub = new Vue();
+
+    beforeEach(() => {
+      window.mrTabs = {
+        eventHub,
+        currentTab: 'show',
+      };
+
+      vm = mountComponent();
+    });
+
+    it('only renders when discussion tab is active', done => {
+      eventHub.$emit('MergeRequestTabChange', 'commit');
+
+      vm.$nextTick(() => {
+        expect(vm.$el.querySelector).toBeUndefined();
+        done();
+      });
+    });
   });
 });
