@@ -34,6 +34,7 @@ describe('DiscussionFilter component', () => {
   };
 
   beforeEach(() => {
+    window.mrTabs = undefined;
     vm = mountComponent();
   });
 
@@ -99,6 +100,10 @@ describe('DiscussionFilter component', () => {
       };
 
       vm = mountComponent();
+    });
+
+    afterEach(() => {
+      window.mrTabs = undefined;
     });
 
     it('only renders when discussion tab is active', done => {
