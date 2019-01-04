@@ -36,7 +36,8 @@ class ProjectPresenter < Gitlab::View::Presenter::Delegated
       contribution_guide_anchor_data,
       autodevops_anchor_data(show_auto_devops_callout: show_auto_devops_callout),
       kubernetes_cluster_anchor_data,
-      gitlab_ci_anchor_data
+      gitlab_ci_anchor_data,
+      gitter_room_anchor_data
     ].compact.reject(&:is_link)
   end
 
@@ -115,6 +116,10 @@ class ProjectPresenter < Gitlab::View::Presenter::Delegated
 
   def add_contribution_guide_path
     add_special_file_path(file_name: 'CONTRIBUTING.md', commit_message: 'Add CONTRIBUTING')
+  end
+
+  def add_gitter_path
+    project.path + '/edit'
   end
 
   def add_ci_yml_path
@@ -257,6 +262,22 @@ class ProjectPresenter < Gitlab::View::Presenter::Delegated
       AnchorData.new(false,
                      statistic_icon('doc-text') + _('CONTRIBUTING'),
                      contribution_guide_path)
+    end
+  end
+
+  def gitter_room_anchor_data
+    # need to add && project.badges.gitter_room.blank? or something like that
+    # need to add statistic_icon('gitter')
+    # need to add a way to expand and focus on the badges section after browsing to the url
+    # need to add else clause
+    if current_user && can_current_user_push_to_default_branch?
+      AnchorData.new(false,
+                     statistic_icon() + _('Add Gitter room'),
+                     add_gitter_path)
+    else
+      AnchorData.new(false,
+                     statistic_icon() + _('Gitter room'),
+                     add_gitter_path)
     end
   end
 
