@@ -363,6 +363,9 @@ msgstr ""
 msgid "Add CONTRIBUTING"
 msgstr ""
 
+msgid "Add Gitter room"
+msgstr ""
+
 msgid "Add Kubernetes cluster"
 msgstr ""
 
@@ -3254,6 +3257,9 @@ msgid "Gitea Host URL"
 msgstr ""
 
 msgid "Gitea Import"
+msgstr ""
+
+msgid "Gitter room"
 msgstr ""
 
 msgid "Given access %{time_ago}"
