@@ -45,6 +45,7 @@ Click on the service links to see further configuration instructions and details
 | [Microsoft teams](microsoft_teams.md) |  Receive notifications for actions that happen on GitLab into a room on Microsoft Teams using Office 365 Connectors |
 | Packagist | Update your project on Packagist, the main Composer repository |
 | Pipelines emails | Email the pipeline status to a list of recipients |
+| [Sentry](../operations/error_tracking.md) | View Sentry errors in GitLab |
 | [Slack Notifications](slack.md) | Send GitLab events (e.g. issue created) to Slack as notifications |
 | [Slack slash commands](slack_slash_commands.md) | Use slash commands in Slack to control GitLab |
 | PivotalTracker | Project Management Software (Source Commits Endpoint) |
