@@ -32,4 +32,4 @@ GitLab provides an easy way to connect to your Sentry instance from within your 
 
 The Error Tracking list may be found at **Operations > Error Tracking** in your project's sidebar.
 
-TODO: Add screenshot
+![Error Tracking list](img/error_tracking_list_temporary.png)
