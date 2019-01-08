@@ -2,7 +2,7 @@
 
 > [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/169) in GitLab 11.8.
 
-Error tracking provides a way to ingest and display error tracking in GitLab.
+Error tracking provides a way to ingest and display errors from your managed servers directly in GitLab.
 
 ## Sentry error tracking
 
