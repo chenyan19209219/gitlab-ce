@@ -10,9 +10,7 @@ Error tracking provides a way to ingest and display errors from your managed ser
 
 ### Deploying Sentry
 
-You may sign up to the cloud hosted https://sentry.io or deploy your own on-premise instance.
-
-On-premise deployment instructions are detailed in the [Sentry docs](https://docs.sentry.io/server/installation/).
+You may sign up to the cloud hosted https://sentry.io or deploy your own [on-premise instance](https://docs.sentry.io/server/installation/).
 
 ### Enabling Sentry
 
