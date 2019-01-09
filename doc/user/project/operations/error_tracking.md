@@ -25,8 +25,6 @@ GitLab provides an easy way to connect Sentry to your project.
 1. Click **Save changes** for the changes to take effect.
 1. You can now visit **Operations > Error Tracking** in your project's sidebar to [view a list](#error-tracking-list) of Sentry errors
 
-![Error Tracking configuration](img/error_tracking_configuration.png)
-
 ## Error Tracking List
 
 The Error Tracking list may be found at **Operations > Error Tracking** in your project's sidebar.
