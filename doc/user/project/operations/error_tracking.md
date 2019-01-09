@@ -6,7 +6,7 @@ Error tracking provides a way to ingest and display errors from your managed ser
 
 ## Sentry error tracking
 
-[Sentry](https://sentry.io/) is an open source error tracking system. GitLab allows administrators to integrate Sentry with GitLab, to allow users to view a list of Sentry errors in GitLab itself.
+[Sentry](https://sentry.io/) is an open source error tracking system. GitLab allows administrators to connect Sentry to Gitlab, to allow users to view a list of Sentry errors in GitLab itself.
 
 ### Deploying Sentry
 
