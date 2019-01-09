@@ -16,7 +16,7 @@ On-premise deployment instructions are detailed in the [Sentry docs](https://doc
 
 ### Enabling Sentry
 
-GitLab provides an easy way to connect to your Sentry instance from within your project.
+GitLab provides an easy way to connect Sentry to your project.
 
 1. Sign up to Sentry.io or [deploy your own](#deploying-sentry) Sentry instance
 1. [Find or generate](https://docs.sentry.io/api/auth/) a Sentry auth token for your Sentry project
