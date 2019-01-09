@@ -1,6 +1,6 @@
 # Error Tracking
 
-> [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/169) in GitLab 11.8.
+> [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/169) in GitLab 11.7.
 
 Error tracking provides a way to ingest and display errors from your managed servers directly in GitLab.
 
