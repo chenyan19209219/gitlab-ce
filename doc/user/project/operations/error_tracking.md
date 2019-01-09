@@ -29,4 +29,4 @@ GitLab provides an easy way to connect Sentry to your project.
 
 The Error Tracking list may be found at **Operations > Error Tracking** in your project's sidebar.
 
-![Error Tracking list](img/error_tracking_list_temporary.png)
+![Error Tracking list](img/error_tracking_list.png)
