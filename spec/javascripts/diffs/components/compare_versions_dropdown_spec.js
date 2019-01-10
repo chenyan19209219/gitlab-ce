@@ -11,7 +11,11 @@ describe('CompareVersionsDropdown', () => {
   const targetBranch = { branchName: 'tmp-wine-dev', versionIndex: -1 };
 
   beforeEach(() => {
-    vm = mountComponent(Component, { otherVersions: diffsMockData.slice(1), targetBranch });
+    vm = mountComponent(Component, {
+      baseVersionPath: '/gnuwget/wget2/merge_requests/6/diffs?diff_id=37',
+      otherVersions: diffsMockData.slice(1),
+      targetBranch,
+    });
   });
 
   afterEach(() => {
@@ -22,6 +26,6 @@ describe('CompareVersionsDropdown', () => {
     const links = vm.$el.querySelectorAll('a');
     const lastLink = links[links.length - 1];
 
-    expect(lastLink).toHaveAttr('href', vm.otherVersions[0].compare_path.split('&start_sha')[0]);
+    expect(lastLink).toHaveAttr('href', vm.baseVersionPath);
   });
 });
