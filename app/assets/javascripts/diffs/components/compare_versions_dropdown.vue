@@ -37,6 +37,7 @@ export default {
     baseVersionPath: {
       type: String,
       required: false,
+      default: null,
     },
   },
   computed: {
