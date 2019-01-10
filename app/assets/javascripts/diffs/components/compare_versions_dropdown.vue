@@ -34,14 +34,12 @@ export default {
       required: false,
       default: false,
     },
+    baseVersionPath: {
+      type: String,
+      required: false,
+    },
   },
   computed: {
-    baseVersion() {
-      if (this.otherVersions.length && this.otherVersions[0].compare_path) {
-        return this.otherVersions[0].compare_path.split('&start_sha')[0];
-      }
-      return null;
-    },
     targetVersions() {
       if (this.mergeRequestVersion) {
         return this.otherVersions;
@@ -63,7 +61,7 @@ export default {
     },
     href(version) {
       if (this.isBase(version)) {
-        return this.baseVersion;
+        return this.baseVersionPath;
       }
       if (this.showCommitCount) {
         return version.version_path;
