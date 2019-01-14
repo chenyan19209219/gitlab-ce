@@ -1,31 +1,34 @@
 // TODO: https://gitlab.com/gitlab-org/gitlab-ce/issues/48034
-
-import Vue from 'vue';
+import { shallowMount, createLocalVue } from '@vue/test-utils';
 import CompareVersionsDropdown from '~/diffs/components/compare_versions_dropdown.vue';
-import mountComponent from 'spec/helpers/vue_mount_component_helper';
 import diffsMockData from '../mock_data/merge_request_diffs';
 
 describe('CompareVersionsDropdown', () => {
-  let vm;
-  const Component = Vue.extend(CompareVersionsDropdown);
+  let wrapper;
   const targetBranch = { branchName: 'tmp-wine-dev', versionIndex: -1 };
 
-  beforeEach(() => {
-    vm = mountComponent(Component, {
-      baseVersionPath: '/gnuwget/wget2/merge_requests/6/diffs?diff_id=37',
-      otherVersions: diffsMockData.slice(1),
-      targetBranch,
-    });
-  });
+  const factory = (options = {}) => {
+    const localVue = createLocalVue();
+
+    wrapper = shallowMount(CompareVersionsDropdown, { localVue, ...options });
+  };
 
   afterEach(() => {
-    vm.$destroy();
+    wrapper.destroy();
   });
 
   it('should render a correct base version link', () => {
-    const links = vm.$el.querySelectorAll('a');
-    const lastLink = links[links.length - 1];
+    factory({
+      propsData: {
+        baseVersionPath: '/gnuwget/wget2/merge_requests/6/diffs?diff_id=37',
+        otherVersions: diffsMockData.slice(1),
+        targetBranch,
+      },
+    });
 
-    expect(lastLink).toHaveAttr('href', vm.baseVersionPath);
+    const links = wrapper.findAll('a');
+    const lastLink = links.wrappers[links.length - 1];
+
+    expect(lastLink.attributes('href')).toEqual(wrapper.props('baseVersionPath'));
   });
 });
