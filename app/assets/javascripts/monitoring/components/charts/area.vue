@@ -32,16 +32,18 @@ export default {
       default: () => ({}),
     },
   },
+  data() {
+    return {
+      tooltip: {
+        title: '',
+        content: '',
+      },
+    };
+  },
   computed: {
     chartData() {
       return this.graphData.queries.reduce((accumulator, query) => {
-        const xLabel = `${query.unit}`;
-        accumulator[xLabel] = {};
-        query.result.forEach(res =>
-          res.values.forEach(v => {
-            accumulator[xLabel][v.time.toISOString()] = v.value;
-          }),
-        );
+        accumulator[query.unit] = query.result.reduce((acc, res) => acc.concat(res.values), []);
         return accumulator;
       }, {});
     },
@@ -58,7 +60,7 @@ export default {
           },
         },
         yAxis: {
-          name: this.graphData.y_label,
+          name: this.yAxisLabel,
           axisLabel: {
             formatter: value => value.toFixed(3),
           },
@@ -74,11 +76,20 @@ export default {
     xAxisLabel() {
       return this.graphData.queries.map(query => query.label).join(', ');
     },
+    yAxisLabel() {
+      const [query] = this.graphData.queries;
+      return `${this.graphData.y_label} (${query.unit})`;
+    },
   },
   methods: {
     formatTooltipText(params) {
-      const [date, value] = params;
-      return [dateFormat(date, 'dd mmm yyyy, h:MMtt'), value.toFixed(3)];
+      const [seriesData] = params.seriesData;
+      this.tooltip.title = seriesData
+        ? dateFormat(new Date(params.value), 'dd mmm yyyy, h:MMtt')
+        : '';
+      this.tooltip.content = seriesData
+        ? `${this.yAxisLabel} ${seriesData.value[1].toFixed(3)}`
+        : '';
     },
   },
 };
@@ -96,6 +107,13 @@ export default {
       :option="chartOptions"
       :format-tooltip-text="formatTooltipText"
       :thresholds="alertData"
-    />
+    >
+      <template slot="tooltipTitle">
+        {{ tooltip.title }}
+      </template>
+      <template slot="tooltipContent">
+        {{ tooltip.content }}
+      </template>
+    </gl-area-chart>
   </div>
 </template>

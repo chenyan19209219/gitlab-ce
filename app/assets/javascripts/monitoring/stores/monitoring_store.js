@@ -33,10 +33,10 @@ function normalizeMetrics(metrics) {
       ...query,
       result: query.result.map(result => ({
         ...result,
-        values: result.values.map(([timestamp, value]) => ({
-          time: new Date(timestamp * 1000),
-          value: Number(value),
-        })),
+        values: result.values.map(([timestamp, value]) => [
+          new Date(timestamp * 1000).toISOString(),
+          Number(value),
+        ]),
       })),
     }));
 
