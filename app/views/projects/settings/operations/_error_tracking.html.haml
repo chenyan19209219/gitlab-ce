@@ -8,23 +8,35 @@
       = _('Error Tracking')
     %p
       = _('To link Sentry to GitLab, enter your Sentry URL and Auth Token.')
+      = link_to _('More information'), help_page_path('user/project/operations/error_tracking'), target: '_blank'
   .settings-content
-    = form_for @project, url: project_settings_operations_path(@project), method: :patch do |f|
+    = form_for @project, url: project_settings_operations_path(@project), method: :patch, :html => {:class => 'edit_project js-error-tracking-form'}, data: { api_host: setting.api_host, enabled: setting.enabled, token: setting.token, project_name: setting.project_name, project_slug: setting.project_slug, project_organization_name: setting.organization_name, project_organization_slug: setting.organization_slug, list_projects_endpoint: namespace_project_list_projects_url(project_id: @project, namespace_id: @project.namespace) } do |f|
       = form_errors(@project)
       .form-group
         = f.fields_for :error_tracking_setting_attributes, setting do |form|
           .form-check.form-group
             = form.check_box :enabled, class: 'form-check-input'
             = form.label :enabled, _('Active'), class: 'form-check-label'
+          %div
           .form-group
-            = form.label :api_url, _('Sentry API URL'), class: 'label-bold'
-            = form.url_field :api_url, class: 'form-control', placeholder: _('http://<sentry-host>/api/0/projects/{organization_slug}/{project_slug}/')
+            = form.label :api_host, _('Sentry API URL'), class: 'label-bold'
+            = form.url_field :api_host, class: 'form-control', placeholder: _('https://mysentryserver.com'), id: 'js-error-tracking-api-url'
             %p.form-text.text-muted
-              = _('Enter your Sentry API URL')
+              = _('Find your hostname in your Sentry account settings page')
           .form-group
             = form.label :token, _('Auth Token'), class: 'label-bold'
-            = form.text_field :token, class: 'form-control'
+            = form.text_field :token, class: 'form-control', id: 'js-error-tracking-token'
             %p.form-text.text-muted
-              = _('Find and manage Auth Tokens in your Sentry account settings page.')
+              = _("After adding your Auth Token, use the 'Connect' button to load projects")
+          .form-group
+            %label.label-bold
+              = _('Project')
+            .dropdown
+              %button.dropdown-menu-toggle.dropdown-menu-full-width.js-dropdown-toggle{ type: 'button', disabled: true }
+                %span.dropdown-toggle-text
+                  = _('No projects available')
+                  = icon('chevron-down')
+            %p.form-text.text-muted
+              = _("Click 'Connect' to re-establish the connection to Sentry and activate the dropdown.")
 
-      = f.submit _('Save changes'), class: 'btn btn-success'
+      = f.submit _('Save changes'), class: 'btn btn-success', disabled: true

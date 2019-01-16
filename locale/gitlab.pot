@@ -543,6 +543,9 @@ msgstr ""
 msgid "Advanced settings"
 msgstr ""
 
+msgid "After adding your Auth Token, use the 'Connect' button to load projects"
+msgstr ""
+
 msgid "All"
 msgstr ""
 
@@ -1518,6 +1521,9 @@ msgstr ""
 msgid "Clear search input"
 msgstr ""
 
+msgid "Click 'Connect' to re-establish the connection to Sentry and activate the dropdown."
+msgstr ""
+
 msgid "Click any <strong>project name</strong> in the project list below to navigate to the project milestone."
 msgstr ""
 
@@ -2163,6 +2169,9 @@ msgid "Connect"
 msgstr ""
 
 msgid "Connect repositories from GitHub"
+msgstr ""
+
+msgid "Connection has failed. Re-check Auth Token and try again."
 msgstr ""
 
 msgid "Container Registry"
@@ -2950,9 +2959,6 @@ msgstr ""
 msgid "Enter the merge request title"
 msgstr ""
 
-msgid "Enter your Sentry API URL"
-msgstr ""
-
 msgid "Environment variables"
 msgstr ""
 
@@ -3125,6 +3131,27 @@ msgid "Error while loading the merge request. Please try again."
 msgstr ""
 
 msgid "Error:"
+msgstr ""
+
+msgid "ErrorTracking|Active"
+msgstr ""
+
+msgid "ErrorTracking|Auth Token"
+msgstr ""
+
+msgid "ErrorTracking|Connect"
+msgstr ""
+
+msgid "ErrorTracking|No projects available"
+msgstr ""
+
+msgid "ErrorTracking|Project"
+msgstr ""
+
+msgid "ErrorTracking|Select project"
+msgstr ""
+
+msgid "ErrorTracking|Sentry API URL"
 msgstr ""
 
 msgid "Errors"
@@ -3328,9 +3355,6 @@ msgstr ""
 msgid "Filter..."
 msgstr ""
 
-msgid "Find and manage Auth Tokens in your Sentry account settings page."
-msgstr ""
-
 msgid "Find by path"
 msgstr ""
 
@@ -3344,6 +3368,9 @@ msgid "Find the downloaded ZIP file and decompress it."
 msgstr ""
 
 msgid "Find the newly extracted <code>Takeout/Google Code Project Hosting/GoogleCodeProjectHosting.json</code> file."
+msgstr ""
+
+msgid "Find your hostname in your Sentry account settings page"
 msgstr ""
 
 msgid "Fingerprints"
@@ -4836,6 +4863,9 @@ msgstr ""
 msgid "No prioritised labels with such name or description"
 msgstr ""
 
+msgid "No projects available"
+msgstr ""
+
 msgid "No public groups"
 msgstr ""
 
@@ -5672,6 +5702,9 @@ msgstr ""
 msgid "Project"
 msgstr ""
 
+msgid "Project \"%{name}\" is no longer available. Select another project to continue."
+msgstr ""
+
 msgid "Project '%{project_name}' is in the process of being deleted."
 msgstr ""
 
@@ -5772,6 +5805,9 @@ msgid "ProjectSettings|Learn more about badges."
 msgstr ""
 
 msgid "Projects"
+msgstr ""
+
+msgid "Projects Successfully Retrieved"
 msgstr ""
 
 msgid "Projects shared with %{group_name}"
@@ -7187,6 +7223,9 @@ msgstr ""
 msgid "There was an error loading users activity calendar."
 msgstr ""
 
+msgid "There was an error saving your changes."
+msgstr ""
+
 msgid "There was an error saving your notification settings."
 msgstr ""
 
@@ -7588,6 +7627,9 @@ msgid "To define internal users, first enable new users set to external"
 msgstr ""
 
 msgid "To enable it and see User Cohorts, visit %{application_settings_link_start}application settings%{application_settings_link_end}."
+msgstr ""
+
+msgid "To enable project selection, enter a valid Auth Token"
 msgstr ""
 
 msgid "To get started you enter your FogBugz URL and login information below. In the next steps, you'll be able to map users and select the projects you want to import."
@@ -8433,6 +8475,9 @@ msgstr ""
 msgid "Your changes have been saved"
 msgstr ""
 
+msgid "Your changes have been saved."
+msgstr ""
+
 msgid "Your comment will not be visible to the public."
 msgstr ""
 
@@ -8542,7 +8587,7 @@ msgstr ""
 msgid "here"
 msgstr ""
 
-msgid "http://<sentry-host>/api/0/projects/{organization_slug}/{project_slug}/"
+msgid "https://mysentryserver.com"
 msgstr ""
 
 msgid "https://your-bitbucket-server"
