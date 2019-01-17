@@ -179,7 +179,6 @@ describe API::AwardEmoji do
           post api("/projects/#{project.id}/issues/#{issue.iid}/award_emoji", user), params: { name: 'thumbsup' }
 
           expect(response).to have_gitlab_http_status(304)
-          expect(json_response["message"]).to match("has already been taken")
         end
       end
     end
@@ -221,7 +220,6 @@ describe API::AwardEmoji do
         post api("/projects/#{project.id}/issues/#{issue.iid}/notes/#{note.id}/award_emoji", user), params: { name: 'rocket' }
 
         expect(response).to have_gitlab_http_status(304)
-        expect(json_response["message"]).to match("has already been taken")
       end
     end
   end

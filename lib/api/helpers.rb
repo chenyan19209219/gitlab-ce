@@ -343,8 +343,8 @@ module API
       render_api_error!('413 Request Entity Too Large', 413)
     end
 
-    def not_modified!(message = nil)
-      render_api_error!(message || '304 Not Modified', 304)
+    def not_modified!
+      render_api_error!('304 Not Modified', 304)
     end
 
     def no_content!
