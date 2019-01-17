@@ -74,7 +74,7 @@ module API
             if award.persisted?
               present award, with: Entities::AwardEmoji
             else
-              not_found!("Award Emoji #{award.errors.messages}")
+              not_modified!("Award Emoji #{award.errors.messages}")
             end
           end
 

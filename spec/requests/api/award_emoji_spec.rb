@@ -174,11 +174,11 @@ describe API::AwardEmoji do
       end
 
       context 'when the emoji already has been awarded' do
-        it 'returns a 404 status code' do
+        it 'returns a 304 status code' do
           post api("/projects/#{project.id}/issues/#{issue.iid}/award_emoji", user), params: { name: 'thumbsup' }
           post api("/projects/#{project.id}/issues/#{issue.iid}/award_emoji", user), params: { name: 'thumbsup' }
 
-          expect(response).to have_gitlab_http_status(404)
+          expect(response).to have_gitlab_http_status(304)
           expect(json_response["message"]).to match("has already been taken")
         end
       end
@@ -216,11 +216,11 @@ describe API::AwardEmoji do
     end
 
     context 'when the emoji already has been awarded' do
-      it 'returns a 404 status code' do
+      it 'returns a 304 status code' do
         post api("/projects/#{project.id}/issues/#{issue.iid}/notes/#{note.id}/award_emoji", user), params: { name: 'rocket' }
         post api("/projects/#{project.id}/issues/#{issue.iid}/notes/#{note.id}/award_emoji", user), params: { name: 'rocket' }
 
-        expect(response).to have_gitlab_http_status(404)
+        expect(response).to have_gitlab_http_status(304)
         expect(json_response["message"]).to match("has already been taken")
       end
     end
