@@ -19,6 +19,14 @@ module ErrorTracking
 
     after_save :clear_reactive_cache!
 
+    def project_name
+      super || project_name_from_slug
+    end
+
+    def organization_name
+      super || organization_name_from_slug
+    end
+
     def sentry_client
       Sentry::Client.new(api_url, token)
     end
@@ -33,10 +41,18 @@ module ErrorTracking
       end
     end
 
+    def list_sentry_projects
+      with_reactive_cache('list_projects', {}) do |result|
+        { issues: result }
+      end
+    end
+
     def calculate_reactive_cache(request, opts)
       case request
       when 'list_issues'
         sentry_client.list_issues(**opts.symbolize_keys)
+      when 'list_projects'
+        sentry_client.list_projects
       end
     end
 
@@ -48,6 +64,24 @@ module ErrorTracking
     end
 
     private
+
+    def project_name_from_slug
+      return nil if api_url.blank?
+
+      slugs = get_slugs
+      slugs[1].titleize if slugs.length >= 2
+    end
+
+    def organization_name_from_slug
+      return nil if api_url.blank?
+
+      slugs = get_slugs
+      slugs[0].titleize if slugs.length >= 2
+    end
+
+    def get_slugs
+      api_url.partition('/api/0/projects').last.split('/').reject(&:blank?)
+    end
 
     def validate_api_url_path
       unless URI(api_url).path.starts_with?('/api/0/projects')

@@ -1578,6 +1578,8 @@ ActiveRecord::Schema.define(version: 20190124200344) do
     t.string "api_url", null: false
     t.string "encrypted_token"
     t.string "encrypted_token_iv"
+    t.string "project_name"
+    t.string "organization_name"
   end
 
   create_table "project_features", force: :cascade do |t|
