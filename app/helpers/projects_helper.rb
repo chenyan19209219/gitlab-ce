@@ -297,10 +297,6 @@ module ProjectsHelper
       nav_tabs << [:files, :commits, :network, :graphs, :forks]
     end
 
-    if !project.empty_repo? && can?(current_user, :read_release, project)
-      nav_tabs << :releases
-    end
-
     if project.repo_exists? && can?(current_user, :read_merge_request, project)
       nav_tabs << :merge_requests
     end
@@ -321,13 +317,21 @@ module ProjectsHelper
       nav_tabs << :external_issue_tracker
     end
 
+    nav_tabs = get_project_nav_tab_abilities(project, current_user, nav_tabs)
+
+    nav_tabs.flatten
+  end
+
+  def get_project_nav_tab_abilities(project, current_user, nav_tabs)
+    nav_tabs << :releases if !project.empty_repo? && can?(current_user, :read_release, project)
+
     tab_ability_map.each do |tab, ability|
       if can?(current_user, ability, project)
         nav_tabs << tab
       end
     end
 
-    nav_tabs.flatten
+    nav_tabs
   end
 
   def tab_ability_map

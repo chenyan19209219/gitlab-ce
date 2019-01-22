@@ -363,7 +363,7 @@ describe ProjectsHelper do
       before do
         allow(project).to receive(:empty_repo?).and_return(false)
       end
-      
+
       it 'includes the releases tab' do
         is_expected.to include(:releases)
       end
@@ -373,7 +373,7 @@ describe ProjectsHelper do
       before do
         allow(project).to receive(:empty_repo?).and_return(true)
       end
-      
+
       it 'includes the releases tab' do
         is_expected.not_to include(:releases)
       end
