@@ -358,6 +358,26 @@ describe ProjectsHelper do
         is_expected.not_to include(:pipelines)
       end
     end
+
+    context 'when repo is empty' do
+      before do
+        allow(project).to receive(:empty_repo?).and_return(false)
+      end
+      
+      it 'includes the releases tab' do
+        is_expected.to include(:releases)
+      end
+    end
+
+    context 'when repo is not empty' do
+      before do
+        allow(project).to receive(:empty_repo?).and_return(true)
+      end
+      
+      it 'includes the releases tab' do
+        is_expected.not_to include(:releases)
+      end
+    end
   end
 
   describe '#show_projects' do

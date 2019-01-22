@@ -294,7 +294,11 @@ module ProjectsHelper
     nav_tabs = [:home]
 
     if !project.empty_repo? && can?(current_user, :download_code, project)
-      nav_tabs << [:files, :commits, :network, :graphs, :forks, :releases]
+      nav_tabs << [:files, :commits, :network, :graphs, :forks]
+    end
+
+    if !project.empty_repo? && can?(current_user, :read_release, project)
+      nav_tabs << :releases
     end
 
     if project.repo_exists? && can?(current_user, :read_merge_request, project)
