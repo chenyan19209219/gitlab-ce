@@ -12,7 +12,12 @@ module Projects
       private
 
       def project_update_params
-        params.slice(:error_tracking_setting_attributes)
+        attribs = params.slice(:error_tracking_setting_attributes)
+
+        attribs[:api_url] = attribs[:api_url].presence
+        attribs[:token] = attribs[:token].presence
+
+        attribs
       end
     end
   end

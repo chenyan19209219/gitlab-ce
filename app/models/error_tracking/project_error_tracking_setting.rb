@@ -8,9 +8,12 @@ module ErrorTracking
 
     belongs_to :project
 
-    validates :api_url, length: { maximum: 255 }, public_url: true, url: { enforce_sanitization: true }
+    # TODO: Add test to check that api_url is validated only when error tracking is enabled.
+    validates :api_url, length: { maximum: 255 }, public_url: true, url: { enforce_sanitization: true }, if: :enabled
 
-    validate :validate_api_url_path
+    validate :validate_api_url_path, if: :enabled
+
+    validates :token, presence: true, if: :enabled
 
     attr_encrypted :token,
       mode: :per_attribute_iv,
@@ -43,7 +46,7 @@ module ErrorTracking
 
     def list_sentry_projects
       with_reactive_cache('list_projects', {}) do |result|
-        { issues: result }
+        { projects: result }
       end
     end
 
