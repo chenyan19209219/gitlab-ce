@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe ProjectsHelper do
   include ProjectForksHelper
+  include AbilityHelpers
 
   describe "#project_status_css_class" do
     it "returns appropriate class" do
@@ -331,10 +332,6 @@ describe ProjectsHelper do
     let(:project) { create(:project) }
     let(:user)    { create(:user) }
 
-    before do
-      allow(helper).to receive(:can?) { true }
-    end
-
     subject do
       helper.send(:get_project_nav_tabs, project, user)
     end
@@ -342,6 +339,7 @@ describe ProjectsHelper do
     context 'when builds feature is enabled' do
       before do
         allow(project).to receive(:builds_enabled?).and_return(true)
+        allow(helper).to receive(:can?) { true }
       end
 
       it "does include pipelines tab" do
@@ -352,6 +350,7 @@ describe ProjectsHelper do
     context 'when builds feature is disabled' do
       before do
         allow(project).to receive(:builds_enabled?).and_return(false)
+        allow(helper).to receive(:can?) { true }
       end
 
       it "do not include pipelines tab" do
@@ -359,23 +358,18 @@ describe ProjectsHelper do
       end
     end
 
-    context 'when repo is empty' do
-      before do
-        allow(project).to receive(:empty_repo?).and_return(false)
-      end
+    context 'when project is private' do
+      let(:project) { create(:project, :private, :repository) }
 
-      it 'includes the releases tab' do
-        is_expected.to include(:releases)
-      end
-    end
+      context 'when user is guest' do
+        before do
+          stub_delegation_for_can(helper)
+          project.add_guest(user)
+        end
 
-    context 'when repo is not empty' do
-      before do
-        allow(project).to receive(:empty_repo?).and_return(true)
-      end
-
-      it 'includes the releases tab' do
-        is_expected.not_to include(:releases)
+        it 'gets release tab' do
+          is_expected.to include(:releases)
+        end
       end
     end
   end
