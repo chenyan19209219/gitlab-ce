@@ -123,27 +123,10 @@ class Clusters::ClustersController < Clusters::BaseController
   private
 
   def update_params
-    if cluster.managed?
-      params.require(:cluster).permit(
-        :enabled,
-        :environment_scope,
-        platform_kubernetes_attributes: [
-          :namespace
-        ]
-      )
-    else
-      params.require(:cluster).permit(
-        :enabled,
-        :name,
-        :environment_scope,
-        platform_kubernetes_attributes: [
-          :api_url,
-          :token,
-          :ca_cert,
-          :namespace
-        ]
-      )
-    end
+    params.require(:cluster).permit(
+      :enabled,
+      :environment_scope,
+    )
   end
 
   def create_gcp_cluster_params

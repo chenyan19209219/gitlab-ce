@@ -28,4 +28,14 @@ class ProjectClusterablePresenter < ClusterablePresenter
   def learn_more_link
     link_to(s_('ClusterIntegration|Learn more about Kubernetes'), help_page_path('user/project/clusters/index'), target: '_blank', rel: 'noopener noreferrer')
   end
+
+  override :platform_kubernetes_path
+  def platform_kubernetes_path(cluster, platform_kubernetes)
+    update_platform_kubernetes_namespace_project_cluster_path(
+      id: cluster,
+      kubernetes_id: platform_kubernetes,
+      namespace_id: clusterable.namespace.becomes(Namespace),
+      project_id: clusterable
+    )
+  end
 end

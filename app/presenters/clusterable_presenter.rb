@@ -59,4 +59,8 @@ class ClusterablePresenter < Gitlab::View::Presenter::Delegated
   def learn_more_link
     raise NotImplementedError
   end
+
+  def platform_kubernetes_path(cluster, platform_kubernetes)
+    raise NotImplementedError
+  end
 end

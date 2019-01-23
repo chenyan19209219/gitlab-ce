@@ -59,6 +59,8 @@ module Clusters
 
       alias_method :active?, :enabled?
 
+      accepts_nested_attributes_for :cluster, update_only: true
+
       enum_with_nil authorization_type: {
         unknown_authorization: nil,
         rbac: 1,

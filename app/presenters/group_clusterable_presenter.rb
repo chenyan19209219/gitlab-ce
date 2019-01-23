@@ -33,4 +33,9 @@ class GroupClusterablePresenter < ClusterablePresenter
   def learn_more_link
     link_to(s_('ClusterIntegration|Learn more about group Kubernetes clusters'), help_page_path('user/group/clusters/index'), target: '_blank', rel: 'noopener noreferrer')
   end
+
+  override :platform_kubernetes_path
+  def platform_kubernetes_path(cluster, platform_kubernetes)
+    group_cluster_platform_kubernete_path(clusterable, cluster, platform_kubernetes)
+  end
 end

@@ -103,6 +103,9 @@ Rails.application.routes.draw do
           post '/:application', to: 'clusters/applications#create', as: :install_applications
         end
 
+        scope :platforms do
+          patch '/:kubernetes_id', to: 'clusters/platforms/kubernetes#update', as: :update_platform_kubernetes
+        end
         get :cluster_status, format: :json
       end
     end
