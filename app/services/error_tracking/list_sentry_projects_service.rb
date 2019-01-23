@@ -3,10 +3,15 @@
 module ErrorTracking
   class ListSentryProjectsService < ::BaseService
     def execute
-      return error('not enabled') unless enabled?
       return error('access denied') unless can_read?
 
-      result = project_error_tracking_setting.list_sentry_projects
+      e = project_error_tracking_setting
+
+      unless e.valid?
+        return error(e.errors.full_messages.join(', '), :bad_request)
+      end
+
+      result = e.list_sentry_projects
 
       # our results are not yet ready
       unless result
@@ -19,11 +24,11 @@ module ErrorTracking
     private
 
     def project_error_tracking_setting
-      project.error_tracking_setting
-    end
-
-    def enabled?
-      project_error_tracking_setting&.enabled?
+      e = project.error_tracking_setting
+      e.api_url = params[:api_host]
+      e.token = params[:token]
+      e.enabled = true
+      e
     end
 
     def can_read?

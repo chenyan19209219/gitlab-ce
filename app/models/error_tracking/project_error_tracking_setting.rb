@@ -8,10 +8,7 @@ module ErrorTracking
 
     belongs_to :project
 
-    # TODO: Add test to check that api_url is validated only when error tracking is enabled.
     validates :api_url, length: { maximum: 255 }, public_url: true, url: { enforce_sanitization: true }, if: :enabled
-
-    validate :validate_api_url_path, if: :enabled
 
     validates :token, presence: true, if: :enabled
 
@@ -84,13 +81,6 @@ module ErrorTracking
 
     def get_slugs
       api_url.partition('/api/0/projects').last.split('/').reject(&:blank?)
-    end
-
-    def validate_api_url_path
-      unless URI(api_url).path.starts_with?('/api/0/projects')
-        errors.add(:api_url, 'path needs to start with /api/0/projects')
-      end
-    rescue URI::InvalidURIError
     end
   end
 end

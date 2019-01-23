@@ -26,6 +26,14 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
 
   private
 
+  def list_projects_params
+    params.require(:error_tracking_setting).permit([:api_host, :token])
+
+    params[:api_host] = ActionController::Base.helpers.sanitize(params[:api_host])
+
+    params
+  end
+
   def render_index_json
     service = ErrorTracking::ListIssuesService.new(project, current_user)
     result = service.execute
@@ -42,7 +50,7 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
   end
 
   def render_project_list_json
-    service = ErrorTracking::ListSentryProjectsService.new(project, current_user)
+    service = ErrorTracking::ListSentryProjectsService.new(project, current_user, list_projects_params)
     result = service.execute
 
     unless result[:status] == :success

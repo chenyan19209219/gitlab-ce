@@ -17,7 +17,7 @@ describe Projects::ErrorTrackingController do
 
     before do
       expect(ErrorTracking::ListSentryProjectsService)
-        .to receive(:new).with(project, user)
+        .to receive(:new).with(project, user, ActionController::Parameters)
         .and_return(list_sentry_projects_service)
     end
 
@@ -30,7 +30,7 @@ describe Projects::ErrorTrackingController do
       end
 
       it 'returns a list of errors' do
-        post :list_projects, params: project_params(format: :json)
+        post :list_projects, params: list_projects_params
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(response).to match_response_schema('error_tracking/list_projects')
@@ -48,7 +48,7 @@ describe Projects::ErrorTrackingController do
         end
 
         it 'returns 400 with message' do
-          get :list_projects, params: project_params(format: :json)
+          get :list_projects, params: list_projects_params
 
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(json_response['message']).to eq(error_message)
@@ -64,7 +64,7 @@ describe Projects::ErrorTrackingController do
         end
 
         it 'returns http_status with message' do
-          get :list_projects, params: project_params(format: :json)
+          get :list_projects, params: list_projects_params
 
           expect(response).to have_gitlab_http_status(http_status)
           expect(json_response['message']).to eq(error_message)
@@ -188,5 +188,17 @@ describe Projects::ErrorTrackingController do
 
   def project_params(opts = {})
     opts.reverse_merge(namespace_id: project.namespace, project_id: project)
+  end
+
+  def list_projects_params(opts = {})
+    opts.reverse_merge(
+      namespace_id: project.namespace,
+      project_id: project,
+      format: :json,
+      error_tracking_setting: {
+        api_host: 'gitlab.com',
+        token: 'token'
+      }
+    )
   end
 end

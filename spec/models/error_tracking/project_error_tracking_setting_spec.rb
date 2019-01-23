@@ -15,11 +15,19 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
 
   describe 'Validations' do
     context 'when api_url is over 255 chars' do
-      it 'fails validation' do
+      before do
         subject.api_url = 'https://' + 'a' * 250
+      end
 
+      it 'fails validation when enabled' do
         expect(subject).not_to be_valid
         expect(subject.errors.messages[:api_url]).to include('is too long (maximum is 255 characters)')
+      end
+
+      it 'passes validation when disabled' do
+        subject.enabled = false
+
+        expect(subject).to be_valid
       end
     end
 
@@ -31,16 +39,31 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
       end
     end
 
-    context 'URL path' do
-      it 'fails validation with wrong path' do
-        subject.api_url = 'http://gitlab.com/project1/something'
+    context 'when token missing' do
+      it 'fails validation when enabled' do
+        subject.token = nil
 
         expect(subject).not_to be_valid
-        expect(subject.errors.messages[:api_url]).to include('path needs to start with /api/0/projects')
       end
 
-      it 'passes validation with correct path' do
-        subject.api_url = 'http://gitlab.com/api/0/projects/project1/something'
+      it 'passes validation when disabled' do
+        subject.token = nil
+        subject.enabled = false
+
+        expect(subject).to be_valid
+      end
+    end
+
+    context 'when api_url missing' do
+      it 'fails validation when enabled' do
+        subject.api_url = nil
+
+        expect(subject).not_to be_valid
+      end
+
+      it 'passes validation when disabled' do
+        subject.api_url = nil
+        subject.enabled = false
 
         expect(subject).to be_valid
       end
