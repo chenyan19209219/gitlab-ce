@@ -43,4 +43,25 @@ describe FormHelper do
       end
     end
   end
+
+  describe '#base_form_errors' do
+    let(:cluster) { create(:cluster, :provided_by_user, :project) }
+    let(:platform_kubernetes) { cluster.platform_kubernetes }
+
+    before do
+      cluster.domain = 'invalid-domain'
+      platform_kubernetes.api_url = 'invalid-api'
+
+      cluster.valid?
+    end
+
+    it 'display errors for the particular model' do
+      errors = helper.base_form_errors(cluster)
+
+      aggregate_failures do
+        expect(errors).to include('<li>Domain is not a fully qualified domain name</li>')
+        expect(errors).not_to include('<li>Platform kubernetes api url is blocked: Only allowed protocols are http, https</li>')
+      end
+    end
+  end
 end

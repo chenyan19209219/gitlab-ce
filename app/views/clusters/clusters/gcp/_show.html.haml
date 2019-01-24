@@ -7,7 +7,7 @@
       = clipboard_button(text: @cluster.name, title: s_('ClusterIntegration|Copy Kubernetes cluster name'), class: 'input-group-text btn-default')
 
 = form_for @cluster, url: clusterable.cluster_path(@cluster), as: :cluster do |field|
-  = form_errors(@cluster)
+  = base_form_errors(@cluster)
 
   = field.fields_for :platform_kubernetes, @cluster.platform_kubernetes do |platform_kubernetes_field|
     .form-group

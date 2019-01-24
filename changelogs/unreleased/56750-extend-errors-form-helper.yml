@@ -1,0 +1,5 @@
+---
+title: Removes duplicated error message on cluster page
+merge_request: 24643
+author:
+type: fixed
