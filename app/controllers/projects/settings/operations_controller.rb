@@ -35,7 +35,14 @@ module Projects
 
       # overridden in EE
       def permitted_project_params
-        { error_tracking_setting_attributes: [:enabled, :api_url, :token] }
+        {
+          error_tracking_setting_attributes: [
+            :enabled,
+            :api_host,
+            :token,
+            project: [:slug, :name, :organization_slug, :organization_name]
+          ]
+        }
       end
 
       def check_license

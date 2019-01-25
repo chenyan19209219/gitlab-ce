@@ -68,6 +68,21 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
         expect(subject).to be_valid
       end
     end
+
+    context 'URL path' do
+      it 'fails validation with wrong path' do
+        subject.api_url = 'http://gitlab.com/project1/something'
+
+        expect(subject).not_to be_valid
+        expect(subject.errors.messages[:api_url]).to include('path needs to start with /api/0/projects')
+      end
+
+      it 'passes validation with correct path' do
+        subject.api_url = 'http://gitlab.com/api/0/projects/project1/something'
+
+        expect(subject).to be_valid
+      end
+    end
   end
 
   describe '#sentry_external_url' do
@@ -127,6 +142,56 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
 
         expect(result).to be_nil
       end
+    end
+  end
+
+  describe '#project_slug' do
+    it 'returns slug when api_url is correct' do
+      subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug'
+
+      expect(subject.project_slug).to eq('project-slug')
+    end
+
+    it 'returns nil when api_url is blank' do
+      subject.api_url = nil
+
+      expect(subject.project_slug).to be_nil
+    end
+  end
+
+  describe '#organization_slug' do
+    it 'returns slug when api_url is correct' do
+      subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug'
+
+      expect(subject.organization_slug).to eq('org-slug')
+    end
+
+    it 'returns nil when api_url is blank' do
+      subject.api_url = nil
+
+      expect(subject.organization_slug).to be_nil
+    end
+  end
+
+  describe '.build_api_url_from' do
+    it 'correctly builds api_url with slugs' do
+      api_url = described_class.build_api_url_from(
+        api_host: 'http://sentry.com/',
+        organization_slug: 'org-slug',
+        project_slug: 'proj-slug'
+      )
+
+      expect(api_url).to eq('http://sentry.com/api/0/projects/org-slug/proj-slug/')
+    end
+
+    it 'correctly builds api_url without slugs' do
+      api_url = described_class.build_api_url_from(
+        api_host: 'http://sentry.com/',
+        organization_slug: nil,
+        project_slug: nil
+      )
+
+      expect(api_url).to eq('http://sentry.com/api/0/projects/')
     end
   end
 end

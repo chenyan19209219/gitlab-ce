@@ -25,7 +25,12 @@ module ErrorTracking
 
     def project_error_tracking_setting
       e = project.error_tracking_setting
-      e.api_url = params[:api_host]
+
+      e.api_url = ErrorTracking::ProjectErrorTrackingSetting.build_api_url_from(
+        api_host: params[:api_host],
+        organization_slug: nil,
+        project_slug: nil
+      )
       e.token = params[:token]
       e.enabled = true
       e

@@ -27,7 +27,8 @@ describe ErrorTracking::ListSentryProjectsService do
   describe '#execute' do
     context 'with authorized user' do
       before do
-        expect(project).to receive(:error_tracking_setting).at_least(:once).and_return(error_tracking_setting)
+        expect(project).to receive(:error_tracking_setting).at_least(:once)
+          .and_return(error_tracking_setting)
       end
 
       it 'uses new api_url and token' do
@@ -35,7 +36,8 @@ describe ErrorTracking::ListSentryProjectsService do
 
         sentry_client = spy(:sentry_client)
 
-        expect(Sentry::Client).to receive(:new).with(new_api_host, new_token).and_return(sentry_client)
+        expect(Sentry::Client).to receive(:new)
+          .with(new_api_host + 'api/0/projects/', new_token).and_return(sentry_client)
         expect(sentry_client).to receive(:list_projects).and_return([])
 
         subject.execute
@@ -44,7 +46,10 @@ describe ErrorTracking::ListSentryProjectsService do
       context 'with invalid url' do
         it 'returns error' do
           error_tracking_setting.enabled = false
-          params = ActionController::Parameters.new(api_host: 'https://localhost', token: new_token)
+          params = ActionController::Parameters.new(
+            api_host: 'https://localhost',
+            token: new_token
+          )
           subject = described_class.new(project, user, params)
 
           result = subject.execute
@@ -98,7 +103,8 @@ describe ErrorTracking::ListSentryProjectsService do
 
     context 'with error tracking disabled' do
       before do
-        expect(project).to receive(:error_tracking_setting).at_least(:once).and_return(error_tracking_setting)
+        expect(project).to receive(:error_tracking_setting).at_least(:once)
+          .and_return(error_tracking_setting)
         expect(error_tracking_setting)
           .to receive(:list_sentry_projects).and_return(projects: [])
 

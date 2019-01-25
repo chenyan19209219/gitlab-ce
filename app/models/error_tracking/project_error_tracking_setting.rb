@@ -8,7 +8,9 @@ module ErrorTracking
 
     belongs_to :project
 
-    validates :api_url, length: { maximum: 255 }, public_url: true, url: { enforce_sanitization: true }, if: :enabled
+    validates :api_url, length: { maximum: 255 }, public_url: true, url: { enforce_sanitization: true, ascii_only: true }, if: :enabled
+
+    validate :validate_api_url_path, if: :enabled
 
     validates :token, presence: true, if: :enabled
 
@@ -25,6 +27,23 @@ module ErrorTracking
 
     def organization_name
       super || organization_name_from_slug
+    end
+
+    def project_slug
+      slugs = get_slugs
+      slugs[1] if slugs.length >= 2
+    end
+
+    def organization_slug
+      slugs = get_slugs
+      slugs[0] if slugs.length >= 2
+    end
+
+    def self.build_api_url_from(api_host:, project_slug:, organization_slug:)
+      uri = Addressable::URI.parse("#{api_host}/api/0/projects/#{organization_slug}/#{project_slug}/")
+      uri.path = uri.path.squeeze('/')
+
+      uri.to_s
     end
 
     def sentry_client
@@ -80,7 +99,20 @@ module ErrorTracking
     end
 
     def get_slugs
-      api_url.partition('/api/0/projects').last.split('/').reject(&:blank?)
+      if api_url.present?
+        api_url.partition('/api/0/projects').last.split('/').reject(&:blank?)
+      else
+        []
+      end
+    end
+
+    def validate_api_url_path
+      return if api_url.blank?
+
+      unless URI(api_url).path.starts_with?('/api/0/projects')
+        errors.add(:api_url, 'path needs to start with /api/0/projects')
+      end
+    rescue URI::InvalidURIError
     end
   end
 end

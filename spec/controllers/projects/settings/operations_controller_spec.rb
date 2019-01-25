@@ -74,8 +74,14 @@ describe Projects::Settings::OperationsController do
         {
           error_tracking_setting_attributes: {
             enabled: '1',
-            api_url: 'http://url',
-            token: 'token'
+            api_host: 'http://url',
+            token: 'token',
+            project: {
+              slug: 'sentry-project',
+              name: 'Sentry Project',
+              organization_slug: 'sentry-org',
+              organization_name: 'Sentry Org'
+            }
           }
         }
       end
