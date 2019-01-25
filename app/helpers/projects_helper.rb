@@ -293,9 +293,9 @@ module ProjectsHelper
   def get_project_nav_tabs(project, current_user)
     nav_tabs = [:home]
 
-    if !project.empty_repo? && can?(current_user, :download_code, project)
-      nav_tabs << [:files, :commits, :network, :graphs, :forks]
-    end
+    nav_tabs << [:files, :commits, :network, :graphs, :forks] if can_download_code?(project, current_user)
+
+    nav_tabs << :releases if can_read_release?(project, current_user)
 
     if project.repo_exists? && can?(current_user, :read_merge_request, project)
       nav_tabs << :merge_requests
@@ -322,9 +322,15 @@ module ProjectsHelper
     nav_tabs.flatten
   end
 
-  def get_project_nav_tab_abilities(project, current_user, nav_tabs)
-    nav_tabs << :releases if !project.empty_repo? && can?(current_user, :read_release, project)
+  def can_download_code?(project, current_user)
+    !project.empty_repo? && can?(current_user, :download_code, project)
+  end
 
+  def can_read_release?(project, current_user)
+    !project.empty_repo? && can?(current_user, :read_release, project)
+  end
+
+  def get_project_nav_tab_abilities(project, current_user, nav_tabs)
     tab_ability_map.each do |tab, ability|
       if can?(current_user, ability, project)
         nav_tabs << tab
