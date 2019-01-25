@@ -3,14 +3,14 @@ require 'rails_helper'
 describe 'GFM autocomplete', :js do
   let(:issue_xss_title) { 'This will execute alert<img src=x onerror=alert(2)&lt;img src=x onerror=alert(1)&gt;' }
   let(:user_xss_title) { 'eve <img src=x onerror=alert(2)&lt;img src=x onerror=alert(1)&gt;' }
-  let(:label_xss_title) { 'alert label &lt;img src=x onerror="alert(\'Hello xss\');" a'}
+  let(:label_xss_title) { 'alert label &lt;img src=x onerror="alert(\'Hello xss\');" a' }
   let(:milestone_xss_title) { 'alert milestone &lt;img src=x onerror="alert(\'Hello xss\');" a' }
 
   let(:user_xss) { create(:user, name: user_xss_title, username: 'xss.user') }
-  let(:user)    { create(:user, name: '💃speciąl someone💃', username: 'someone.special') }
+  let(:user) { create(:user, name: '💃speciąl someone💃', username: 'someone.special') }
   let(:project) { create(:project) }
   let(:label) { create(:label, project: project, title: 'special+') }
-  let(:issue)   { create(:issue, project: project) }
+  let(:issue) { create(:issue, project: project) }
 
   before do
     project.add_maintainer(user)
@@ -280,8 +280,8 @@ describe 'GFM autocomplete', :js do
 
   # This context has jsut one example in each contexts in order to improve spec performance.
   context 'labels' do
-    let!(:backend)          { create(:label, project: project, title: 'backend') }
-    let!(:bug)              { create(:label, project: project, title: 'bug') }
+    let!(:backend) { create(:label, project: project, title: 'backend') }
+    let!(:bug) { create(:label, project: project, title: 'bug') }
     let!(:feature_proposal) { create(:label, project: project, title: 'feature proposal') }
 
     it 'opens autocomplete menu for Labels when field starts with text with item escaping HTML characters' do
@@ -299,7 +299,7 @@ describe 'GFM autocomplete', :js do
       end
     end
 
-    context 'when no labels are assigned' do
+    context 'when no labels are assigned', :focus => true do
       it 'shows labels' do
         note = find('#note-body')
 
@@ -309,20 +309,32 @@ describe 'GFM autocomplete', :js do
         expect_labels(shown: [backend, bug, feature_proposal])
 
         # It should show all the labels on "/label ~".
-        type(note, '/label ~')
+        type(note, '/label')
+        wait_for_requests
+        sleep 1
+        note.native.send_keys :space, '~'
+        sleep 1
         expect_labels(shown: [backend, bug, feature_proposal])
 
         # It should show all the labels on "/relabel ~".
-        type(note, '/relabel ~')
+        type(note, '/relabel')
+        wait_for_requests
+        sleep 1
+        note.native.send_keys :space, '~'
+        sleep 1
         expect_labels(shown: [backend, bug, feature_proposal])
 
         # It should show no labels on "/unlabel ~".
-        type(note, '/unlabel ~')
+        type(note, '/unlabel')
+        wait_for_requests
+        sleep 1
+        note.native.send_keys :space, '~'
+        sleep 1
         expect_labels(not_shown: [backend, bug, feature_proposal])
       end
     end
 
-    context 'when some labels are assigned' do
+    context 'when some labels are assigned', :focus => true do
       before do
         issue.labels << [backend]
       end
@@ -337,19 +349,22 @@ describe 'GFM autocomplete', :js do
 
         # It should show only unset labels on "/label ~".
         type(note, '/label ~')
+        wait_for_requests
         expect_labels(shown: [bug, feature_proposal], not_shown: [backend])
 
         # It should show all the labels on "/relabel ~".
         type(note, '/relabel ~')
+        wait_for_requests
         expect_labels(shown: [backend, bug, feature_proposal])
 
         # It should show only set labels on "/unlabel ~".
         type(note, '/unlabel ~')
+        wait_for_requests
         expect_labels(shown: [backend], not_shown: [bug, feature_proposal])
       end
     end
 
-    context 'when all labels are assigned' do
+    context 'when all labels are assigned', :focus => true do
       before do
         issue.labels << [backend, bug, feature_proposal]
       end
@@ -364,14 +379,17 @@ describe 'GFM autocomplete', :js do
 
         # It should show no labels on "/label ~".
         type(note, '/label ~')
+        wait_for_requests
         expect_labels(not_shown: [backend, bug, feature_proposal])
 
         # It should show all the labels on "/relabel ~".
         type(note, '/relabel ~')
+        wait_for_requests
         expect_labels(shown: [backend, bug, feature_proposal])
 
         # It should show all the labels on "/unlabel ~".
         type(note, '/unlabel ~')
+        wait_for_requests
         expect_labels(shown: [backend, bug, feature_proposal])
       end
     end
@@ -444,7 +462,12 @@ describe 'GFM autocomplete', :js do
   end
 
   def expect_labels(shown: nil, not_shown: nil)
-    page.within('.atwho-container') do
+
+    if shown
+      find('#at-view-labels')
+    end
+
+    page.within('.atwho-container ') do
       if shown
         expect(page).to have_selector('.atwho-view li', count: shown.size)
         shown.each { |label| expect(page).to have_content(label.title) }

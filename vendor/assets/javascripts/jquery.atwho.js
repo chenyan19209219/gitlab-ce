@@ -881,6 +881,7 @@ Model = (function() {
   };
 
   Model.prototype.load = function(data) {
+    console.warn('LOAD')
     if (!(this.saved() || !data)) {
       return this._load(data);
     }
@@ -891,6 +892,7 @@ Model = (function() {
   };
 
   Model.prototype._load = function(data) {
+    console.warn('2')
     if (typeof data === "string") {
       return $.ajax(data, {
         dataType: "json"
@@ -1047,12 +1049,14 @@ View = (function() {
   };
 
   View.prototype.show = function() {
+    console.warn('SHOW')
     var rect;
     if (this.stopShowing) {
       this.stopShowing = false;
       return;
     }
     if (!this.visible()) {
+      console.warn('showing')
       this.$el.show();
       this.$el.scrollTop(0);
       this.context.trigger('shown');
@@ -1115,6 +1119,7 @@ var Api;
 Api = {
   load: function(at, data) {
     var c;
+    console.warn('LOAD', at, this.controller(at))
     if (c = this.controller(at)) {
       return c.model.load(data);
     }

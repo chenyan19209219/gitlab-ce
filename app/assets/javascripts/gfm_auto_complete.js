@@ -325,6 +325,7 @@ class GfmAutoComplete {
       searchKey: 'search',
       data: GfmAutoComplete.defaultLoadingData,
       displayTpl(value) {
+        console.warn('Display template called')
         let tmpl = GfmAutoComplete.Labels.templateFunction(value.color, value.title);
         if (GfmAutoComplete.isLoading(value)) {
           tmpl = GfmAutoComplete.Loading.template;
@@ -336,6 +337,7 @@ class GfmAutoComplete {
       callbacks: {
         ...this.getDefaultCallbacks(),
         beforeSave(merges) {
+          console.warn('beforeSave')
           if (GfmAutoComplete.isLoading(merges)) return merges;
           return $.map(merges, m => ({
             title: sanitize(m.title),
@@ -358,6 +360,7 @@ class GfmAutoComplete {
               node === LABEL_COMMAND.RELABEL ||
               node === LABEL_COMMAND.UNLABEL
             ) {
+              console.warn('yay')
               return node;
             }
             return null;
@@ -374,6 +377,8 @@ class GfmAutoComplete {
           if (data === GfmAutoComplete.defaultLoadingData) {
             return $.fn.atwho.default.callbacks.filter(query, data, searchKey);
           }
+
+          console.warn('yay2',command)
 
           // The `LABEL_COMMAND.RELABEL` is intentionally skipped
           // because we want to return all the labels (unfiltered) for that command.
@@ -444,6 +449,7 @@ class GfmAutoComplete {
         return $.fn.atwho.default.callbacks.filter(query, data, searchKey);
       },
       beforeInsert(value) {
+        console.warn('veforeInsert')
         let withoutAt = value.substring(1);
         const at = value.charAt();
 
@@ -474,14 +480,18 @@ class GfmAutoComplete {
   }
 
   fetchData($input, at) {
+    console.warn('fetchData 1')
     if (this.isLoadingData[at]) return;
 
     this.isLoadingData[at] = true;
     const dataSource = this.dataSources[GfmAutoComplete.atTypeMap[at]];
 
     if (this.cachedData[at]) {
+      console.warn('fetchData 2')
       this.loadData($input, at, this.cachedData[at]);
+      this.isLoadingData[at] = false;
     } else if (GfmAutoComplete.atTypeMap[at] === 'emojis') {
+      console.warn('fetchData 3')
       import(/* webpackChunkName: 'emoji' */ './emoji')
         .then(({ validEmojiNames, glEmojiTag }) => {
           this.loadData($input, at, validEmojiNames);
@@ -491,6 +501,7 @@ class GfmAutoComplete {
           this.isLoadingData[at] = false;
         });
     } else if (dataSource) {
+      console.warn('fetchData 4')
       AjaxCache.retrieve(dataSource, true)
         .then(data => {
           this.loadData($input, at, data);
@@ -499,12 +510,14 @@ class GfmAutoComplete {
           this.isLoadingData[at] = false;
         });
     } else {
+      console.warn('fetchData 5')
       this.isLoadingData[at] = false;
     }
   }
 
   loadData($input, at, data) {
     this.isLoadingData[at] = false;
+    console.warn(at, data.length, JSON.stringify(data))
     this.cachedData[at] = data;
     $input.atwho('load', at, data);
     // This trigger at.js again
