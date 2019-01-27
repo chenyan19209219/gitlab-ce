@@ -15,7 +15,24 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
     end
   end
 
+  def list_projects
+    respond_to do |format|
+      format.json do
+        set_polling_interval
+        render_project_list_json
+      end
+    end
+  end
+
   private
+
+  def list_projects_params
+    params.require(:error_tracking_setting).permit([:api_host, :token])
+
+    params[:api_host] = ActionController::Base.helpers.sanitize(params[:api_host])
+
+    params
+  end
 
   def render_index_json
     service = ErrorTracking::ListIssuesService.new(project, current_user)
@@ -32,6 +49,20 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
     }
   end
 
+  def render_project_list_json
+    service = ErrorTracking::ListSentryProjectsService.new(project, current_user, list_projects_params)
+    result = service.execute
+
+    unless result[:status] == :success
+      return render json: { message: result[:message] },
+                    status: result[:http_status] || :bad_request
+    end
+
+    render json: {
+      projects: serialize_projects(result[:projects])
+    }
+  end
+
   def set_polling_interval
     Gitlab::PollingInterval.set_header(response, interval: POLLING_INTERVAL)
   end
@@ -40,5 +71,11 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
     ErrorTracking::ErrorSerializer
       .new(project: project, user: current_user)
       .represent(errors)
+  end
+
+  def serialize_projects(projects)
+    ErrorTracking::ProjectSerializer
+      .new(project: project, user: current_user)
+      .represent(projects)
   end
 end
