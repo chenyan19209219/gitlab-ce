@@ -11,6 +11,68 @@ describe Projects::ErrorTrackingController do
     project.add_maintainer(user)
   end
 
+  describe 'POST #list_projects' do
+    let(:list_sentry_projects_service) { spy(:list_sentry_projects_service) }
+    let(:sentry_project) { build(:error_tracking_project) }
+
+    before do
+      expect(ErrorTracking::ListSentryProjectsService)
+        .to receive(:new).with(project, user, ActionController::Parameters)
+        .and_return(list_sentry_projects_service)
+    end
+
+    context 'service result is successful' do
+      let(:sentry_project) { build(:error_tracking_project) }
+
+      before do
+        expect(list_sentry_projects_service).to receive(:execute)
+          .and_return(status: :success, projects: [sentry_project])
+      end
+
+      it 'returns a list of errors' do
+        post :list_projects, params: list_projects_params
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to match_response_schema('error_tracking/list_projects')
+        expect(json_response['projects']).to eq([sentry_project].as_json)
+      end
+    end
+
+    context 'service result is erroneous' do
+      let(:error_message) { 'error message' }
+
+      context 'without http_status' do
+        before do
+          expect(list_sentry_projects_service).to receive(:execute)
+            .and_return(status: :error, message: error_message)
+        end
+
+        it 'returns 400 with message' do
+          get :list_projects, params: list_projects_params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to eq(error_message)
+        end
+      end
+
+      context 'with explicit http_status' do
+        let(:http_status) { :no_content }
+
+        before do
+          expect(list_sentry_projects_service).to receive(:execute)
+            .and_return(status: :error, message: error_message, http_status: http_status)
+        end
+
+        it 'returns http_status with message' do
+          get :list_projects, params: list_projects_params
+
+          expect(response).to have_gitlab_http_status(http_status)
+          expect(json_response['message']).to eq(error_message)
+        end
+      end
+    end
+  end
+
   describe 'GET #index' do
     describe 'html' do
       it 'renders index with 200 status code' do
@@ -126,5 +188,17 @@ describe Projects::ErrorTrackingController do
 
   def project_params(opts = {})
     opts.reverse_merge(namespace_id: project.namespace, project_id: project)
+  end
+
+  def list_projects_params(opts = {})
+    opts.reverse_merge(
+      namespace_id: project.namespace,
+      project_id: project,
+      format: :json,
+      error_tracking_setting: {
+        api_host: 'gitlab.com',
+        token: 'token'
+      }
+    )
   end
 end
