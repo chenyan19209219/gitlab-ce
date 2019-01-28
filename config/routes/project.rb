@@ -443,11 +443,9 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
         end
       end
 
-      resources :error_tracking, only: [:index], controller: :error_tracking do
-        collection do
-          post 'list_projects'
-        end
-      end
+      resources :error_tracking, only: [:index], controller: :error_tracking
+
+      post 'list_projects', to: 'error_tracking#list_projects'
 
       # Since both wiki and repository routing contains wildcard characters
       # its preferable to keep it below all other project routes
