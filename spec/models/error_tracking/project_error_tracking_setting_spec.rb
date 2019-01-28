@@ -147,35 +147,15 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
 
   describe '#list_sentry_projects' do
     let(:projects) { [:list, :of, :projects] }
+    let(:sentry_client) { spy(:sentry_client) }
 
-    let(:result) do
-      subject.list_sentry_projects
-    end
+    it 'calls sentry client' do
+      expect(subject).to receive(:sentry_client).and_return(sentry_client)
+      expect(sentry_client).to receive(:list_projects).and_return(projects)
 
-    context 'when cached' do
-      let(:sentry_client) { spy(:sentry_client) }
+      result = subject.list_sentry_projects
 
-      before do
-        stub_reactive_cache(subject, projects, {})
-        synchronous_reactive_cache(subject)
-
-        expect(subject).to receive(:sentry_client).and_return(sentry_client)
-      end
-
-      it 'returns cached projects' do
-        expect(sentry_client).to receive(:list_projects)
-          .and_return(projects)
-
-        expect(result).to eq(projects: projects)
-      end
-    end
-
-    context 'when not cached' do
-      it 'returns nil' do
-        expect(subject).not_to receive(:sentry_client)
-
-        expect(result).to be_nil
-      end
+      expect(result).to eq(projects: projects)
     end
   end
 
