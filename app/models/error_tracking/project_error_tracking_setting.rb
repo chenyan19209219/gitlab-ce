@@ -30,13 +30,11 @@ module ErrorTracking
     end
 
     def project_slug
-      slugs = get_slugs
-      slugs[1] if slugs.length >= 2
+      project_slug_from_api_url
     end
 
     def organization_slug
-      slugs = get_slugs
-      slugs[0] if slugs.length >= 2
+      organization_slug_from_api_url
     end
 
     def self.build_api_url_from(api_host:, project_slug:, organization_slug:)
@@ -85,25 +83,29 @@ module ErrorTracking
     private
 
     def project_name_from_slug
+      project_slug_from_api_url&.titleize
+    end
+
+    def project_slug_from_api_url
       return nil if api_url.blank?
 
       slugs = get_slugs
-      slugs[1].titleize if slugs.length >= 2
+      slugs[1] if slugs.length >= 2
     end
 
     def organization_name_from_slug
+      organization_slug_from_api_url&.titleize
+    end
+
+    def organization_slug_from_api_url
       return nil if api_url.blank?
 
       slugs = get_slugs
-      slugs[0].titleize if slugs.length >= 2
+      slugs[0] if slugs.length >= 2
     end
 
     def get_slugs
-      if api_url.present?
-        api_url.partition('/api/0/projects').last.split('/').reject(&:blank?)
-      else
-        []
-      end
+      api_url.partition('/api/0/projects').last.split('/').reject(&:blank?)
     end
 
     def validate_api_url_path
