@@ -61,17 +61,13 @@ module ErrorTracking
     end
 
     def list_sentry_projects
-      with_reactive_cache('list_projects', {}) do |result|
-        { projects: result }
-      end
+      { projects: sentry_client.list_projects }
     end
 
     def calculate_reactive_cache(request, opts)
       case request
       when 'list_issues'
         sentry_client.list_issues(**opts.symbolize_keys)
-      when 'list_projects'
-        sentry_client.list_projects
       end
     end
 
