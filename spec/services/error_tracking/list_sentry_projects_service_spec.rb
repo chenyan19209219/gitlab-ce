@@ -43,6 +43,19 @@ describe ErrorTracking::ListSentryProjectsService do
         subject.execute
       end
 
+      context 'sentry client raises exception' do
+        it 'returns error response' do
+          expect(error_tracking_setting).to receive(:list_sentry_projects)
+            .and_raise(Sentry::Client::Error, 'Sentry response error: 500')
+
+          subject = described_class.new(project, user, params)
+          result = subject.execute
+
+          expect(result[:message]).to eq('Sentry response error: 500')
+          expect(result[:http_status]).to eq(:bad_request)
+        end
+      end
+
       context 'with invalid url' do
         it 'returns error' do
           error_tracking_setting.enabled = false
