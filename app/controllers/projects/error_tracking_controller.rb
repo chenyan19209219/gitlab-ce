@@ -18,7 +18,6 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
   def list_projects
     respond_to do |format|
       format.json do
-        set_polling_interval
         render_project_list_json
       end
     end
@@ -28,10 +27,6 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
 
   def list_projects_params
     params.require(:error_tracking_setting).permit([:api_host, :token])
-
-    params[:api_host] = ActionController::Base.helpers.sanitize(params[:api_host])
-
-    params
   end
 
   def render_index_json
