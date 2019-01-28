@@ -19,6 +19,9 @@ module ErrorTracking
       end
 
       success(projects: result[:projects])
+
+    rescue Sentry::Client::Error => e
+      error(e.message, :bad_request)
     end
 
     private
