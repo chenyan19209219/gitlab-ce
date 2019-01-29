@@ -62,7 +62,7 @@ Example response:
 ## List all members of a group or project including inherited members
 
 Gets a list of group or project members viewable by the authenticated user, including inherited members through ancestor groups.
-Returns multiple times the same user (with different member attributes) when the user is a member of the project/group and of one or more ancestor group.
+When an user is a member of the project/group and of one or more ancestor groups the user is returned only once thus avoiding members duplication.
 
 ```
 GET /groups/:id/members/all
