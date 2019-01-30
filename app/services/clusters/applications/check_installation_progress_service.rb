@@ -4,7 +4,7 @@ module Clusters
   module Applications
     class CheckInstallationProgressService < BaseHelmService
       def execute
-        return unless app.installing?
+        return unless app.installing? || app.updating?
 
         case installation_phase
         when Gitlab::Kubernetes::Pod::SUCCEEDED
@@ -16,7 +16,8 @@ module Clusters
         end
       rescue Kubeclient::HttpError => e
         log_error(e)
-        app.make_errored!("Kubernetes error: #{e.error_code}") unless app.errored?
+
+        make_error("Kubernetes error: #{e.error_code}")
       end
 
       private
@@ -28,13 +29,13 @@ module Clusters
       end
 
       def on_failed
-        app.make_errored!("Installation failed. Check pod logs for #{install_command.pod_name} for more details.")
+        make_error("Operation failed. Check pod logs for #{pod_name} for more details.")
       end
 
       def check_timeout
         if timeouted?
           begin
-            app.make_errored!("Installation timed out. Check pod logs for #{install_command.pod_name} for more details.")
+            make_error("Operation timed out. Check pod logs for #{pod_name} for more details.")
           end
         else
           ClusterWaitForAppInstallationWorker.perform_in(
@@ -42,20 +43,32 @@ module Clusters
         end
       end
 
+      def make_error(message)
+        if app.installing?
+          app.make_errored!(message)
+        elsif app.updating?
+          app.make_update_errored!(message)
+        end
+      end
+
+      def pod_name
+        install_command.pod_name
+      end
+
       def timeouted?
         Time.now.utc - app.updated_at.to_time.utc > ClusterWaitForAppInstallationWorker::TIMEOUT
       end
 
       def remove_installation_pod
-        helm_api.delete_pod!(install_command.pod_name)
+        helm_api.delete_pod!(pod_name)
       end
 
       def installation_phase
-        helm_api.status(install_command.pod_name)
+        helm_api.status(pod_name)
       end
 
       def installation_errors
-        helm_api.log(install_command.pod_name)
+        helm_api.log(pod_name)
       end
     end
   end

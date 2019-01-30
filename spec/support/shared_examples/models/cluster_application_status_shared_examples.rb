@@ -112,6 +112,18 @@ shared_examples 'cluster application status specs' do |application_name|
           expect(subject.status_reason).to be_nil
         end
       end
+
+      describe 'when was updated_errored' do
+        subject { create(application_name, :update_errored) }
+
+        it 'clears #status_reason' do
+          expect(subject.status_reason).not_to be_nil
+
+          subject.make_scheduled!
+
+          expect(subject.status_reason).to be_nil
+        end
+      end
     end
   end
 

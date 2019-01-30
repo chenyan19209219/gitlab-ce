@@ -10,6 +10,22 @@ module Clusters
       end
 
       def execute
+        if application.updateable?
+          schedule_upgrade
+        else
+          schedule_install
+        end
+      end
+
+      private
+
+      def schedule_upgrade
+        application.make_scheduled!
+
+        ClusterUpgradeAppWorker.perform_async(application.name, application.id)
+      end
+
+      def schedule_install
         application.make_scheduled!
 
         ClusterInstallAppWorker.perform_async(application.name, application.id)

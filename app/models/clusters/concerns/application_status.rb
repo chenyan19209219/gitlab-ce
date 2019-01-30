@@ -20,7 +20,7 @@ module Clusters
           state :update_errored, value: 6
 
           event :make_scheduled do
-            transition [:installable, :errored] => :scheduled
+            transition [:installable, :errored, :installed, :updated, :update_errored] => :scheduled
           end
 
           event :make_installing do
@@ -28,7 +28,7 @@ module Clusters
           end
 
           event :make_installed do
-            transition [:installing] => :installed
+            transition [:installing, :updating] => :installed
           end
 
           event :make_errored do
@@ -36,7 +36,7 @@ module Clusters
           end
 
           event :make_updating do
-            transition [:installed, :updated, :update_errored] => :updating
+            transition [:installed, :updated, :update_errored, :scheduled] => :updating
           end
 
           event :make_updated do
@@ -72,6 +72,10 @@ module Clusters
             app_status.cluster.application_helm.update!(version: Gitlab::Kubernetes::Helm::HELM_VERSION)
           end
         end
+      end
+
+      def updateable?
+        installed? || updated? || update_errored?
       end
 
       def available?
