@@ -43,13 +43,14 @@
     margin: 0;
 
     .flash-action {
+      color: $white;
       margin-left: 5px;
       text-decoration: none;
-      font-weight: $gl-font-weight-normal;
-      border-bottom: 1px solid;
-
+      font-weight: $gl-font-weight-bold;
+      border-bottom: 1px solid transparent;
+      
       &:hover {
-        border-color: transparent;
+        border-color: $white;
       }
     }
   }
