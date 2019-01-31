@@ -539,6 +539,14 @@ $note-form-margin-left: 72px;
   }
 }
 
+.note-header-author-name {
+  display: none;
+
+  @media (min-width: map-get($grid-breakpoints, sm)) {
+    display: inline;
+  }
+}
+
 .discussion-header {
   min-height: 72px;
 
@@ -560,12 +568,16 @@ $note-form-margin-left: 72px;
 
 .note-header {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
+
+  @media (min-width: map-get($grid-breakpoints, md)) {
+    flex-direction: row;
+  }
 }
 
 .note-header-info {
   min-width: 0;
-  padding-bottom: $gl-padding-8;
 
   &.discussion {
     padding-bottom: 0;
@@ -638,16 +650,20 @@ $note-form-margin-left: 72px;
 }
 
 .note-actions {
+  display: flex;
   align-self: flex-start;
   flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  margin-left: 10px;
+  justify-content: flex-end;
+  width: 100%;
+  padding-bottom: $gl-padding-8;
   color: $gray-darkest;
 
-  @include notes-media('max', map-get($grid-breakpoints, sm) - 1) {
-    float: none;
-    margin-left: 0;
+  @include media-breakpoint-up(md) {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    margin-left: 10px;
+    padding-bottom: 0;
   }
 }
 
@@ -714,7 +730,11 @@ $note-form-margin-left: 72px;
 }
 
 .note-role {
-  margin: 0 3px;
+  margin: 0 auto 0 0;
+
+  @include media-breakpoint-up(md) {
+    margin: 0 3px;
+  }
 }
 
 .note-role-special {
