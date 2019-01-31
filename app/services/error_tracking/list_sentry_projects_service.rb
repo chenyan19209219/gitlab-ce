@@ -13,11 +13,6 @@ module ErrorTracking
 
       result = e.list_sentry_projects
 
-      # our results are not yet ready
-      unless result
-        return error('not ready', :no_content)
-      end
-
       success(projects: result[:projects])
 
     rescue Sentry::Client::Error => e
