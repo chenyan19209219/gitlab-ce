@@ -76,6 +76,13 @@ module ErrorTracking
       url.sub('api/0/projects/', '')
     end
 
+    def api_host
+      return nil if api_url.blank?
+
+      # This returns http://example.com/
+      Addressable::URI.join(api_url, '/').to_s
+    end
+
     private
 
     def project_name_from_slug
