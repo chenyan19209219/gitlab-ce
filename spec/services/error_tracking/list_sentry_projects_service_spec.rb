@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 describe ErrorTracking::ListSentryProjectsService do
-  include ReactiveCachingHelpers
-
   set(:user) { create(:user) }
   set(:project) { create(:project) }
 
@@ -32,8 +30,6 @@ describe ErrorTracking::ListSentryProjectsService do
       end
 
       it 'uses new api_url and token' do
-        synchronous_reactive_cache(error_tracking_setting)
-
         sentry_client = spy(:sentry_client)
 
         expect(Sentry::Client).to receive(:new)
@@ -84,20 +80,6 @@ describe ErrorTracking::ListSentryProjectsService do
           result = subject.execute
 
           expect(result).to eq(status: :success, projects: projects)
-        end
-      end
-
-      context 'when list_sentry_projects returns nil' do
-        before do
-          expect(error_tracking_setting)
-            .to receive(:list_sentry_projects).and_return(nil)
-        end
-
-        it 'result is not ready' do
-          result = subject.execute
-
-          expect(result).to eq(
-            status: :error, http_status: :no_content, message: 'not ready')
         end
       end
     end
