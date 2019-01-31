@@ -112,5 +112,32 @@ describe ErrorTracking::ListSentryProjectsService do
         expect(result).to include(status: :success, projects: [])
       end
     end
+
+    context 'error_tracking_setting is nil' do
+      let(:new_api_host) { 'https://gitlab.com/' }
+      let(:new_token) { 'new-token' }
+      let(:params) { ActionController::Parameters.new(api_host: new_api_host, token: new_token) }
+
+      before do
+        expect(project).to receive(:error_tracking_setting).at_least(:once)
+          .and_return(nil)
+      end
+
+      it 'builds a new error_tracking_setting' do
+        sentry_client = spy(:sentry_client)
+
+        expect(Sentry::Client).to receive(:new)
+          .with(new_api_host + 'api/0/projects/', new_token)
+          .and_return(sentry_client)
+
+        expect(sentry_client).to receive(:list_projects)
+          .and_return([:project1, :project2])
+
+        result = subject.execute
+
+        expect(result[:projects]).to eq([:project1, :project2])
+        expect(project.error_tracking_setting).to be_nil
+      end
+    end
   end
 end
