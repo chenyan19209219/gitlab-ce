@@ -321,4 +321,12 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
       end
     end
   end
+
+  describe '#api_host' do
+    it 'extracts the api_host from api_url' do
+      subject.api_url = 'https://example.com/api/0/projects/org-slug/proj-slug/'
+
+      expect(subject.api_host).to eq('https://example.com/')
+    end
+  end
 end
