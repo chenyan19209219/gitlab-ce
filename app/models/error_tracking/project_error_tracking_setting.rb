@@ -107,10 +107,9 @@ module ErrorTracking
     def validate_api_url_path
       return if api_url.blank?
 
-      unless URI(api_url).path.starts_with?('/api/0/projects')
+      unless Addressable::URI.parse(api_url).path.starts_with?('/api/0/projects')
         errors.add(:api_url, 'path needs to start with /api/0/projects')
       end
-    rescue URI::InvalidURIError
     end
   end
 end
