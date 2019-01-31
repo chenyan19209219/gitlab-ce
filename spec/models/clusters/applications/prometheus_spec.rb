@@ -206,8 +206,8 @@ describe Clusters::Applications::Prometheus do
     let(:prometheus) { build(:clusters_applications_prometheus) }
     let(:values) { prometheus.values }
 
-    it 'returns an instance of Gitlab::Kubernetes::Helm::GetCommand' do
-      expect(prometheus.upgrade_command(values)).to be_an_instance_of(::Gitlab::Kubernetes::Helm::UpgradeCommand)
+    it 'returns an instance of Gitlab::Kubernetes::Helm::InstallCommand' do
+      expect(prometheus.upgrade_command(values)).to be_an_instance_of(::Gitlab::Kubernetes::Helm::InstallCommand)
     end
 
     it 'should be initialized with 3 arguments' do
