@@ -23,6 +23,10 @@ describe Gitlab::Kubernetes::Helm::InstallCommand do
 
   subject { install_command }
 
+  def tls_flags
+    '--tls --tls-ca-cert /data/helm/app-name/config/ca.pem --tls-cert /data/helm/app-name/config/cert.pem --tls-key /data/helm/app-name/config/key.pem'
+  end
+
   it_behaves_like 'helm commands' do
     let(:commands) do
       <<~EOS
@@ -38,10 +42,8 @@ describe Gitlab::Kubernetes::Helm::InstallCommand do
       <<~EOS.squish
       helm upgrade app-name chart-name
         --install
-        --tls
-        --tls-ca-cert /data/helm/app-name/config/ca.pem
-        --tls-cert /data/helm/app-name/config/cert.pem
-        --tls-key /data/helm/app-name/config/key.pem
+        --reset-values
+        #{tls_flags}
         --version 1.2.3
         --set rbac.create\\=false,rbac.enabled\\=false
         --namespace gitlab-managed-apps
@@ -68,10 +70,8 @@ describe Gitlab::Kubernetes::Helm::InstallCommand do
         <<~EOS.squish
         helm upgrade app-name chart-name
           --install
-          --tls
-          --tls-ca-cert /data/helm/app-name/config/ca.pem
-          --tls-cert /data/helm/app-name/config/cert.pem
-          --tls-key /data/helm/app-name/config/key.pem
+          --reset-values
+          #{tls_flags}
           --version 1.2.3
           --set rbac.create\\=true,rbac.enabled\\=true
           --namespace gitlab-managed-apps
@@ -97,10 +97,8 @@ describe Gitlab::Kubernetes::Helm::InstallCommand do
         <<~EOS.squish
         helm upgrade app-name chart-name
           --install
-          --tls
-          --tls-ca-cert /data/helm/app-name/config/ca.pem
-          --tls-cert /data/helm/app-name/config/cert.pem
-          --tls-key /data/helm/app-name/config/key.pem
+          --reset-values
+          #{tls_flags}
           --version 1.2.3
           --set rbac.create\\=false,rbac.enabled\\=false
           --namespace gitlab-managed-apps
@@ -128,7 +126,7 @@ describe Gitlab::Kubernetes::Helm::InstallCommand do
         <<~EOS.strip
         /bin/date
         /bin/true
-        helm upgrade app-name chart-name --install --tls --tls-ca-cert /data/helm/app-name/config/ca.pem --tls-cert /data/helm/app-name/config/cert.pem --tls-key /data/helm/app-name/config/key.pem --version 1.2.3 --set rbac.create\\=false,rbac.enabled\\=false --namespace gitlab-managed-apps -f /data/helm/app-name/config/values.yaml
+        helm upgrade app-name chart-name --install --reset-values #{tls_flags} --version 1.2.3 --set rbac.create\\=false,rbac.enabled\\=false --namespace gitlab-managed-apps -f /data/helm/app-name/config/values.yaml
         EOS
       end
     end
@@ -150,7 +148,7 @@ describe Gitlab::Kubernetes::Helm::InstallCommand do
 
       let(:helm_install_command) do
         <<~EOS.strip
-        helm upgrade app-name chart-name --install --tls --tls-ca-cert /data/helm/app-name/config/ca.pem --tls-cert /data/helm/app-name/config/cert.pem --tls-key /data/helm/app-name/config/key.pem --version 1.2.3 --set rbac.create\\=false,rbac.enabled\\=false --namespace gitlab-managed-apps -f /data/helm/app-name/config/values.yaml
+        helm upgrade app-name chart-name --install --reset-values #{tls_flags} --version 1.2.3 --set rbac.create\\=false,rbac.enabled\\=false --namespace gitlab-managed-apps -f /data/helm/app-name/config/values.yaml
         /bin/date
         /bin/false
         EOS
@@ -176,6 +174,7 @@ describe Gitlab::Kubernetes::Helm::InstallCommand do
         <<~EOS.squish
         helm upgrade app-name chart-name
            --install
+           --reset-values
            --version 1.2.3
            --set rbac.create\\=false,rbac.enabled\\=false
            --namespace gitlab-managed-apps
@@ -203,10 +202,8 @@ describe Gitlab::Kubernetes::Helm::InstallCommand do
         <<~EOS.squish
         helm upgrade app-name chart-name
           --install
-          --tls
-          --tls-ca-cert /data/helm/app-name/config/ca.pem
-          --tls-cert /data/helm/app-name/config/cert.pem
-          --tls-key /data/helm/app-name/config/key.pem
+          --reset-values
+          #{tls_flags}
           --set rbac.create\\=false,rbac.enabled\\=false
           --namespace gitlab-managed-apps
           -f /data/helm/app-name/config/values.yaml

@@ -59,16 +59,23 @@ module Gitlab
         end
 
         def install_command_flags
-          install_flag   = ['--install']
-          namespace_flag = ['--namespace', Gitlab::Kubernetes::Helm::NAMESPACE]
-          value_flag     = ['-f', "/data/helm/#{name}/config/values.yaml"]
-
-          install_flag +
+          [
+            '--install',
+            '--reset-values'
+          ] +
             optional_tls_flags +
             optional_version_flag +
             rbac_create_flag +
             namespace_flag +
             value_flag
+        end
+
+        def value_flag
+          ['-f', "/data/helm/#{name}/config/values.yaml"]
+        end
+
+        def namespace_flag
+          ['--namespace', Gitlab::Kubernetes::Helm::NAMESPACE]
         end
 
         def rbac_create_flag
