@@ -40,11 +40,15 @@ const createFlashEl = (message, type, isFixedLayout = false) => `
     class="flash-${type}"
   >
     <div
-      class="flash-text ${
+      class="flash-wrapper ${
         isFixedLayout ? 'container-fluid container-limited limit-container-width' : ''
       }"
     >
-      ${_.escape(message)}
+      <div
+        class="flash-text"
+      >
+        ${_.escape(message)}
+      </div>
     </div>
   </div>
 `;
@@ -90,7 +94,8 @@ const createFlash = function createFlash(
   removeFlashClickListener(flashEl, fadeTransition);
 
   if (actionConfig) {
-    flashEl.innerHTML += createAction(actionConfig);
+    const flashWrapper = flashContainer.querySelector(`.flash-wrapper`);
+    flashWrapper.innerHTML += createAction(actionConfig);
 
     if (actionConfig.clickHandler) {
       flashEl
