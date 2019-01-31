@@ -13,21 +13,18 @@ module ErrorTracking
 
       result = e.list_sentry_projects
 
-      # our results are not yet ready
-      unless result
-        return error('not ready', :no_content)
-      end
-
       success(projects: result[:projects])
 
     rescue Sentry::Client::Error => e
       error(e.message, :bad_request)
+    rescue Sentry::Client::SentryError => e
+      error(e.message, :unprocessable_entity)
     end
 
     private
 
     def project_error_tracking_setting
-      e = project.error_tracking_setting
+      e = project.error_tracking_setting || project.build_error_tracking_setting
 
       e.api_url = ErrorTracking::ProjectErrorTrackingSetting.build_api_url_from(
         api_host: params[:api_host],
@@ -36,6 +33,7 @@ module ErrorTracking
       )
       e.token = params[:token]
       e.enabled = true
+
       e
     end
 

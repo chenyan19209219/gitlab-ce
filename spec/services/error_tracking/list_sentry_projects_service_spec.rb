@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 describe ErrorTracking::ListSentryProjectsService do
-  include ReactiveCachingHelpers
-
   set(:user) { create(:user) }
   set(:project) { create(:project) }
 
@@ -32,8 +30,6 @@ describe ErrorTracking::ListSentryProjectsService do
       end
 
       it 'uses new api_url and token' do
-        synchronous_reactive_cache(error_tracking_setting)
-
         sentry_client = spy(:sentry_client)
 
         expect(Sentry::Client).to receive(:new)
@@ -86,20 +82,6 @@ describe ErrorTracking::ListSentryProjectsService do
           expect(result).to eq(status: :success, projects: projects)
         end
       end
-
-      context 'when list_sentry_projects returns nil' do
-        before do
-          expect(error_tracking_setting)
-            .to receive(:list_sentry_projects).and_return(nil)
-        end
-
-        it 'result is not ready' do
-          result = subject.execute
-
-          expect(result).to eq(
-            status: :error, http_status: :no_content, message: 'not ready')
-        end
-      end
     end
 
     context 'with unauthorized user' do
@@ -128,6 +110,33 @@ describe ErrorTracking::ListSentryProjectsService do
         result = subject.execute
 
         expect(result).to include(status: :success, projects: [])
+      end
+    end
+
+    context 'error_tracking_setting is nil' do
+      let(:new_api_host) { 'https://gitlab.com/' }
+      let(:new_token) { 'new-token' }
+      let(:params) { ActionController::Parameters.new(api_host: new_api_host, token: new_token) }
+
+      before do
+        expect(project).to receive(:error_tracking_setting).at_least(:once)
+          .and_return(nil)
+      end
+
+      it 'builds a new error_tracking_setting' do
+        sentry_client = spy(:sentry_client)
+
+        expect(Sentry::Client).to receive(:new)
+          .with(new_api_host + 'api/0/projects/', new_token)
+          .and_return(sentry_client)
+
+        expect(sentry_client).to receive(:list_projects)
+          .and_return([:project1, :project2])
+
+        result = subject.execute
+
+        expect(result[:projects]).to eq([:project1, :project2])
+        expect(project.error_tracking_setting).to be_nil
       end
     end
   end
