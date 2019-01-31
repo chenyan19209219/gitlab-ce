@@ -83,6 +83,14 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
         expect(subject).to be_valid
       end
     end
+
+    context 'non ascii chars in api_url' do
+      it 'fails validation' do
+        subject.api_url = 'http://gitlab.com/api/0/projects/project1/something€'
+
+        expect(subject).not_to be_valid
+      end
+    end
   end
 
   describe '#sentry_external_url' do
@@ -145,6 +153,20 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
     end
   end
 
+  describe '#list_sentry_projects' do
+    let(:projects) { [:list, :of, :projects] }
+    let(:sentry_client) { spy(:sentry_client) }
+
+    it 'calls sentry client' do
+      expect(subject).to receive(:sentry_client).and_return(sentry_client)
+      expect(sentry_client).to receive(:list_projects).and_return(projects)
+
+      result = subject.list_sentry_projects
+
+      expect(result).to eq(projects: projects)
+    end
+  end
+
   describe '#project_slug' do
     it 'returns slug when api_url is correct' do
       subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug'
@@ -171,6 +193,47 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
 
       expect(subject.organization_slug).to be_nil
     end
+  end
+
+  context 'names from api_url' do
+    shared_examples_for 'name from api_url' do |name, titleized_slug|
+      let(:name_with_equals) { :"#{name}=" }
+
+      context 'name is present in DB' do
+        it 'returns name from DB' do
+          subject.public_send(name_with_equals, 'Sentry name')
+          subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug'
+
+          expect(subject.public_send(name)).to eq('Sentry name')
+        end
+      end
+
+      context 'name is null in DB' do
+        it 'titleizes and returns slug from api_url' do
+          subject.public_send(name_with_equals, nil)
+          subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug'
+
+          expect(subject.public_send(name)).to eq(titleized_slug)
+        end
+
+        it 'returns nil when api_url is incorrect' do
+          subject.public_send(name_with_equals, nil)
+          subject.api_url = 'http://gitlab.com/api/0/projects/'
+
+          expect(subject.public_send(name)).to be_nil
+        end
+
+        it 'returns nil when api_url is blank' do
+          subject.public_send(name_with_equals, nil)
+          subject.api_url = nil
+
+          expect(subject.public_send(name)).to be_nil
+        end
+      end
+    end
+
+    it_behaves_like 'name from api_url', :organization_name, 'Org Slug'
+    it_behaves_like 'name from api_url', :project_name, 'Project Slug'
   end
 
   describe '.build_api_url_from' do
