@@ -83,6 +83,14 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
         expect(subject).to be_valid
       end
     end
+
+    context 'non ascii chars in api_url' do
+      it 'fails validation' do
+        subject.api_url = 'http://gitlab.com/api/0/projects/project1/something€'
+
+        expect(subject).not_to be_valid
+      end
+    end
   end
 
   describe '#sentry_external_url' do
