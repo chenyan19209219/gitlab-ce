@@ -85,33 +85,67 @@ describe Projects::Settings::OperationsController do
           }
         }
       end
+
       let(:error_tracking_permitted) do
         ActionController::Parameters.new(error_tracking_params).permit!
       end
 
-      context 'when update succeeds' do
-        before do
-          stub_operations_update_service_returning(status: :success)
+      context 'format html' do
+        context 'when update succeeds' do
+          before do
+            stub_operations_update_service_returning(status: :success)
+          end
+
+          it 'shows a notice' do
+            patch :update, params: project_params(project, error_tracking_params)
+
+            expect(response).to redirect_to(operations_url)
+            expect(flash[:notice]).to eq _('Your changes have been saved')
+          end
         end
 
-        it 'shows a notice' do
-          patch :update, params: project_params(project, error_tracking_params)
+        context 'when update fails' do
+          before do
+            stub_operations_update_service_returning(status: :error)
+          end
 
-          expect(response).to redirect_to(operations_url)
-          expect(flash[:notice]).to eq _('Your changes have been saved')
+          it 'renders show page' do
+            patch :update, params: project_params(project, error_tracking_params)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(response).to render_template(:show)
+          end
         end
       end
 
-      context 'when update fails' do
-        before do
-          stub_operations_update_service_returning(status: :error)
+      context 'format json' do
+        context 'when update succeeds' do
+          before do
+            stub_operations_update_service_returning(status: :success)
+          end
+
+          it 'returns success status' do
+            patch :update, params: project_params(project, error_tracking_params, format: :json)
+
+            body = Gitlab::Utils.deep_indifferent_access(JSON.parse(response.body))
+
+            expect(body).to eq('status' => 'success', 'message' => 'Your changes have been saved')
+          end
         end
 
-        it 'renders show page' do
-          patch :update, params: project_params(project, error_tracking_params)
+        context 'when update fails' do
+          before do
+            stub_operations_update_service_returning(status: :error, message: 'error message')
+          end
 
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(response).to render_template(:show)
+          it 'returns error' do
+            patch :update, params: project_params(project, error_tracking_params, format: :json)
+
+            body = Gitlab::Utils.deep_indifferent_access(JSON.parse(response.body))
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(body[:message]).not_to be_nil
+          end
         end
       end
 
@@ -153,11 +187,11 @@ describe Projects::Settings::OperationsController do
 
   private
 
-  def project_params(project, params = {})
+  def project_params(project, project_params = {}, other_params = {})
     {
       namespace_id: project.namespace,
       project_id: project,
-      project: params
-    }
+      project: project_params
+    }.merge(other_params)
   end
 end
