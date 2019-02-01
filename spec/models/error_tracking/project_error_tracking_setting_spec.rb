@@ -229,11 +229,9 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
 
   context 'names from api_url' do
     shared_examples_for 'name from api_url' do |name, titleized_slug|
-      let(:name_with_equals) { :"#{name}=" }
-
       context 'name is present in DB' do
         it 'returns name from DB' do
-          subject.public_send(name_with_equals, 'Sentry name')
+          subject[name] = 'Sentry name'
           subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug'
 
           expect(subject.public_send(name)).to eq('Sentry name')
@@ -242,21 +240,21 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
 
       context 'name is null in DB' do
         it 'titleizes and returns slug from api_url' do
-          subject.public_send(name_with_equals, nil)
+          subject[name] = nil
           subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug'
 
           expect(subject.public_send(name)).to eq(titleized_slug)
         end
 
         it 'returns nil when api_url is incorrect' do
-          subject.public_send(name_with_equals, nil)
+          subject[name] = nil
           subject.api_url = 'http://gitlab.com/api/0/projects/'
 
           expect(subject.public_send(name)).to be_nil
         end
 
         it 'returns nil when api_url is blank' do
-          subject.public_send(name_with_equals, nil)
+          subject[name] = nil
           subject.api_url = nil
 
           expect(subject.public_send(name)).to be_nil
@@ -323,9 +321,11 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
   end
 
   describe '#api_host' do
-    it 'extracts the api_host from api_url' do
+    before do
       subject.api_url = 'https://example.com/api/0/projects/org-slug/proj-slug/'
+    end
 
+    it 'extracts the api_host from api_url' do
       expect(subject.api_host).to eq('https://example.com/')
     end
   end
