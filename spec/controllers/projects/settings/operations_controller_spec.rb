@@ -90,34 +90,6 @@ describe Projects::Settings::OperationsController do
         ActionController::Parameters.new(error_tracking_params).permit!
       end
 
-      context 'format html' do
-        context 'when update succeeds' do
-          before do
-            stub_operations_update_service_returning(status: :success)
-          end
-
-          it 'shows a notice' do
-            patch :update, params: project_params(project, error_tracking_params)
-
-            expect(response).to redirect_to(operations_url)
-            expect(flash[:notice]).to eq _('Your changes have been saved')
-          end
-        end
-
-        context 'when update fails' do
-          before do
-            stub_operations_update_service_returning(status: :error)
-          end
-
-          it 'renders show page' do
-            patch :update, params: project_params(project, error_tracking_params)
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(response).to render_template(:show)
-          end
-        end
-      end
-
       context 'format json' do
         context 'when update succeeds' do
           before do
