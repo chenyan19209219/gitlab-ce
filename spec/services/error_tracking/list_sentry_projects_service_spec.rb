@@ -53,14 +53,20 @@ describe ErrorTracking::ListSentryProjectsService do
       end
 
       context 'with invalid url' do
-        it 'returns error' do
-          error_tracking_setting.enabled = false
-          params = ActionController::Parameters.new(
+        let(:params) do
+          ActionController::Parameters.new(
             api_host: 'https://localhost',
             token: new_token
           )
-          subject = described_class.new(project, user, params)
+        end
 
+        subject { described_class.new(project, user, params) }
+
+        before do
+          error_tracking_setting.enabled = false
+        end
+
+        it 'returns error' do
           result = subject.execute
 
           expect(error_tracking_setting).not_to be_valid
