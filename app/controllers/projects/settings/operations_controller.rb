@@ -14,11 +14,29 @@ module Projects
       def update
         result = ::Projects::Operations::UpdateService.new(project, current_user, update_params).execute
 
-        if result[:status] == :success
-          flash[:notice] = _('Your changes have been saved')
-          redirect_to project_settings_operations_path(@project)
-        else
-          render 'show'
+        respond_to do |format|
+          format.html do
+            if result[:status] == :success
+              flash[:notice] = _('Your changes have been saved')
+              redirect_to project_settings_operations_path(@project)
+            else
+              render 'show'
+            end
+          end
+
+          format.json do
+            if result[:status] == :success
+              render json:
+                result.slice(:status).merge({
+                message: _('Your changes have been saved')
+              })
+            else
+              render(
+                status: result[:http_status] || :bad_request,
+                json: result.slice(:status, :message)
+              )
+            end
+          end
         end
       end
 
