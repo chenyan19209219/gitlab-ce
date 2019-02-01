@@ -23,7 +23,12 @@ module Clusters
       private
 
       def on_success
-        app.make_installed!
+        if app.installing?
+          app.make_installed!
+        elsif app.updating?
+          app.make_updated!
+        end
+
       ensure
         remove_installation_pod
       end

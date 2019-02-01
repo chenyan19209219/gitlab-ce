@@ -28,7 +28,7 @@ module Clusters
           end
 
           event :make_installed do
-            transition [:installing, :updating] => :installed
+            transition [:installing] => :installed
           end
 
           event :make_errored do

@@ -61,5 +61,17 @@ describe Clusters::Applications::ScheduleInstallationService do
         expect(application).to be_scheduled
       end
     end
+
+    context 'when application is updated' do
+      let(:application) { create(:clusters_applications_helm, :updated) }
+
+      it 'schedules an upgrade via worker' do
+        expect(ClusterUpgradeAppWorker).to receive(:perform_async).with(application.name, application.id).once
+
+        service.execute
+
+        expect(application).to be_scheduled
+      end
+    end
   end
 end

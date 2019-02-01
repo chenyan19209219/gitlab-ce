@@ -8,30 +8,6 @@ describe Clusters::Applications::CheckInstallationProgressService, '#execute' do
   let(:phase) { Gitlab::Kubernetes::Pod::UNKNOWN }
   let(:errors) { nil }
 
-  shared_examples 'successful installation' do
-    context 'when installation POD succeeded' do
-      let(:phase) { Gitlab::Kubernetes::Pod::SUCCEEDED }
-      before do
-        expect(service).to receive(:installation_phase).once.and_return(phase)
-      end
-
-      it 'removes the installation POD' do
-        expect(service).to receive(:remove_installation_pod).once
-
-        service.execute
-      end
-
-      it 'make the application installed' do
-        expect(ClusterWaitForAppInstallationWorker).not_to receive(:perform_in)
-
-        service.execute
-
-        expect(application).to be_installed
-        expect(application.status_reason).to be_nil
-      end
-    end
-  end
-
   shared_examples 'a not yet terminated installation' do |a_phase|
     let(:phase) { a_phase }
 
@@ -90,10 +66,31 @@ describe Clusters::Applications::CheckInstallationProgressService, '#execute' do
   context 'when application is updating' do
     let(:application) { create(:clusters_applications_helm, :updating) }
 
-    include_examples 'successful installation'
     include_examples 'error logging'
 
     RESCHEDULE_PHASES.each { |phase| it_behaves_like 'a not yet terminated installation', phase }
+
+    context 'when installation POD succeeded' do
+      let(:phase) { Gitlab::Kubernetes::Pod::SUCCEEDED }
+      before do
+        expect(service).to receive(:installation_phase).once.and_return(phase)
+      end
+
+      it 'removes the installation POD' do
+        expect(service).to receive(:remove_installation_pod).once
+
+        service.execute
+      end
+
+      it 'make the application installed' do
+        expect(ClusterWaitForAppInstallationWorker).not_to receive(:perform_in)
+
+        service.execute
+
+        expect(application).to be_updated
+        expect(application.status_reason).to be_nil
+      end
+    end
 
     context 'when installation POD failed' do
       let(:phase) { Gitlab::Kubernetes::Pod::FAILED }
@@ -130,10 +127,31 @@ describe Clusters::Applications::CheckInstallationProgressService, '#execute' do
   end
 
   context 'when application is installing' do
-    include_examples 'successful installation'
     include_examples 'error logging'
 
     RESCHEDULE_PHASES.each { |phase| it_behaves_like 'a not yet terminated installation', phase }
+
+    context 'when installation POD succeeded' do
+      let(:phase) { Gitlab::Kubernetes::Pod::SUCCEEDED }
+      before do
+        expect(service).to receive(:installation_phase).once.and_return(phase)
+      end
+
+      it 'removes the installation POD' do
+        expect(service).to receive(:remove_installation_pod).once
+
+        service.execute
+      end
+
+      it 'make the application installed' do
+        expect(ClusterWaitForAppInstallationWorker).not_to receive(:perform_in)
+
+        service.execute
+
+        expect(application).to be_installed
+        expect(application.status_reason).to be_nil
+      end
+    end
 
     context 'when installation POD failed' do
       let(:phase) { Gitlab::Kubernetes::Pod::FAILED }
