@@ -11,14 +11,15 @@ module ErrorTracking
         return error(e.errors.full_messages.join(', '), :bad_request)
       end
 
-      result = e.list_sentry_projects
+      begin
+        result = e.list_sentry_projects
+      rescue Sentry::Client::Error => e
+        return error(e.message, :bad_request)
+      rescue Sentry::Client::SentryError => e
+        return error(e.message, :unprocessable_entity)
+      end
 
       success(projects: result[:projects])
-
-    rescue Sentry::Client::Error => e
-      error(e.message, :bad_request)
-    rescue Sentry::Client::SentryError => e
-      error(e.message, :unprocessable_entity)
     end
 
     private
