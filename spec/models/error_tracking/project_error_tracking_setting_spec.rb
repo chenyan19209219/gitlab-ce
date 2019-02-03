@@ -33,43 +33,31 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
       end
     end
 
-    context 'when enabled' do
-      context 'when token missing' do
-        it 'fails validation' do
-          subject.token = nil
+    context 'presence validations' do
+      using RSpec::Parameterized::TableSyntax
 
-          expect(subject).not_to be_valid
-        end
+      valid_api_url = 'http://example.com/api/0/projects/org-slug/proj-slug/'
+      valid_token = 'token'
+
+      where(:enabled, :token, :api_url, :valid?) do
+        true  | nil         | nil           | false
+        true  | nil         | valid_api_url | false
+        true  | valid_token | nil           | false
+        true  | valid_token | valid_api_url | true
+        false | nil         | nil           | true
+        false | nil         | valid_api_url | true
+        false | valid_token | nil           | true
+        false | valid_token | valid_api_url | true
       end
 
-      context 'when api_url missing' do
-        it 'fails validation' do
-          subject.api_url = nil
-
-          expect(subject).not_to be_valid
+      with_them do
+        before do
+          subject.enabled = enabled
+          subject.token = token
+          subject.api_url = api_url
         end
-      end
-    end
 
-    context 'when disabled' do
-      before do
-        subject.enabled = false
-      end
-
-      context 'token missing' do
-        it 'passes validation' do
-          subject.token = nil
-
-          expect(subject).to be_valid
-        end
-      end
-
-      context 'when api_url missing' do
-        it 'passes validation' do
-          subject.api_url = nil
-
-          expect(subject).to be_valid
-        end
+        it { expect(subject.valid?).to eq(valid?) }
       end
     end
 
@@ -173,48 +161,31 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
     end
   end
 
-  describe '#project_slug' do
-    context 'when api_url is correct' do
-      before do
-        subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug'
+  context 'slugs' do
+    shared_examples_for 'slug from api_url' do |method, slug|
+      context 'when api_url is correct' do
+        before do
+          subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug/'
+        end
+
+        it 'returns slug' do
+          expect(subject.public_send(method)).to eq(slug)
+        end
       end
 
-      it 'returns slug' do
-        expect(subject.project_slug).to eq('project-slug')
+      context 'when api_url is blank' do
+        before do
+          subject.api_url = nil
+        end
+
+        it 'returns nil' do
+          expect(subject.public_send(method)).to be_nil
+        end
       end
     end
 
-    context 'when api_url is blank' do
-      before do
-        subject.api_url = nil
-      end
-
-      it 'returns nil' do
-        expect(subject.project_slug).to be_nil
-      end
-    end
-  end
-
-  describe '#organization_slug' do
-    context 'when api_url is correct' do
-      before do
-        subject.api_url = 'http://gitlab.com/api/0/projects/org-slug/project-slug'
-      end
-
-      it 'returns slug' do
-        expect(subject.organization_slug).to eq('org-slug')
-      end
-    end
-
-    context 'when api_url is blank' do
-      before do
-        subject.api_url = nil
-      end
-
-      it 'returns nil' do
-        expect(subject.organization_slug).to be_nil
-      end
-    end
+    it_behaves_like 'slug from api_url', :project_slug, 'project-slug'
+    it_behaves_like 'slug from api_url', :organization_slug, 'org-slug'
   end
 
   context 'names from api_url' do
@@ -275,6 +246,16 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
       )
 
       expect(api_url).to eq('http://sentry.com/api/0/projects/')
+    end
+
+    it 'does not raise exception with invalid url' do
+      api_url = described_class.build_api_url_from(
+        api_host: ':::',
+        organization_slug: 'org-slug',
+        project_slug: 'proj-slug'
+      )
+
+      expect(api_url).to eq(':::')
     end
   end
 

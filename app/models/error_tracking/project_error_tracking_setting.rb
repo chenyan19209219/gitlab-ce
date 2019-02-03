@@ -90,29 +90,26 @@ module ErrorTracking
     private
 
     def project_name_from_slug
-      project_slug_from_api_url&.titleize
-    end
-
-    def project_slug_from_api_url
-      return nil if api_url.blank?
-
-      @project_slug_from_api_url ||= get_slug(1)
+      @project_name_from_slug ||= project_slug_from_api_url&.titleize
     end
 
     def organization_name_from_slug
-      @organization_name_from_slug = organization_slug_from_api_url&.titleize
+      @organization_name_from_slug ||= organization_slug_from_api_url&.titleize
+    end
+
+    def project_slug_from_api_url
+      extract_slug(:project)
     end
 
     def organization_slug_from_api_url
-      return nil if api_url.blank?
-
-      @organization_slug_from_api_url ||= get_slug(0)
+      extract_slug(:organization)
     end
 
-    def get_slug(index)
-      slugs = api_url.partition('/api/0/projects').last.split('/').reject(&:blank?)
+    def extract_slug(capture)
+      return if api_url.blank?
 
-      slugs[index] if slugs.length > index
+      @slug_match ||= api_url.match(%r{/api/0/projects/+(?<organization>[^/]+)/+(?<project>[^/|$]+)}) || {}
+      @slug_match[capture]
     end
 
     def validate_api_url_path
