@@ -8,7 +8,9 @@ module ErrorTracking
 
     belongs_to :project
 
-    validates :api_url, length: { maximum: 255 }, public_url: true, url: { enforce_sanitization: true, ascii_only: true }, if: :enabled
+    validates :api_url, length: { maximum: 255 }, public_url: true, url: { enforce_sanitization: true, ascii_only: true }, allow_nil: true
+
+    validates :api_url, presence: true, if: :enabled
 
     validate :validate_api_url_path, if: :enabled
 
@@ -42,6 +44,8 @@ module ErrorTracking
       uri.path = uri.path.squeeze('/')
 
       uri.to_s
+    rescue Addressable::URI::InvalidURIError
+      api_host
     end
 
     def sentry_client
@@ -86,36 +90,36 @@ module ErrorTracking
     private
 
     def project_name_from_slug
-      project_slug_from_api_url&.titleize
-    end
-
-    def project_slug_from_api_url
-      return nil if api_url.blank?
-
-      slugs = get_slugs
-      slugs[1] if slugs.length >= 2
+      @project_name_from_slug ||= project_slug_from_api_url&.titleize
     end
 
     def organization_name_from_slug
-      organization_slug_from_api_url&.titleize
+      @organization_name_from_slug ||= organization_slug_from_api_url&.titleize
+    end
+
+    def project_slug_from_api_url
+      extract_slug(:project)
     end
 
     def organization_slug_from_api_url
-      return nil if api_url.blank?
-
-      slugs = get_slugs
-      slugs[0] if slugs.length >= 2
+      extract_slug(:organization)
     end
 
-    def get_slugs
-      api_url.partition('/api/0/projects').last.split('/').reject(&:blank?)
+    def extract_slug(capture)
+      return if api_url.blank?
+
+      @slug_match ||= api_url.match(%r{/api/0/projects/+(?<organization>[^/]+)/+(?<project>[^/|$]+)}) || {}
+      @slug_match[capture]
     end
 
     def validate_api_url_path
       return if api_url.blank?
 
-      unless Addressable::URI.parse(api_url).path.starts_with?('/api/0/projects')
-        errors.add(:api_url, 'path needs to start with /api/0/projects')
+      begin
+        unless Addressable::URI.parse(api_url).path.starts_with?('/api/0/projects')
+          errors.add(:api_url, 'path needs to start with /api/0/projects')
+        end
+      rescue Addressable::URI::InvalidURIError
       end
     end
   end
