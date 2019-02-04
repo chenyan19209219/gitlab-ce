@@ -23,30 +23,33 @@ describe ErrorTracking::ListSentryProjectsService do
   end
 
   describe '#execute' do
+    let(:result) { subject.execute }
+
     context 'with authorized user' do
+      let(:sentry_client) { spy(:sentry_client) }
+
       before do
         expect(project).to receive(:error_tracking_setting).at_least(:once)
           .and_return(error_tracking_setting)
       end
 
-      it 'uses new api_url and token' do
-        sentry_client = spy(:sentry_client)
+      context 'call sentry client' do
+        it 'uses new api_url and token' do
+          expect(Sentry::Client).to receive(:new)
+            .with(new_api_host + 'api/0/projects/', new_token).and_return(sentry_client)
+          expect(sentry_client).to receive(:list_projects).and_return([])
 
-        expect(Sentry::Client).to receive(:new)
-          .with(new_api_host + 'api/0/projects/', new_token).and_return(sentry_client)
-        expect(sentry_client).to receive(:list_projects).and_return([])
-
-        subject.execute
+          subject.execute
+        end
       end
 
       context 'sentry client raises exception' do
-        it 'returns error response' do
+        before do
           expect(error_tracking_setting).to receive(:list_sentry_projects)
             .and_raise(Sentry::Client::Error, 'Sentry response error: 500')
+        end
 
-          subject = described_class.new(project, user, params)
-          result = subject.execute
-
+        it 'returns error response' do
           expect(result[:message]).to eq('Sentry response error: 500')
           expect(result[:http_status]).to eq(:bad_request)
         end
@@ -60,17 +63,13 @@ describe ErrorTracking::ListSentryProjectsService do
           )
         end
 
-        subject { described_class.new(project, user, params) }
-
         before do
           error_tracking_setting.enabled = false
         end
 
         it 'returns error' do
-          result = subject.execute
-
-          expect(error_tracking_setting).not_to be_valid
           expect(result[:message]).to start_with('Api url is blocked')
+          expect(error_tracking_setting).not_to be_valid
         end
       end
 
@@ -83,21 +82,17 @@ describe ErrorTracking::ListSentryProjectsService do
         end
 
         it 'returns the projects' do
-          result = subject.execute
-
           expect(result).to eq(status: :success, projects: projects)
         end
       end
     end
 
     context 'with unauthorized user' do
-      let(:unauthorized_user) { create(:user) }
-
-      subject { described_class.new(project, unauthorized_user) }
+      before do
+        project.add_guest(user)
+      end
 
       it 'returns error' do
-        result = subject.execute
-
         expect(result).to include(status: :error, message: 'access denied')
       end
     end
@@ -113,20 +108,16 @@ describe ErrorTracking::ListSentryProjectsService do
       end
 
       it 'ignores enabled flag' do
-        result = subject.execute
-
         expect(result).to include(status: :success, projects: [])
       end
     end
 
     context 'error_tracking_setting is nil' do
+      let(:sentry_client) { spy(:sentry_client) }
+
       before do
         expect(project).to receive(:error_tracking_setting).at_least(:once)
           .and_return(nil)
-      end
-
-      it 'builds a new error_tracking_setting' do
-        sentry_client = spy(:sentry_client)
 
         expect(Sentry::Client).to receive(:new)
           .with(new_api_host + 'api/0/projects/', new_token)
@@ -134,9 +125,9 @@ describe ErrorTracking::ListSentryProjectsService do
 
         expect(sentry_client).to receive(:list_projects)
           .and_return([:project1, :project2])
+      end
 
-        result = subject.execute
-
+      it 'builds a new error_tracking_setting' do
         expect(result[:projects]).to eq([:project1, :project2])
         expect(project.error_tracking_setting).to be_nil
       end
