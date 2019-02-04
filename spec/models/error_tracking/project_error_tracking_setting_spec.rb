@@ -23,12 +23,6 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
         expect(subject).not_to be_valid
         expect(subject.errors.messages[:api_url]).to include('is too long (maximum is 255 characters)')
       end
-
-      it 'passes validation when disabled' do
-        subject.enabled = false
-
-        expect(subject).to be_valid
-      end
     end
 
     context 'With unsafe url' do
