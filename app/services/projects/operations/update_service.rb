@@ -32,6 +32,8 @@ module Projects
         settings[:project_name] = settings.dig(:project, :name).presence
         settings[:organization_name] = settings.dig(:project, :organization_name).presence
 
+        settings[:token] = settings[:token].presence
+
         settings.slice(
           :api_url,
           :token,

@@ -40,6 +40,8 @@ module ErrorTracking
     end
 
     def self.build_api_url_from(api_host:, project_slug:, organization_slug:)
+      return if api_host.blank?
+
       uri = Addressable::URI.parse("#{api_host}/api/0/projects/#{organization_slug}/#{project_slug}/")
       uri.path = uri.path.squeeze('/')
 
