@@ -296,6 +296,16 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
 
       expect(api_url).to eq(':::')
     end
+
+    it 'returns nil when api_host is blank' do
+      api_url = described_class.build_api_url_from(
+        api_host: '',
+        organization_slug: 'org-slug',
+        project_slug: 'proj-slug'
+      )
+
+      expect(api_url).to be_nil
+    end
   end
 
   describe '#api_host' do
