@@ -120,10 +120,6 @@ describe ErrorTracking::ListSentryProjectsService do
     end
 
     context 'error_tracking_setting is nil' do
-      let(:new_api_host) { 'https://gitlab.com/' }
-      let(:new_token) { 'new-token' }
-      let(:params) { ActionController::Parameters.new(api_host: new_api_host, token: new_token) }
-
       before do
         expect(project).to receive(:error_tracking_setting).at_least(:once)
           .and_return(nil)
