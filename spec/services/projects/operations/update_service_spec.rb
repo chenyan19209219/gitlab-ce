@@ -43,6 +43,22 @@ describe Projects::Operations::UpdateService do
           expect(project.error_tracking_setting.read_attribute(:project_name)).to eq('Project')
           expect(project.error_tracking_setting.read_attribute(:organization_name)).to eq('Org')
         end
+
+        it 'can set api_url to nil' do
+          params[:error_tracking_setting_attributes][:api_host] = ''
+          params[:error_tracking_setting_attributes][:enabled] = false
+
+          result = subject.execute
+
+          expect(result[:status]).to eq(:success)
+
+          project.reload
+          expect(project.error_tracking_setting).not_to be_enabled
+          expect(project.error_tracking_setting.api_url).to be_nil
+          expect(project.error_tracking_setting.token).to eq('token')
+          expect(project.error_tracking_setting.read_attribute(:project_name)).to eq('Project')
+          expect(project.error_tracking_setting.read_attribute(:organization_name)).to eq('Org')
+        end
       end
 
       context 'without an existing error tracking setting' do
