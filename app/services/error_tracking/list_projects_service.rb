@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ErrorTracking
-  class ListSentryProjectsService < ::BaseService
+  class ListProjectsService < ::BaseService
     def execute
       return error('access denied') unless can_read?
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe ErrorTracking::ListSentryProjectsService do
+describe ErrorTracking::ListProjectsService do
   set(:user) { create(:user) }
   set(:project) { create(:project) }
 
