@@ -552,9 +552,6 @@ msgstr ""
 msgid "An empty GitLab User field will add the FogBugz user's full name (e.g. \"By John Smith\") in the description of all issues and comments. It will also associate and/or assign these issues and comments with the project creator."
 msgstr ""
 
-msgid "An error accured whilst committing your changes."
-msgstr ""
-
 msgid "An error has occurred"
 msgstr ""
 
@@ -637,6 +634,9 @@ msgid "An error occurred while saving assignees"
 msgstr ""
 
 msgid "An error occurred while validating username"
+msgstr ""
+
+msgid "An error occurred whilst committing your changes."
 msgstr ""
 
 msgid "An error occurred whilst fetching the job trace."
@@ -2992,6 +2992,9 @@ msgstr ""
 msgid "Error Tracking"
 msgstr ""
 
+msgid "Error deleting  %{issuableType}"
+msgstr ""
+
 msgid "Error fetching contributors data."
 msgstr ""
 
@@ -3038,6 +3041,9 @@ msgid "Error rendering markdown preview"
 msgstr ""
 
 msgid "Error saving label update."
+msgstr ""
+
+msgid "Error updating %{issuableType}"
 msgstr ""
 
 msgid "Error updating status for all todos."
@@ -5513,6 +5519,9 @@ msgstr ""
 msgid "Profiles|Username successfully changed"
 msgstr ""
 
+msgid "Profiles|Using emojis in names seems fun, but please try to set a status message instead"
+msgstr ""
+
 msgid "Profiles|What's your status?"
 msgstr ""
 
@@ -6522,6 +6531,9 @@ msgid "Snippet Contents"
 msgstr ""
 
 msgid "Snippets"
+msgstr ""
+
+msgid "Someone edited this issue at the same time you did. The description has been updated and you will need to make your changes again."
 msgstr ""
 
 msgid "Something went wrong on our end"
@@ -7708,6 +7720,9 @@ msgid "Upcoming"
 msgstr ""
 
 msgid "Update"
+msgstr ""
+
+msgid "Update failed"
 msgstr ""
 
 msgid "Update now"

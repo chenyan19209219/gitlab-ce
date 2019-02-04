@@ -81,7 +81,7 @@ module ErrorTracking
     end
 
     def api_host
-      return nil if api_url.blank?
+      return if api_url.blank?
 
       # This returns http://example.com/
       Addressable::URI.join(api_url, '/').to_s
@@ -108,7 +108,13 @@ module ErrorTracking
     def extract_slug(capture)
       return if api_url.blank?
 
-      @slug_match ||= api_url.match(%r{/api/0/projects/+(?<organization>[^/]+)/+(?<project>[^/|$]+)}) || {}
+      begin
+        url = Addressable::URI.parse(api_url)
+      rescue Addressable::URI::InvalidURIError
+        return nil
+      end
+
+      @slug_match ||= url.path.match(%r{^/api/0/projects/+(?<organization>[^/]+)/+(?<project>[^/|$]+)}) || {}
       @slug_match[capture]
     end
 

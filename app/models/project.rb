@@ -738,11 +738,13 @@ class Project < ActiveRecord::Base
   end
 
   def import_url=(value)
-    return super(value) unless Gitlab::UrlSanitizer.valid?(value)
-
-    import_url = Gitlab::UrlSanitizer.new(value)
-    super(import_url.sanitized_url)
-    create_or_update_import_data(credentials: import_url.credentials)
+    if Gitlab::UrlSanitizer.valid?(value)
+      import_url = Gitlab::UrlSanitizer.new(value)
+      super(import_url.sanitized_url)
+      create_or_update_import_data(credentials: import_url.credentials)
+    else
+      super(value)
+    end
   end
 
   def import_url
@@ -1066,7 +1068,7 @@ class Project < ActiveRecord::Base
   # rubocop: disable CodeReuse/ServiceClass
   def create_labels
     Label.templates.each do |label|
-      params = label.attributes.except('id', 'template', 'created_at', 'updated_at')
+      params = label.attributes.except('id', 'template', 'created_at', 'updated_at', 'type')
       Labels::FindOrCreateService.new(nil, self, params).execute(skip_authorization: true)
     end
   end
