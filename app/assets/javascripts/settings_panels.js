@@ -1,8 +1,11 @@
 import $ from 'jquery';
 import { __ } from './locale';
 
-function expandSection($section) {
-  $section.find('.js-settings-toggle:not(.js-settings-toggle-trigger-only)').text(__('Collapse'));
+function expandSection($section, text = null) {
+  $section
+    .find('.js-settings-toggle:not(.js-settings-toggle-trigger-only)')
+    .text(text || __('Collapse'));
+
   $section
     .find('.settings-content')
     .off('scroll.expandSection')
@@ -15,8 +18,11 @@ function expandSection($section) {
   }
 }
 
-function closeSection($section) {
-  $section.find('.js-settings-toggle:not(.js-settings-toggle-trigger-only)').text(__('Expand'));
+function closeSection($section, text = null) {
+  $section
+    .find('.js-settings-toggle:not(.js-settings-toggle-trigger-only)')
+    .text(text || __('Expand'));
+
   $section.find('.settings-content').on('scroll.expandSection', () => expandSection($section));
   $section.removeClass('expanded');
   if (!$section.hasClass('no-animate')) {
@@ -26,25 +32,36 @@ function closeSection($section) {
   }
 }
 
-function toggleSection($section) {
+function toggleSection($section, opts) {
   $section.removeClass('no-animate');
   if ($section.hasClass('expanded')) {
-    closeSection($section);
+    closeSection($section, opts.collapsedText);
   } else {
-    expandSection($section);
+    expandSection($section, opts.expandedText);
   }
 }
 
-export default function initSettingsPanels() {
+// TODO: How does custom text affect translations
+function updateText($section, text = '') {
+  $section
+    .find('.js-settings-toggle:not(.js-settings-toggle-trigger-only)')
+    .text(text || __('Expand'));
+}
+
+export default function initSettingsPanels(
+  opts = { expandedText: 'Expand', collapsedText: 'Collapse' },
+) {
   $('.settings').each((i, elm) => {
     const $section = $(elm);
-    $section.on('click.toggleSection', '.js-settings-toggle', () => toggleSection($section));
+    $section.on('click.toggleSection', '.js-settings-toggle', () => toggleSection($section, opts));
 
     if (!$section.hasClass('expanded')) {
       $section.find('.settings-content').on('scroll.expandSection', () => {
         $section.removeClass('no-animate');
-        expandSection($section);
+        expandSection($section, opts.collapsedText);
       });
+    } else {
+      updateText($section, opts.expandedText);
     }
   });
 

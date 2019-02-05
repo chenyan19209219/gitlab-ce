@@ -2,6 +2,7 @@
 - ci_cd_only = local_assigns.fetch(:ci_cd_only, false)
 - hide_init_with_readme = local_assigns.fetch(:hide_init_with_readme, false)
 - track_label = local_assigns.fetch(:track_label, 'blank_project')
+- expanded = Rails.env.test?
 
 .row{ id: project_name_id }
   = f.hidden_field :ci_cd_only, value: ci_cd_only
@@ -24,6 +25,7 @@
                                       extra_group: namespace_id),
                    {},
                    { class: 'select2 js-select-namespace qa-project-namespace-select block-truncated', tabindex: 1, data: { track_label: "#{track_label}", track_event: "activate_form_input", track_property: "project_path", track_value: "" }})
+        .input-group-addon.project-path-slug-separator.hidden-xs /
 
       - else
         .input-group-prepend.static-namespace.flex-shrink-0.has-tooltip{ title: user_url(current_user.username) + '/' }
@@ -38,12 +40,6 @@
   .form-text.text-muted
     Want to house several dependent projects under the same namespace?
     = link_to "Create a group.", new_group_path
-
-.form-group
-  = f.label :description, class: 'label-bold' do
-    Project description
-    %span (optional)
-  = f.text_area :description, placeholder: 'Description format', class: "form-control", rows: 3, maxlength: 250, data: { track_label: "#{track_label}", track_event: "activate_form_input", track_property: "project_description", track_value: "" }
 
 = f.label :visibility_level, class: 'label-bold' do
   Visibility Level
@@ -60,6 +56,178 @@
             %strong Initialize repository with a README
           .option-description
             Allows you to immediately clone this project’s repository. Skip this if you plan to push up an existing repository.
+-# TODO: move some of this into another file
+%section.settings#new-project-settings.no-animate{ class: ('expanded' if expanded) }
+  %button.btn.btn-link.js-settings-toggle{ type: 'button' }
+    = expanded ? _('Hide avatar, license and features settings') : _('Show avatar, license and features settings')
+
+  .settings-content
+    -# collapsible menu section
+    .form-group
+      = f.label :description, class: 'label-bold' do
+        Project description
+        %span (optional)
+      = f.text_area :description, placeholder: 'Description format', class: "form-control", rows: 3, maxlength: 250, data: { track_label: "#{track_label}", track_event: "activate_form_input", track_property: "project_description", track_value: "" }
+    -# TODO: fix avatar form 
+    -# .col-lg-8
+    -#   .clearfix.avatar-image.append-bottom-default
+    -#     = link_to avatar_icon_for_user(@user, 400), target: '_blank', rel: 'noopener noreferrer' do
+    -#       = image_tag avatar_icon_for_user(@user, 160), alt: '', class: 'avatar s160'
+    -# %h5.prepend-top-0= s_("Profiles|Upload new avatar")
+    -# .prepend-top-5.append-bottom-10
+    -#   %button.btn.js-choose-user-avatar-button{ type: 'button' }= s_("Profiles|Choose file...")
+    -#   %span.avatar-file-name.prepend-left-default.js-avatar-filename= s_("Profiles|No file chosen")
+    -#   = f.file_field_without_bootstrap :avatar, class: 'js-user-avatar-input hidden', accept: 'image/*'
+    -# .form-text.text-muted= s_("Profiles|The maximum file size allowed is 200KB.")
+    -# - if @user.avatar?
+    -#   %hr
+    -#   = link_to s_("Profiles|Remove avatar"), profile_avatar_path, data: { confirm: s_("Profiles|Avatar will be removed. Are you sure?") }, method: :delete, class: 'btn btn-danger btn-inverted'
+
+    -# TODO: fix license selector form
+    -# .license-selector.js-license-selector-wrap.js-template-selector-wrap.hidden
+    -#   = dropdown_tag("Apply a license template", options: { toggle_class: 'js-license-selector qa-license-dropdown', title: "Apply a license", filter: true, placeholder: "Filter", data: { data: licenses_for_select(@project), project: @project.name, fullname: @project.namespace.human_name } } )
+
+    -# Project settings toggles
+    -# TODO: this was originally a vue component, should we convert it or add the toggle behaviour with JS
+    .project-feature-settings.new-project-feature-settings
+      .project-feature-row
+        %label.label-bold
+          Issues
+          /
+        %span.form-text.text-muted Lightweight issue tracking system for this project
+        .project-feature-controls{"data-for" => "project[project_feature_attributes][issues_access_level]"}
+          %input{:name => "project[project_feature_attributes][issues_access_level]", :type => "hidden", :value => "0"}/
+          %label.toggle-wrapper
+            / 
+            %button.project-feature-toggle{"aria-label" => "Toggle Status: OFF", :type => "button"}
+              .loading-container.text-center.loading-icon
+                %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+              %span.toggle-icon
+                %svg.s16.ic-status_failed_borderless.toggle-icon-svg{"aria-hidden" => "true"}
+                  %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_failed_borderless"}
+          .select-wrapper
+            %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
+              %option{:value => "0"}
+                Enable feature to choose access level
+            %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+      .project-feature-row
+        %label.label-bold
+          Repository
+          / 
+        %span.form-text.text-muted View and edit files in this project
+        .project-feature-controls{"data-for" => "project[project_feature_attributes][repository_access_level]"}
+          %input{:name => "project[project_feature_attributes][repository_access_level]", :type => "hidden", :value => "10"}/
+          %label.toggle-wrapper
+            / 
+            %button.project-feature-toggle.is-checked{"aria-label" => "Toggle Status: ON", :type => "button"}
+              .loading-container.text-center.loading-icon
+                %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+              %span.toggle-icon
+                %svg.s16.ic-status_success_borderless.toggle-icon-svg{"aria-hidden" => "true"}
+                  %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless"}
+          .select-wrapper
+            %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
+              %option{:value => "10"}
+                Only Project Members
+            %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+      -# TODO: check if we need the extended settings
+      -# .project-feature-setting-group
+      -#   .project-feature-row
+      -#     %label.label-bold
+      -#       Merge requests
+      -#       / 
+      -#     %span.form-text.text-muted Submit changes to be merged upstream
+      -#     .project-feature-controls{"data-for" => "project[project_feature_attributes][merge_requests_access_level]"}
+      -#       %input{:name => "project[project_feature_attributes][merge_requests_access_level]", :type => "hidden", :value => "10"}/
+      -#       %label.toggle-wrapper
+      -#         / 
+      -#         %button.project-feature-toggle.is-checked{"aria-label" => "Toggle Status: ON", :type => "button"}
+      -#           .loading-container.text-center.loading-icon
+      -#             %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+      -#           %span.toggle-icon
+      -#             %svg.s16.ic-status_success_borderless.toggle-icon-svg{"aria-hidden" => "true"}
+      -#               %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless"}
+      -#       .select-wrapper
+      -#         %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
+      -#           %option{:value => "10"}
+      -#             Only Project Members
+      -#         %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+      -#   .project-feature-row
+      -#     %label.label-bold
+      -#       Pipelines
+      -#       /
+      -#     %span.form-text.text-muted Build, test, and deploy your changes
+      -#     .project-feature-controls{"data-for" => "project[project_feature_attributes][builds_access_level]"}
+      -#       %input{:name => "project[project_feature_attributes][builds_access_level]", :type => "hidden", :value => "10"}/
+      -#       %label.toggle-wrapper
+      -#         / 
+      -#         %button.project-feature-toggle.is-checked{"aria-label" => "Toggle Status: ON", :type => "button"}
+      -#           .loading-container.text-center.loading-icon
+      -#             %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+      -#           %span.toggle-icon
+      -#             %svg.s16.ic-status_success_borderless.toggle-icon-svg{"aria-hidden" => "true"}
+      -#               %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless"}
+      -#       .select-wrapper
+      -#         %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
+      -#           %option{:value => "10"}
+      -#             Only Project Members
+      -#         %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+      -#   / 
+      -#   .project-feature-row
+      -#     %label.label-bold
+      -#       Git Large File Storage
+      -#       %a{:href => "/help/workflow/lfs/manage_large_binaries_with_git_lfs", :target => "_blank"}
+      -#         %i.fa.fa-question-circle{"aria-hidden" => "true", "data-hidden" => "true"}
+      -#     %span.form-text.text-muted Manages large files such as audio, video, and graphics files
+      -#     %label.toggle-wrapper
+      -#       %input{:name => "project[lfs_enabled]", :type => "hidden", :value => "true"}/
+      -#       %button.project-feature-toggle.is-checked{"aria-label" => "Toggle Status: ON", :type => "button"}
+      -#         .loading-container.text-center.loading-icon
+      -#           %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+      -#         %span.toggle-icon
+      -#           %svg.s16.ic-status_success_borderless.toggle-icon-svg{"aria-hidden" => "true"}
+      -#             %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless"}
+      .project-feature-row
+        %label.label-bold
+          Wiki
+          / 
+        %span.form-text.text-muted Pages for project documentation
+        .project-feature-controls{"data-for" => "project[project_feature_attributes][wiki_access_level]"}
+          %input{:name => "project[project_feature_attributes][wiki_access_level]", :type => "hidden", :value => "20"}/
+          %label.toggle-wrapper
+            / 
+            %button.project-feature-toggle.is-checked{"aria-label" => "Toggle Status: ON", :type => "button"}
+              .loading-container.text-center.loading-icon
+                %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+              %span.toggle-icon
+                %svg.s16.ic-status_success_borderless.toggle-icon-svg{"aria-hidden" => "true"}
+                  %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless"}
+          .select-wrapper
+            %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
+              %option{:value => "10"}
+                Only Project Members
+            %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+      .project-feature-row
+        %label.label-bold
+          Snippets
+          / 
+        %span.form-text.text-muted Share code pastes with others out of Git repository
+        .project-feature-controls{"data-for" => "project[project_feature_attributes][snippets_access_level]"}
+          %input{:name => "project[project_feature_attributes][snippets_access_level]", :type => "hidden", :value => "20"}/
+          %label.toggle-wrapper
+            / 
+            %button.project-feature-toggle.is-checked{"aria-label" => "Toggle Status: ON", :type => "button"}
+              .loading-container.text-center.loading-icon
+                %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+              %span.toggle-icon
+                %svg.s16.ic-status_success_borderless.toggle-icon-svg{"aria-hidden" => "true"}
+                  %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless"}
+          .select-wrapper
+            %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
+              %option{:value => "10"}
+                Only Project Members
+            %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+      / 
+
 
 = f.submit 'Create project', class: "btn btn-success project-submit", data: { track_label: "#{track_label}", track_event: "click_button", track_property: "create_project", track_value: "" }
-= link_to 'Cancel', dashboard_projects_path, class: 'btn btn-cancel', data: { track_label: "#{track_label}", track_event: "click_button", track_property: "cancel" }

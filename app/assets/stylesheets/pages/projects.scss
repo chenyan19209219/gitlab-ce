@@ -95,6 +95,12 @@
   margin-bottom: 16px;
 }
 
+.new-project-feature-settings {
+  background: transparent;
+  border:none;
+  padding:0;
+}
+
 .project-repo-select {
   transition: background 2s ease-out;
 
@@ -1305,6 +1311,12 @@ pre.light-well {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
+}
+
+.project-path-slug-separator {
+  position:relative;
+  top:6px;
+  left:16px;
 }
 
 .project-home-empty {

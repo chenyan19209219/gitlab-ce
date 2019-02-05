@@ -42,4 +42,44 @@ describe('Settings Panels', () => {
     expect(panel.classList.contains('expanded')).toBe(false);
     expect(trigger.textContent).toEqual(originalText);
   });
+
+  it('should default text to Collapse and Expand when no custom text is provided', () => {
+    const panel = document.querySelector('#js-general-settings');
+    const trigger = panel.querySelector('button.js-settings-toggle');
+    const collapsedText = 'Collapse';
+    const expandedText = 'Expand';
+
+    initSettingsPanels({
+      expandedText,
+      collapsedText,
+    });
+
+    expect(panel.classList.contains('expanded')).toBe(true);
+    expect(trigger.textContent).toEqual(expandedText);
+
+    $(trigger).click();
+
+    expect(panel.classList.contains('expanded')).toBe(false);
+    expect(trigger.textContent).toEqual(collapsedText);
+  });
+
+  it('should take optional text content for the triggers', () => {
+    const panel = document.querySelector('#js-general-settings');
+    const trigger = panel.querySelector('button.js-settings-toggle');
+    const collapsedText = 'Show me the money';
+    const expandedText = "You can't handle the truth";
+
+    initSettingsPanels({
+      expandedText,
+      collapsedText,
+    });
+
+    expect(panel.classList.contains('expanded')).toBe(true);
+    expect(trigger.textContent).toEqual(expandedText);
+
+    $(trigger).click();
+
+    expect(panel.classList.contains('expanded')).toBe(false);
+    expect(trigger.textContent).toEqual(collapsedText);
+  });
 });
