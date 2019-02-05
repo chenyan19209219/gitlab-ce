@@ -91,6 +91,8 @@ describe Projects::Settings::OperationsController do
       end
 
       context 'format json' do
+        let(:body) { Gitlab::Utils.deep_indifferent_access(JSON.parse(response.body)) }
+
         context 'when update succeeds' do
           before do
             stub_operations_update_service_returning(status: :success)
@@ -98,8 +100,6 @@ describe Projects::Settings::OperationsController do
 
           it 'returns success status' do
             patch :update, params: project_params(project, error_tracking_params, format: :json)
-
-            body = Gitlab::Utils.deep_indifferent_access(JSON.parse(response.body))
 
             expect(body).to eq('status' => 'success', 'message' => 'Your changes have been saved')
           end
@@ -112,8 +112,6 @@ describe Projects::Settings::OperationsController do
 
           it 'returns error' do
             patch :update, params: project_params(project, error_tracking_params, format: :json)
-
-            body = Gitlab::Utils.deep_indifferent_access(JSON.parse(response.body))
 
             expect(response).to have_gitlab_http_status(:bad_request)
             expect(body[:message]).not_to be_nil
