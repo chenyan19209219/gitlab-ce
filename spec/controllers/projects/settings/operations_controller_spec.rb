@@ -97,7 +97,9 @@ describe Projects::Settings::OperationsController do
           end
 
           it 'returns success status' do
-            patch :update, params: project_params(project, error_tracking_params), format: :json
+            patch :update,
+              params: project_params(project, error_tracking_params),
+              format: :json
 
             expect(json_response).to eq(
               'status' => 'success',
@@ -108,11 +110,16 @@ describe Projects::Settings::OperationsController do
 
         context 'when update fails' do
           before do
-            stub_operations_update_service_returning(status: :error, message: 'error message')
+            stub_operations_update_service_returning(
+              status: :error,
+              message: 'error message'
+            )
           end
 
           it 'returns error' do
-            patch :update, params: project_params(project, error_tracking_params), format: :json
+            patch :update,
+              params: project_params(project, error_tracking_params),
+              format: :json
 
             expect(response).to have_gitlab_http_status(:bad_request)
             expect(json_response['message']).not_to be_nil
@@ -158,11 +165,11 @@ describe Projects::Settings::OperationsController do
 
   private
 
-  def project_params(project, project_params = {})
+  def project_params(project, params = {})
     {
       namespace_id: project.namespace,
       project_id: project,
-      project: project_params
+      project: params
     }
   end
 end
