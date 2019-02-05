@@ -29,7 +29,7 @@ describe Projects::ErrorTrackingController do
           .and_return(status: :success, projects: [sentry_project])
       end
 
-      it 'returns a list of errors' do
+      it 'returns a list of projects' do
         post :list_projects, params: list_projects_params
 
         expect(response).to have_gitlab_http_status(:ok)
@@ -59,8 +59,11 @@ describe Projects::ErrorTrackingController do
         let(:http_status) { :no_content }
 
         before do
-          expect(list_projects_service).to receive(:execute)
-            .and_return(status: :error, message: error_message, http_status: http_status)
+          expect(list_projects_service).to receive(:execute).and_return(
+            status: :error,
+            message: error_message,
+            http_status: http_status
+          )
         end
 
         it 'returns http_status with message' do
@@ -169,8 +172,11 @@ describe Projects::ErrorTrackingController do
           let(:http_status) { :no_content }
 
           before do
-            expect(list_issues_service).to receive(:execute)
-              .and_return(status: :error, message: error_message, http_status: http_status)
+            expect(list_issues_service).to receive(:execute).and_return(
+              status: :error,
+              message: error_message,
+              http_status: http_status
+            )
           end
 
           it 'returns http_status with message' do
