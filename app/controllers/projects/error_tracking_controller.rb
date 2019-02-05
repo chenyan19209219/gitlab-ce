@@ -45,7 +45,7 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
   end
 
   def render_project_list_json
-    service = ErrorTracking::ListSentryProjectsService.new(project, current_user, list_projects_params)
+    service = ErrorTracking::ListProjectsService.new(project, current_user, list_projects_params)
     result = service.execute
 
     unless result[:status] == :success

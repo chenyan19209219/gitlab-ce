@@ -12,20 +12,20 @@ describe Projects::ErrorTrackingController do
   end
 
   describe 'POST #list_projects' do
-    let(:list_sentry_projects_service) { spy(:list_sentry_projects_service) }
+    let(:list_projects_service) { spy(:list_projects_service) }
     let(:sentry_project) { build(:error_tracking_project) }
 
     before do
-      expect(ErrorTracking::ListSentryProjectsService)
+      expect(ErrorTracking::ListProjectsService)
         .to receive(:new).with(project, user, ActionController::Parameters)
-        .and_return(list_sentry_projects_service)
+        .and_return(list_projects_service)
     end
 
     context 'service result is successful' do
       let(:sentry_project) { build(:error_tracking_project) }
 
       before do
-        expect(list_sentry_projects_service).to receive(:execute)
+        expect(list_projects_service).to receive(:execute)
           .and_return(status: :success, projects: [sentry_project])
       end
 
@@ -43,7 +43,7 @@ describe Projects::ErrorTrackingController do
 
       context 'without http_status' do
         before do
-          expect(list_sentry_projects_service).to receive(:execute)
+          expect(list_projects_service).to receive(:execute)
             .and_return(status: :error, message: error_message)
         end
 
@@ -59,7 +59,7 @@ describe Projects::ErrorTrackingController do
         let(:http_status) { :no_content }
 
         before do
-          expect(list_sentry_projects_service).to receive(:execute)
+          expect(list_projects_service).to receive(:execute)
             .and_return(status: :error, message: error_message, http_status: http_status)
         end
 
