@@ -14,24 +14,33 @@ module Projects
       def update
         result = ::Projects::Operations::UpdateService.new(project, current_user, update_params).execute
 
+        render_update_response(result)
+      end
+
+      private
+
+      # overridden in EE
+      def render_update_response(result)
         respond_to do |format|
           format.json do
-            if result[:status] == :success
-              render json:
-                result.slice(:status).merge({
-                message: _('Your changes have been saved')
-              })
-            else
-              render(
-                status: result[:http_status] || :bad_request,
-                json: result.slice(:status, :message)
-              )
-            end
+            render_update_json_response(result)
           end
         end
       end
 
-      private
+      def render_update_json_response(result)
+        if result[:status] == :success
+          render json:
+            result.slice(:status).merge({
+            message: _('Your changes have been saved')
+          })
+        else
+          render(
+            status: result[:http_status] || :bad_request,
+            json: result.slice(:status, :message)
+          )
+        end
+      end
 
       def error_tracking_setting
         @error_tracking_setting ||= project.error_tracking_setting ||
