@@ -30,14 +30,17 @@ module Projects
 
       def render_update_json_response(result)
         if result[:status] == :success
-          render json:
-            result.slice(:status).merge({
+          render json: {
+            status: result[:status],
             message: _('Your changes have been saved')
-          })
+          }
         else
           render(
             status: result[:http_status] || :bad_request,
-            json: result.slice(:status, :message)
+            json: {
+              status: result[:status],
+              message: result[:message]
+            }
           )
         end
       end

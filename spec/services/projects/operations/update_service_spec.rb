@@ -14,7 +14,7 @@ describe Projects::Operations::UpdateService do
     context 'error tracking' do
       context 'with existing error tracking setting' do
         let(:params) do
-          ActionController::Parameters.new({
+          {
             error_tracking_setting_attributes: {
               enabled: false,
               api_host: 'http://gitlab.com/',
@@ -26,7 +26,7 @@ describe Projects::Operations::UpdateService do
                 organization_name: 'Org'
               }
             }
-          }).permit!
+          }
         end
 
         before do
@@ -40,8 +40,8 @@ describe Projects::Operations::UpdateService do
           expect(project.error_tracking_setting).not_to be_enabled
           expect(project.error_tracking_setting.api_url).to eq('http://gitlab.com/api/0/projects/org/project/')
           expect(project.error_tracking_setting.token).to eq('token')
-          expect(project.error_tracking_setting.read_attribute(:project_name)).to eq('Project')
-          expect(project.error_tracking_setting.read_attribute(:organization_name)).to eq('Org')
+          expect(project.error_tracking_setting[:project_name]).to eq('Project')
+          expect(project.error_tracking_setting[:organization_name]).to eq('Org')
         end
 
         context 'disable error tracking' do
@@ -57,15 +57,15 @@ describe Projects::Operations::UpdateService do
             expect(project.error_tracking_setting).not_to be_enabled
             expect(project.error_tracking_setting.api_url).to be_nil
             expect(project.error_tracking_setting.token).to eq('token')
-            expect(project.error_tracking_setting.read_attribute(:project_name)).to eq('Project')
-            expect(project.error_tracking_setting.read_attribute(:organization_name)).to eq('Org')
+            expect(project.error_tracking_setting[:project_name]).to eq('Project')
+            expect(project.error_tracking_setting[:organization_name]).to eq('Org')
           end
         end
       end
 
       context 'without an existing error tracking setting' do
         let(:params) do
-          ActionController::Parameters.new({
+          {
             error_tracking_setting_attributes: {
               enabled: true,
               api_host: 'http://gitlab.com/',
@@ -77,7 +77,7 @@ describe Projects::Operations::UpdateService do
                 organization_name: 'Org'
               }
             }
-          }).permit!
+          }
         end
 
         it 'creates a setting' do
@@ -86,8 +86,8 @@ describe Projects::Operations::UpdateService do
           expect(project.error_tracking_setting).to be_enabled
           expect(project.error_tracking_setting.api_url).to eq('http://gitlab.com/api/0/projects/org/project/')
           expect(project.error_tracking_setting.token).to eq('token')
-          expect(project.error_tracking_setting.read_attribute(:project_name)).to eq('Project')
-          expect(project.error_tracking_setting.read_attribute(:organization_name)).to eq('Org')
+          expect(project.error_tracking_setting[:project_name]).to eq('Project')
+          expect(project.error_tracking_setting[:organization_name]).to eq('Org')
         end
       end
 
