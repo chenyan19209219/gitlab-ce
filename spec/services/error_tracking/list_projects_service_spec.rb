@@ -33,21 +33,21 @@ describe ErrorTracking::ListProjectsService do
           .and_return(error_tracking_setting)
       end
 
-      context 'call sentry client' do
-        let(:sentry_client) { spy(:sentry_client) }
+      context 'set model attributes to new values' do
+        let(:new_api_url) { new_api_host + 'api/0/projects/' }
 
         before do
           synchronous_reactive_cache(error_tracking_setting)
+
+          expect(error_tracking_setting).to receive(:list_sentry_projects)
+            .and_return({ projects: [] })
         end
 
         it 'uses new api_url and token' do
-          expect(Sentry::Client).to receive(:new)
-            .with(new_api_host + 'api/0/projects/', new_token)
-            .and_return(sentry_client)
-          expect(sentry_client).to receive(:list_projects).and_return([])
-
           subject.execute
 
+          expect(error_tracking_setting.api_url).to eq(new_api_url)
+          expect(error_tracking_setting.token).to eq(new_token)
           error_tracking_setting.reload
           expect(error_tracking_setting.api_url).to eq(sentry_url)
           expect(error_tracking_setting.token).to eq(token)
