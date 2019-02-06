@@ -177,6 +177,9 @@ export default {
 
       return s__('ClusterIntegration|Upgraded ');
     },
+    isUpgradable() {
+      return this.status === APPLICATION_STATUS.UPDATABLE;
+    },
     upgradeRequested() {
       return this.requestStatus === UPGRADE_REQUESTED;
     },
@@ -207,7 +210,9 @@ export default {
     },
     upgradeButtonLabel() {
       let label;
-      if (this.isUpgrading) {
+      if(this.isUpgradable) {
+        label = s__('ClusterIntegration|Upgrade');
+      } else if (this.isUpgrading) {
         label = s__('ClusterIntegration|Upgrading');
       } else {
         label = s__('ClusterIntegration|Retry upgrade');
@@ -343,7 +348,7 @@ export default {
         </div>
 
         <loading-button
-          v-if="upgradeFailed || isUpgrading"
+          v-if="isUpgradable || upgradeFailed || isUpgrading"
           class="btn btn-primary js-cluster-application-upgrade-button mt-2"
           :loading="isUpgrading"
           :disabled="isUpgrading"

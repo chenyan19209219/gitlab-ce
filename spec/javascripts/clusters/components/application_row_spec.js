@@ -219,6 +219,17 @@ describe('Application Row', () => {
       expect(upgradeBtn).toBe(null);
     });
 
+    it('has enabled "Upgrade" when APPLICATION_STATUS.UPDATABLE', () => {
+      vm = mountComponent(ApplicationRow, {
+        ...DEFAULT_APPLICATION_STATE,
+        status: APPLICATION_STATUS.UPDATABLE,
+      });
+      const upgradeBtn = vm.$el.querySelector('.js-cluster-application-upgrade-button');
+
+      expect(upgradeBtn).not.toBe(null);
+      expect(upgradeBtn.innerHTML).toContain('Upgrade');
+    });
+
     it('has enabled "Retry upgrade" when APPLICATION_STATUS.UPDATE_ERRORED', () => {
       vm = mountComponent(ApplicationRow, {
         ...DEFAULT_APPLICATION_STATE,

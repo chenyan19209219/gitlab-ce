@@ -1950,6 +1950,9 @@ msgstr ""
 msgid "ClusterIntegration|Token"
 msgstr ""
 
+msgid "ClusterIntegration|Upgrade"
+msgstr ""
+
 msgid "ClusterIntegration|Upgrade failed "
 msgstr ""
 

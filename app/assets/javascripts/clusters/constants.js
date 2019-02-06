@@ -12,8 +12,9 @@ export const APPLICATION_STATUS = {
   SCHEDULED: 'scheduled',
   INSTALLING: 'installing',
   INSTALLED: 'installed',
-  UPDATED: 'updated',
+  UPDATABLE: 'updatable',
   UPDATING: 'updating',
+  UPDATED: 'updated',
   UPDATE_ERRORED: 'update_errored',
   ERROR: 'errored',
 };
