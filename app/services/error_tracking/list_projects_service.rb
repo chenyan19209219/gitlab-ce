@@ -11,15 +11,12 @@ module ErrorTracking
         return error(setting.errors.full_messages.join(', '), :bad_request)
       end
 
-      result = setting.list_sentry_projects
-
-      # our results are not yet ready
-      if result.nil?
-        return error('not ready', :no_content)
-      end
-
-      if result[:error].present?
-        return error(result[:error], result[:http_status] || :bad_request)
+      begin
+        result = setting.list_sentry_projects
+      rescue Sentry::Client::Error => e
+        return error(e.message, :bad_request)
+      rescue Sentry::Client::SentryError => e
+        return error(e.message, :unprocessable_entity)
       end
 
       success(projects: result[:projects])

@@ -3,8 +3,6 @@
 require 'spec_helper'
 
 describe ErrorTracking::ListProjectsService do
-  include ReactiveCachingHelpers
-
   set(:user) { create(:user) }
   set(:project) { create(:project) }
 
@@ -28,6 +26,8 @@ describe ErrorTracking::ListProjectsService do
     let(:result) { subject.execute }
 
     context 'with authorized user' do
+      let(:sentry_client) { spy(:sentry_client) }
+
       before do
         expect(project).to receive(:error_tracking_setting).at_least(:once)
           .and_return(error_tracking_setting)
@@ -37,8 +37,6 @@ describe ErrorTracking::ListProjectsService do
         let(:new_api_url) { new_api_host + 'api/0/projects/' }
 
         before do
-          synchronous_reactive_cache(error_tracking_setting)
-
           expect(error_tracking_setting).to receive(:list_sentry_projects)
             .and_return({ projects: [] })
         end
@@ -51,6 +49,18 @@ describe ErrorTracking::ListProjectsService do
           error_tracking_setting.reload
           expect(error_tracking_setting.api_url).to eq(sentry_url)
           expect(error_tracking_setting.token).to eq(token)
+        end
+      end
+
+      context 'sentry client raises exception' do
+        before do
+          expect(error_tracking_setting).to receive(:list_sentry_projects)
+            .and_raise(Sentry::Client::Error, 'Sentry response error: 500')
+        end
+
+        it 'returns error response' do
+          expect(result[:message]).to eq('Sentry response error: 500')
+          expect(result[:http_status]).to eq(:bad_request)
         end
       end
 
@@ -84,39 +94,6 @@ describe ErrorTracking::ListProjectsService do
           expect(result).to eq(status: :success, projects: projects)
         end
       end
-
-      context 'when list_sentry_projects returns nil' do
-        before do
-          expect(error_tracking_setting)
-            .to receive(:list_sentry_projects).and_return(nil)
-        end
-
-        it 'result is not ready' do
-          result = subject.execute
-
-          expect(result).to eq(
-            status: :error,
-            http_status: :no_content,
-            message: 'not ready'
-          )
-        end
-      end
-
-      context 'when list_sentry_projects returns empty array' do
-        before do
-          expect(error_tracking_setting)
-            .to receive(:list_sentry_projects).and_return({ projects: [] })
-        end
-
-        it 'returns the empty array' do
-          result = subject.execute
-
-          expect(result).to eq(
-            status: :success,
-            projects: []
-          )
-        end
-      end
     end
 
     context 'with unauthorized user' do
@@ -137,29 +114,26 @@ describe ErrorTracking::ListProjectsService do
           .to receive(:list_sentry_projects).and_return(projects: [])
 
         error_tracking_setting.enabled = false
-        error_tracking_setting.save!
       end
 
       it 'ignores enabled flag' do
         expect(result).to include(status: :success, projects: [])
-
-        error_tracking_setting.reload
-        expect(error_tracking_setting.enabled).to be false
       end
     end
 
     context 'error_tracking_setting is nil' do
-      let(:error_tracking_setting) { build(:project_error_tracking_setting) }
+      let(:sentry_client) { spy(:sentry_client) }
 
       before do
         expect(project).to receive(:error_tracking_setting).at_least(:once)
           .and_return(nil)
 
-        expect(project).to receive(:build_error_tracking_setting).once
-          .and_return(error_tracking_setting)
+        expect(Sentry::Client).to receive(:new)
+          .with(new_api_host + 'api/0/projects/', new_token)
+          .and_return(sentry_client)
 
-        expect(error_tracking_setting).to receive(:list_sentry_projects)
-          .and_return(projects: [:project1, :project2])
+        expect(sentry_client).to receive(:list_projects)
+          .and_return([:project1, :project2])
       end
 
       it 'builds a new error_tracking_setting' do
