@@ -26,8 +26,6 @@ describe ErrorTracking::ListProjectsService do
     let(:result) { subject.execute }
 
     context 'with authorized user' do
-      let(:sentry_client) { spy(:sentry_client) }
-
       before do
         expect(project).to receive(:error_tracking_setting).at_least(:once)
           .and_return(error_tracking_setting)
@@ -122,22 +120,28 @@ describe ErrorTracking::ListProjectsService do
     end
 
     context 'error_tracking_setting is nil' do
-      let(:sentry_client) { spy(:sentry_client) }
+      let(:error_tracking_setting) { build(:project_error_tracking_setting) }
+      let(:new_api_url) { new_api_host + 'api/0/projects/' }
 
       before do
-        expect(project).to receive(:error_tracking_setting).at_least(:once)
-          .and_return(nil)
+        expect(project).to receive(:build_error_tracking_setting).once
+          .and_return(error_tracking_setting)
 
-        expect(Sentry::Client).to receive(:new)
-          .with(new_api_host + 'api/0/projects/', new_token)
-          .and_return(sentry_client)
-
-        expect(sentry_client).to receive(:list_projects)
-          .and_return([:project1, :project2])
+        expect(error_tracking_setting).to receive(:list_sentry_projects)
+          .and_return(projects: [:project1, :project2])
       end
 
       it 'builds a new error_tracking_setting' do
+        expect(project.error_tracking_setting).to be_nil
+
         expect(result[:projects]).to eq([:project1, :project2])
+
+        expect(error_tracking_setting.api_url).to eq(new_api_url)
+        expect(error_tracking_setting.token).to eq(new_token)
+        expect(error_tracking_setting.enabled).to be true
+        expect(error_tracking_setting.persisted?).to be false
+        expect(error_tracking_setting.project_id).not_to be_nil
+
         expect(project.error_tracking_setting).to be_nil
       end
     end
