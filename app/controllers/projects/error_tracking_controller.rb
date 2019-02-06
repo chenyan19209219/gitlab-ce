@@ -25,10 +25,6 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
 
   private
 
-  def list_projects_params
-    params.require(:error_tracking_setting).permit([:api_host, :token])
-  end
-
   def render_index_json
     service = ErrorTracking::ListIssuesService.new(project, current_user)
     result = service.execute
@@ -45,17 +41,29 @@ class Projects::ErrorTrackingController < Projects::ApplicationController
   end
 
   def render_project_list_json
-    service = ErrorTracking::ListSentryProjectsService.new(project, current_user, list_projects_params)
+    service = ErrorTracking::ListProjectsService.new(
+      project,
+      current_user,
+      list_projects_params
+    )
     result = service.execute
 
     unless result[:status] == :success
-      return render json: { message: result[:message] },
-                    status: result[:http_status] || :bad_request
+      return render(
+        status: result[:http_status] || :bad_request,
+        json: {
+          message: result[:message]
+        }
+      )
     end
 
     render json: {
       projects: serialize_projects(result[:projects])
     }
+  end
+
+  def list_projects_params
+    params.require(:error_tracking_setting).permit([:api_host, :token])
   end
 
   def set_polling_interval
