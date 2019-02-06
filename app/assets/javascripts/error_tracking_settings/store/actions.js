@@ -44,7 +44,7 @@ export const receiveSettingsSuccess = ({ commit }) => {
   commit(types.UPDATE_SETTINGS_LOADING, false);
 };
 
-export const receiveSettingsError = ({ commit }, response) => {
+export const receiveSettingsError = ({ commit }, { response = {} }) => {
   const data = response.data || {};
   const message = data.message || '';
 
@@ -66,7 +66,7 @@ export const updateSettings = ({ dispatch, state }, data) => {
       dispatch('receiveSettingsSuccess');
     })
     .catch(err => {
-      dispatch('receiveSettingsError', err.response);
+      dispatch('receiveSettingsError', err);
     });
 };
 
