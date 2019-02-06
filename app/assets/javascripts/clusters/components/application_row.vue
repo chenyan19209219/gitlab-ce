@@ -210,7 +210,7 @@ export default {
     },
     upgradeButtonLabel() {
       let label;
-      if(this.isUpgradable) {
+      if (this.isUpgradable) {
         label = s__('ClusterIntegration|Upgrade');
       } else if (this.isUpgrading) {
         label = s__('ClusterIntegration|Upgrading');
