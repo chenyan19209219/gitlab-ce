@@ -17,42 +17,29 @@ module Clusters
       rescue Kubeclient::HttpError => e
         log_error(e)
 
-        make_error("Kubernetes error: #{e.error_code}")
+        app.make_errored!("Kubernetes error: #{e.error_code}")
       end
 
       private
 
       def on_success
-        if app.installing?
-          app.make_installed!
-        elsif app.updating?
-          app.make_updated!
-        end
-
+        app.make_installed!
       ensure
         remove_installation_pod
       end
 
       def on_failed
-        make_error("Operation failed. Check pod logs for #{pod_name} for more details.")
+        app.make_errored!("Operation failed. Check pod logs for #{pod_name} for more details.")
       end
 
       def check_timeout
         if timeouted?
           begin
-            make_error("Operation timed out. Check pod logs for #{pod_name} for more details.")
+            app.make_errored!("Operation timed out. Check pod logs for #{pod_name} for more details.")
           end
         else
           ClusterWaitForAppInstallationWorker.perform_in(
             ClusterWaitForAppInstallationWorker::INTERVAL, app.name, app.id)
-        end
-      end
-
-      def make_error(message)
-        if app.installing?
-          app.make_errored!(message)
-        elsif app.updating?
-          app.make_update_errored!(message)
         end
       end
 
