@@ -2,6 +2,10 @@ require 'sidekiq/web'
 require 'sidekiq/cron/web'
 
 Rails.application.routes.draw do
+
+  # Serve GitLab Pages from within Rails
+  draw :pages
+
   concern :access_requestable do
     post :request_access, on: :collection
     post :approve_access_request, on: :member
