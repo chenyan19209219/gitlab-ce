@@ -71,7 +71,7 @@ export default {
 
 <template>
   <div :class="{ 'gl-show-field-errors': isProjectInvalid }">
-    <label class="label-bold" for="project-dropdown">{{ s__('ErrorTracking|Project') }}</label>
+    <label class="label-bold" for="project-dropdown">{{ __('Project') }}</label>
     <div class="row">
       <gl-dropdown
         id="project-dropdown"

@@ -65,9 +65,7 @@ export default {
       }}</label>
     </div>
     <div class="form-group">
-      <label class="label-bold" for="error-tracking-api-host">{{
-        s__('ErrorTracking|Sentry API URL')
-      }}</label>
+      <label class="label-bold" for="error-tracking-api-host">{{ __('Sentry API URL') }}</label>
       <div class="row">
         <div class="col-8 col-md-9 gl-pr-0">
           <input
@@ -100,7 +98,7 @@ export default {
             data-qa-id="error-tracking-connect"
             @click="handleConnectClick"
           >
-            {{ s__('ErrorTracking|Connect') }}
+            {{ __('Connect') }}
           </button>
           <icon
             v-show="showCheck"
@@ -115,7 +113,11 @@ export default {
         {{ s__('ErrorTracking|Connection has failed. Re-check Auth Token and try again.') }}
       </p>
       <p v-else class="form-text text-muted">
-        {{ __("After adding your Auth Token, use the 'Connect' button to load projects") }}
+        {{
+          s__(
+            "ErrorTracking|After adding your Auth Token, use the 'Connect' button to load projects",
+          )
+        }}
       </p>
     </div>
   </div>

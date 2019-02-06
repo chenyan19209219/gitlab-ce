@@ -10,6 +10,6 @@
       = _('To link Sentry to GitLab, enter your Sentry URL and Auth Token.')
       = link_to _('More information'), help_page_path('user/project/operations/error_tracking'), target: '_blank'
   .settings-content
-    .js_error-tracking-form{ data: { api_host: setting.api_host, enabled: setting.enabled, token: setting.token, project_name: setting.project_name, project_slug: setting.project_slug, project_organization_name: setting.organization_name, project_organization_slug: setting.organization_slug, list_projects_endpoint: namespace_project_list_projects_url(project_id: @project, namespace_id: @project.namespace), operations_settings_endpoint: project_settings_operations_path(@project) } }
+    .js_error-tracking-form{ data: { api_host: setting.api_host, enabled: setting.enabled, token: setting.token, project_name: setting.project_name, project_slug: setting.project_slug, project_organization_name: setting.organization_name, project_organization_slug: setting.organization_slug, list_projects_endpoint: list_projects_project_error_tracking_index_path(@project), operations_settings_endpoint: project_settings_operations_path(@project) } }
       .loading-container.text-center
         = icon('spinner spin 2x', class: 'loading-animation prepend-top-20')
