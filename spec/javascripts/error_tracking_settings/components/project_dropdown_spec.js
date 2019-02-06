@@ -2,37 +2,14 @@ import _ from 'underscore';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import ProjectDropdown from '~/error_tracking_settings/components/project_dropdown.vue';
+import { createStore } from '~/error_tracking_settings/store';
 import { GlDropdown, GlDropdownItem } from '@gitlab/ui';
+import { projectList, staleProject } from '../mock';
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
-const testProjects = [
-  {
-    id: 1,
-    name: 'name',
-    slug: 'slug',
-    organizationName: 'organizationName',
-    organizationSlug: 'organizationSlug',
-  },
-  {
-    id: 2,
-    name: 'name2',
-    slug: 'slug2',
-    organizationName: 'organizationName2',
-    organizationSlug: 'organizationSlug2',
-  },
-];
-
-const staleProject = {
-  id: 3,
-  name: 'staleName',
-  slug: 'staleSlug',
-  organizationName: 'staleOrganizationName',
-  organizationSlug: 'staleOrganizationSlug',
-};
-
-describe('ErrorTrackingSettings', () => {
+describe('error tracking settings project dropdown', () => {
   let store;
   let wrapper;
 
@@ -44,18 +21,7 @@ describe('ErrorTrackingSettings', () => {
   }
 
   beforeEach(() => {
-    const actions = {};
-
-    const state = {
-      token: '',
-      projects: null,
-      selectedProject: null,
-    };
-
-    store = new Vuex.Store({
-      actions,
-      state,
-    });
+    store = createStore();
 
     mountComponent();
   });
@@ -66,36 +32,36 @@ describe('ErrorTrackingSettings', () => {
     }
   });
 
-  describe('Empty project list', () => {
-    it('Renders the dropdown', () => {
-      expect(wrapper.find('#project_dropdown').exists()).toBeTruthy();
+  describe('empty project list', () => {
+    it('renders the dropdown', () => {
+      expect(wrapper.find('#project-dropdown').exists()).toBeTruthy();
       expect(wrapper.find(GlDropdown).exists()).toBeTruthy();
     });
 
     it('shows helper text', () => {
-      expect(wrapper.find('[data-qa-id=project_dropdown_label]').exists()).toBeTruthy();
-      expect(wrapper.find('[data-qa-id="project_dropdown_label"]').text()).toContain(
+      expect(wrapper.find('[data-qa-id=project-dropdown-label]').exists()).toBeTruthy();
+      expect(wrapper.find('[data-qa-id="project-dropdown-label"]').text()).toContain(
         'To enable project selection',
       );
     });
 
     it('does not show an error', () => {
-      expect(wrapper.find('[data-qa-id="project_dropdown_error"]').exists()).toBeFalsy();
+      expect(wrapper.find('[data-qa-id="project-dropdown-error"]').exists()).toBeFalsy();
     });
 
     it('does not contain any dropdown items', () => {
       expect(wrapper.find(GlDropdownItem).exists()).toBeFalsy();
-      // expect(wrapper.find('#project_dropdown > button').text()).toBe('No projects available');
+      expect(wrapper.find(GlDropdown).props('text')).toBe('No projects available');
     });
   });
 
-  describe('Populated project list', () => {
+  describe('populated project list', () => {
     beforeEach(() => {
-      store.state.projects = _.clone(testProjects);
+      store.state.projects = _.clone(projectList);
     });
 
-    it('Renders the dropdown', () => {
-      expect(wrapper.find('#project_dropdown').exists()).toBeTruthy();
+    it('renders the dropdown', () => {
+      expect(wrapper.find('#project-dropdown').exists()).toBeTruthy();
       expect(wrapper.find(GlDropdown).exists()).toBeTruthy();
       expect(wrapper.find(GlDropdown).props('text')).toContain('Select project');
     });
@@ -106,45 +72,41 @@ describe('ErrorTrackingSettings', () => {
     });
   });
 
-  describe('Selected project', () => {
-    const selectedProject = _.clone(testProjects[0]);
+  describe('selected project', () => {
+    const selectedProject = _.clone(projectList[0]);
 
     beforeEach(() => {
-      store.state.projects = _.clone(testProjects);
+      store.state.projects = _.clone(projectList);
       store.state.selectedProject = selectedProject;
     });
 
     it('displays the selected project', () => {
-      expect(wrapper.find('#project_dropdown').props('text')).toContain(
-        selectedProject.organizationName,
-      );
+      expect(wrapper.find(GlDropdown).props('text')).toContain(selectedProject.organizationName);
 
-      expect(wrapper.find('#project_dropdown').props('text')).toContain(selectedProject.name);
+      expect(wrapper.find(GlDropdown).props('text')).toContain(selectedProject.name);
     });
 
     it('does not show helper text', () => {
-      expect(wrapper.find('[data-qa-id=project_dropdown_label]').exists()).toBeFalsy();
-      expect(wrapper.find('[data-qa-id=project_dropdown_error]').exists()).toBeFalsy();
+      expect(wrapper.find('[data-qa-id=project-dropdown-label]').exists()).toBeFalsy();
+      expect(wrapper.find('[data-qa-id=project-dropdown-error]').exists()).toBeFalsy();
     });
   });
 
-  describe('Invalid project selected', () => {
+  describe('invalid project selected', () => {
     beforeEach(() => {
-      store.state.projects = _.clone(testProjects);
+      store.state.projects = _.clone(projectList);
       store.state.selectedProject = staleProject;
     });
 
     it('displays the selected project', () => {
-      expect(wrapper.find('#project_dropdown').props('text')).toContain(
-        staleProject.organizationName,
-      );
+      expect(wrapper.find(GlDropdown).props('text')).toContain(staleProject.organizationName);
 
-      expect(wrapper.find('#project_dropdown').props('text')).toContain(staleProject.name);
+      expect(wrapper.find(GlDropdown).props('text')).toContain(staleProject.name);
     });
 
     it('displays a error', () => {
-      expect(wrapper.find('[data-qa-id=project_dropdown_label]').exists()).toBeFalsy();
-      expect(wrapper.find('[data-qa-id=project_dropdown_error]').exists()).toBeTruthy();
+      expect(wrapper.find('[data-qa-id=project-dropdown-label]').exists()).toBeFalsy();
+      expect(wrapper.find('[data-qa-id=project-dropdown-error]').exists()).toBeTruthy();
     });
   });
 });

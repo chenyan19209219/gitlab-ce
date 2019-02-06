@@ -1,6 +1,8 @@
 import Vue from 'vue';
-import store from './store';
+import { createStore } from './store';
 import ErrorTrackingSettings from './components/error_tracking_settings.vue';
+
+const store = createStore();
 
 const getInitialProject = dataset => {
   const {
@@ -11,7 +13,7 @@ const getInitialProject = dataset => {
   } = dataset;
   if (slug) {
     return {
-      id: organizationSlug + slug,
+      id: `${organizationSlug}${slug}`,
       name,
       slug,
       organizationName,
@@ -30,10 +32,12 @@ export default () => {
   const initialProject = getInitialProject(formContainerEl.dataset);
 
   // Set up initial store state from DOM
-  store.dispatch('updateApiHost', apiHost);
-  store.dispatch('updateEnabled', enabled === 'false' ? false : Boolean(enabled));
-  store.dispatch('updateToken', token);
-  store.dispatch('updateSelectedProject', initialProject);
+  store.dispatch('setInitialState', {
+    apiHost,
+    enabled: enabled === 'false' ? false : Boolean(enabled),
+    token,
+    project: initialProject,
+  });
 
   return new Vue({
     el: formContainerEl,

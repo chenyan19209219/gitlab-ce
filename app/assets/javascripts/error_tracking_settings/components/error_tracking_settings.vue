@@ -1,5 +1,5 @@
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import projectDropdown from './project_dropdown.vue';
 import errorTrackingForm from './error_tracking_form.vue';
 
@@ -14,6 +14,9 @@ export default {
       type: String,
       required: true,
     },
+  },
+  computed: {
+    ...mapState(['settingsLoading']),
   },
   methods: {
     ...mapActions(['updateSettings']),
@@ -33,9 +36,9 @@ export default {
       <project-dropdown />
     </div>
     <button
-      :disabled="$store.state.settingsLoading"
+      :disabled="settingsLoading"
       class="btn btn-success"
-      data-qa-id="error_tracking_button"
+      data-qa-id="error-tracking-button"
       @click="handleSubmit"
     >
       {{ __('Save changes') }}

@@ -1,14 +1,15 @@
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import ErrorTrackingForm from '~/error_tracking_settings/components/error_tracking_form.vue';
+import { createStore } from '~/error_tracking_settings/store';
 import { TEST_HOST } from 'spec/test_constants';
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
-describe('ErrorTrackingSettings', () => {
-  let store;
+describe('error tracking settings form', () => {
   let wrapper;
+  let store;
 
   function mountComponent() {
     wrapper = shallowMount(ErrorTrackingForm, {
@@ -21,20 +22,7 @@ describe('ErrorTrackingSettings', () => {
   }
 
   beforeEach(() => {
-    const actions = {};
-
-    const state = {
-      token: '',
-      apiHost: '',
-      connectSuccessful: false,
-      connectError: false,
-    };
-
-    store = new Vuex.Store({
-      actions,
-      state,
-    });
-
+    store = createStore();
     mountComponent();
   });
 
@@ -44,12 +32,12 @@ describe('ErrorTrackingSettings', () => {
     }
   });
 
-  describe('Empty form', () => {
+  describe('empty form', () => {
     it('renders the form', () => {
-      expect(wrapper.find('#error_tracking_enabled').exists()).toBeTruthy();
-      expect(wrapper.find('#error_tracking_api_host').exists()).toBeTruthy();
-      expect(wrapper.find('#error_tracking_token').exists()).toBeTruthy();
-      expect(wrapper.find('[data-qa-id=error_tracking_connect]').exists()).toBeTruthy();
+      expect(wrapper.find('#error-tracking-enabled').exists()).toBeTruthy();
+      expect(wrapper.find('#error-tracking-api-host').exists()).toBeTruthy();
+      expect(wrapper.find('#error-tracking-token').exists()).toBeTruthy();
+      expect(wrapper.find('[data-qa-id=error-tracking-connect]').exists()).toBeTruthy();
     });
 
     it('renders labels', () => {
@@ -62,20 +50,20 @@ describe('ErrorTrackingSettings', () => {
       );
 
       expect(pageText).not.toContain('Connection has failed. Re-check Auth Token and try again');
-      expect(wrapper.find('#error_tracking_api_host').attributes('placeholder')).toContain(
+      expect(wrapper.find('#error-tracking-api-host').attributes('placeholder')).toContain(
         'https://mysentryserver.com',
       );
     });
   });
 
-  describe('After a successful connection', () => {
+  describe('after a successful connection', () => {
     beforeEach(() => {
       store.state.connectSuccessful = true;
       store.state.connectError = false;
     });
 
     it('shows the success checkmark', () => {
-      expect(wrapper.find('[data-qa-id=error_tracking_connect_success]').isVisible()).toBeTruthy();
+      expect(wrapper.find('[data-qa-id=error-tracking-connect-success]').isVisible()).toBeTruthy();
     });
 
     it('does not show an error', () => {
@@ -85,14 +73,14 @@ describe('ErrorTrackingSettings', () => {
     });
   });
 
-  describe('After an unsuccessful connection', () => {
+  describe('after an unsuccessful connection', () => {
     beforeEach(() => {
       store.state.connectSuccessful = false;
       store.state.connectError = true;
     });
 
     it('does not show the check mark', () => {
-      expect(wrapper.find('[data-qa-id=error_tracking_connect_success]').isVisible()).toBeFalsy();
+      expect(wrapper.find('[data-qa-id=error-tracking-connect-success]').isVisible()).toBeFalsy();
     });
 
     it('shows an error', () => {

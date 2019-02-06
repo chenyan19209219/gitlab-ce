@@ -1,5 +1,5 @@
 <script>
-import { __, s__ } from '~/locale';
+import { s__ } from '~/locale';
 import { mapActions, mapState } from 'vuex';
 import Icon from '~/vue_shared/components/icon.vue';
 
@@ -12,9 +12,9 @@ export default {
     GlDropdownItem,
     Icon,
   },
-  noAuthTokenText: __('To enable project selection, enter a valid Auth Token'),
-  noConnectionText: __(
-    "Click 'Connect' to re-establish the connection to Sentry and activate the dropdown.",
+  noAuthTokenText: s__('ErrorTracking|To enable project selection, enter a valid Auth Token'),
+  noConnectionText: s__(
+    "ErrorTracking|Click 'Connect' to re-establish the connection to Sentry and activate the dropdown.",
   ),
   noProjectsText: s__('ErrorTracking|No projects available'),
   selectProjectText: s__('ErrorTracking|Select project'),
@@ -38,7 +38,7 @@ export default {
     isProjectListEmpty() {
       return this.areProjectsLoaded && this.projects.length === 0;
     },
-    isProjectValid() {
+    isProjectInvalid() {
       return (
         this.selectedProject &&
         this.areProjectsLoaded &&
@@ -48,13 +48,19 @@ export default {
     areProjectsLoaded() {
       return this.projects !== null;
     },
+    isDropdownDisabled() {
+      return !this.areProjectsLoaded || this.isProjectListEmpty;
+    },
   },
   methods: {
     ...mapActions(['updateSelectedProject']),
     handleClick(event) {
-      this.updateSelectedProject({
-        ...this.projects.find(item => item.id === event.target.value),
-      });
+      const selectedProject = this.projects.find(item => item.id === event.target.value);
+
+      // Handle the case that the clicked project was not found in the store
+      if (selectedProject) {
+        this.updateSelectedProject({ ...selectedProject });
+      }
     },
     getDisplayName(project) {
       return `${project.organizationName} | ${project.name}`;
@@ -64,13 +70,13 @@ export default {
 </script>
 
 <template>
-  <div :class="[isProjectValid ? 'gl-show-field-errors' : '']">
-    <label class="label-bold" for="project_dropdown">{{ s__('ErrorTracking|Project') }}</label>
+  <div :class="{ 'gl-show-field-errors': isProjectInvalid }">
+    <label class="label-bold" for="project-dropdown">{{ s__('ErrorTracking|Project') }}</label>
     <div class="row">
       <gl-dropdown
-        id="project_dropdown"
+        id="project-dropdown"
         class="col-8 col-md-9 gl-pr-0"
-        :disabled="!areProjectsLoaded || isProjectListEmpty"
+        :disabled="isDropdownDisabled"
         menu-class="w-100 mw-100"
         toggle-class="dropdown-menu-toggle w-100 gl-field-error-outline"
         :text="dropdownText"
@@ -85,7 +91,7 @@ export default {
         >
       </gl-dropdown>
     </div>
-    <p v-if="isProjectValid" class="gl-field-error" data-qa-id="project_dropdown_error">
+    <p v-if="isProjectInvalid" class="gl-field-error" data-qa-id="project-dropdown-error">
       {{
         sprintf(
           __('Project "%{name}" is no longer available. Select another project to continue.'),
@@ -96,7 +102,7 @@ export default {
     <p
       v-else-if="!areProjectsLoaded"
       class="form-text text-muted"
-      data-qa-id="project_dropdown_label"
+      data-qa-id="project-dropdown-label"
     >
       {{ projectSelectionText }}
     </p>

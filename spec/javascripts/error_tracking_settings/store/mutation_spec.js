@@ -1,8 +1,8 @@
 import mutations from '~/error_tracking_settings/store/mutations';
 import * as types from '~/error_tracking_settings/store/mutation_types';
 
-describe('ErrorTrackingSettings', () => {
-  describe('Mutations', () => {
+describe('error tracking settings mutations', () => {
+  describe('mutations', () => {
     let state;
 
     beforeEach(() => {

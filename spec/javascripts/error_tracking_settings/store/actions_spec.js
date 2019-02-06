@@ -5,20 +5,12 @@ import * as types from '~/error_tracking_settings/store/mutation_types';
 import axios from '~/lib/utils/axios_utils';
 import { TEST_HOST } from 'spec/test_constants';
 import { transformBackendProject } from '~/error_tracking_settings/store/utils';
+import { projectList } from '../mock';
 
-const projects = [
-  {
-    name: 'name',
-    slug: 'slug',
-    organization_name: 'organizationName',
-    organization_slug: 'organizationSlug',
-  },
-];
-
-describe('ErrorTrackingActions', () => {
+describe('error tracking settings actions', () => {
   let state;
 
-  describe('Project list actions', () => {
+  describe('project list actions', () => {
     let mock;
 
     beforeEach(() => {
@@ -34,7 +26,7 @@ describe('ErrorTrackingActions', () => {
     });
 
     it('should request and transform the project list', done => {
-      mock.onPost(`${TEST_HOST}.json`).reply(() => [200, { projects }]);
+      mock.onPost(`${TEST_HOST}.json`).reply(() => [200, { projects: projectList }]);
       testAction(
         actions.fetchProjects,
         { listProjectsEndpoint: TEST_HOST },
@@ -44,7 +36,7 @@ describe('ErrorTrackingActions', () => {
           { type: 'requestProjects' },
           {
             type: 'receiveProjectsSuccess',
-            payload: projects.map(transformBackendProject),
+            payload: projectList.map(transformBackendProject),
           },
         ],
         () => {
@@ -106,7 +98,7 @@ describe('ErrorTrackingActions', () => {
     });
   });
 
-  describe('Save changes actions', () => {
+  describe('save changes actions', () => {
     let mock;
 
     beforeEach(() => {
@@ -191,7 +183,7 @@ describe('ErrorTrackingActions', () => {
     });
   });
 
-  describe('Generic actions to update the store', () => {
+  describe('generic actions to update the store', () => {
     const testData = 'test';
     it('should reset the `connect success` flag when updating the api host', done => {
       testAction(
