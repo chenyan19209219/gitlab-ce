@@ -24,11 +24,10 @@ const getInitialProject = dataset => {
 };
 
 export default () => {
-  const formContainerEl = document.getElementsByClassName('js-error-tracking-form')[0];
+  const formContainerEl = document.getElementsByClassName('js_error-tracking-form')[0];
   const {
-    dataset: { apiHost, enabled, token, listProjectsEndpoint },
+    dataset: { apiHost, enabled, token, listProjectsEndpoint, operationsSettingsEndpoint },
   } = formContainerEl;
-  const operationsSettingsEndpoint = formContainerEl.getAttribute('action');
   const initialProject = getInitialProject(formContainerEl.dataset);
 
   // Set up initial store state from DOM
