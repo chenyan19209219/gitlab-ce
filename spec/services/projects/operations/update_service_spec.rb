@@ -38,26 +38,30 @@ describe Projects::Operations::UpdateService do
 
           project.reload
           expect(project.error_tracking_setting).not_to be_enabled
-          expect(project.error_tracking_setting.api_url).to eq('http://gitlab.com/api/0/projects/org/project/')
+          expect(project.error_tracking_setting.api_url).to eq(
+            'http://gitlab.com/api/0/projects/org/project/'
+          )
           expect(project.error_tracking_setting.token).to eq('token')
-          expect(project.error_tracking_setting.read_attribute(:project_name)).to eq('Project')
-          expect(project.error_tracking_setting.read_attribute(:organization_name)).to eq('Org')
+          expect(project.error_tracking_setting[:project_name]).to eq('Project')
+          expect(project.error_tracking_setting[:organization_name]).to eq('Org')
         end
 
-        it 'can set api_url to nil' do
-          params[:error_tracking_setting_attributes][:api_host] = ''
-          params[:error_tracking_setting_attributes][:enabled] = false
+        context 'disable error tracking' do
+          before do
+            params[:error_tracking_setting_attributes][:api_host] = ''
+            params[:error_tracking_setting_attributes][:enabled] = false
+          end
 
-          result = subject.execute
+          it 'can set api_url to nil' do
+            expect(result[:status]).to eq(:success)
 
-          expect(result[:status]).to eq(:success)
-
-          project.reload
-          expect(project.error_tracking_setting).not_to be_enabled
-          expect(project.error_tracking_setting.api_url).to be_nil
-          expect(project.error_tracking_setting.token).to eq('token')
-          expect(project.error_tracking_setting.read_attribute(:project_name)).to eq('Project')
-          expect(project.error_tracking_setting.read_attribute(:organization_name)).to eq('Org')
+            project.reload
+            expect(project.error_tracking_setting).not_to be_enabled
+            expect(project.error_tracking_setting.api_url).to be_nil
+            expect(project.error_tracking_setting.token).to eq('token')
+            expect(project.error_tracking_setting[:project_name]).to eq('Project')
+            expect(project.error_tracking_setting[:organization_name]).to eq('Org')
+          end
         end
       end
 
@@ -82,10 +86,12 @@ describe Projects::Operations::UpdateService do
           expect(result[:status]).to eq(:success)
 
           expect(project.error_tracking_setting).to be_enabled
-          expect(project.error_tracking_setting.api_url).to eq('http://gitlab.com/api/0/projects/org/project/')
+          expect(project.error_tracking_setting.api_url).to eq(
+            'http://gitlab.com/api/0/projects/org/project/'
+          )
           expect(project.error_tracking_setting.token).to eq('token')
-          expect(project.error_tracking_setting.read_attribute(:project_name)).to eq('Project')
-          expect(project.error_tracking_setting.read_attribute(:organization_name)).to eq('Org')
+          expect(project.error_tracking_setting[:project_name]).to eq('Project')
+          expect(project.error_tracking_setting[:organization_name]).to eq('Org')
         end
       end
 
