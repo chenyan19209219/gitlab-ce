@@ -12,12 +12,6 @@ export default {
     GlDropdownItem,
     Icon,
   },
-  noAuthTokenText: s__('ErrorTracking|To enable project selection, enter a valid Auth Token'),
-  noConnectionText: s__(
-    "ErrorTracking|Click 'Connect' to re-establish the connection to Sentry and activate the dropdown.",
-  ),
-  noProjectsText: s__('ErrorTracking|No projects available'),
-  selectProjectText: s__('ErrorTracking|Select project'),
   computed: {
     ...mapState(['token', 'projects', 'selectedProject']),
     dropdownText() {
@@ -25,15 +19,17 @@ export default {
         return this.getDisplayName(this.selectedProject);
       }
       if (!this.areProjectsLoaded || this.isProjectListEmpty) {
-        return this.$options.noProjectsText;
+        return s__('ErrorTracking|No projects available');
       }
-      return this.$options.selectProjectText;
+      return s__('ErrorTracking|Select project');
     },
     projectSelectionText() {
       if (this.token) {
-        return this.$options.noConnectionText;
+        return s__(
+          "ErrorTracking|Click 'Connect' to re-establish the connection to Sentry and activate the dropdown.",
+        );
       }
-      return this.$options.noAuthTokenText;
+      return s__('ErrorTracking|To enable project selection, enter a valid Auth Token');
     },
     isProjectListEmpty() {
       return this.areProjectsLoaded && this.projects.length === 0;
@@ -46,7 +42,7 @@ export default {
       );
     },
     areProjectsLoaded() {
-      return this.projects !== null;
+      return this.projects.length;
     },
     isDropdownDisabled() {
       return !this.areProjectsLoaded || this.isProjectListEmpty;

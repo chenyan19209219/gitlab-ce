@@ -2,7 +2,7 @@ export default () => ({
   apiHost: '',
   enabled: false,
   token: '',
-  projects: null,
+  projects: [],
   selectedProject: null,
   settingsLoading: false,
   connectSuccessful: false,
