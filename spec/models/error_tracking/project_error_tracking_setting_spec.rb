@@ -149,15 +149,63 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
 
   describe '#list_sentry_projects' do
     let(:projects) { [:list, :of, :projects] }
-    let(:sentry_client) { spy(:sentry_client) }
 
-    it 'calls sentry client' do
-      expect(subject).to receive(:sentry_client).and_return(sentry_client)
-      expect(sentry_client).to receive(:list_projects).and_return(projects)
+    let(:result) do
+      subject.list_sentry_projects
+    end
 
-      result = subject.list_sentry_projects
+    context 'when cached' do
+      let(:sentry_client) { spy(:sentry_client) }
 
-      expect(result).to eq(projects: projects)
+      before do
+        stub_reactive_cache(subject, projects, {})
+        synchronous_reactive_cache(subject)
+
+        expect(subject).to receive(:sentry_client).and_return(sentry_client)
+        expect(sentry_client).to receive(:list_projects)
+          .and_return(projects)
+      end
+
+      it 'returns cached projects' do
+        expect(result).to eq(projects: projects)
+      end
+    end
+
+    context 'when not cached' do
+      it 'returns nil' do
+        expect(subject).not_to receive(:sentry_client)
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when sentry client raises exception' do
+      let(:sentry_client) { spy(:sentry_client) }
+
+      before do
+        synchronous_reactive_cache(subject)
+
+        expect(subject).to receive(:sentry_client).and_return(sentry_client)
+      end
+
+      it 'returns error for Sentry::Client::Error exception' do
+        expect(sentry_client).to receive(:list_projects)
+          .and_raise(Sentry::Client::Error, 'error message')
+
+        expect(result).to eq(
+          error: 'error message',
+          http_status: :bad_request
+        )
+      end
+
+      it 'returns error for Sentry::Client::SentryError exception' do
+        expect(sentry_client).to receive(:list_projects)
+          .and_raise(Sentry::Client::SentryError, 'error message')
+
+        expect(result).to eq(
+          error: 'error message',
+          http_status: :unprocessable_entity
+        )
+      end
     end
   end
 

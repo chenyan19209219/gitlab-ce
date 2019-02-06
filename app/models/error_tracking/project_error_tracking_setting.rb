@@ -63,13 +63,29 @@ module ErrorTracking
     end
 
     def list_sentry_projects
-      { projects: sentry_client.list_projects }
+      with_reactive_cache('list_projects', {}) do |result|
+        result
+      end
     end
 
     def calculate_reactive_cache(request, opts)
       case request
       when 'list_issues'
         sentry_client.list_issues(**opts.symbolize_keys)
+      when 'list_projects'
+        begin
+          { projects: sentry_client.list_projects }
+        rescue Sentry::Client::SentryError => e
+          {
+            error: e.message,
+            http_status: :unprocessable_entity
+          }
+        rescue Sentry::Client::Error => e
+          {
+            error: e.message,
+            http_status: :bad_request
+          }
+        end
       end
     end
 
