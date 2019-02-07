@@ -219,10 +219,10 @@ describe('Application Row', () => {
       expect(upgradeBtn).toBe(null);
     });
 
-    it('has enabled "Upgrade" when APPLICATION_STATUS.UPDATABLE', () => {
+    it('has enabled "Upgrade" when "upgradeAvailable" is true', () => {
       vm = mountComponent(ApplicationRow, {
         ...DEFAULT_APPLICATION_STATE,
-        status: APPLICATION_STATUS.UPDATABLE,
+        upgradeAvailable: true,
       });
       const upgradeBtn = vm.$el.querySelector('.js-cluster-application-upgrade-button');
 

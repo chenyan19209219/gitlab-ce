@@ -86,6 +86,7 @@ describe('Clusters Store', () => {
             requestStatus: null,
             requestReason: null,
             version: mockResponseData.applications[2].version,
+            upgradeAvailable: mockResponseData.applications[2].update_available,
             upgradedAt: null,
             chartRepo: 'https://gitlab.com/charts/gitlab-runner',
           },

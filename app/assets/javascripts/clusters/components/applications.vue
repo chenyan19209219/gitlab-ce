@@ -365,6 +365,7 @@ export default {
         :version="applications.runner.version"
         :chart-repo="applications.runner.chartRepo"
         :upgraded-at="applications.runner.upgradedAt"
+        :upgrade-available="applications.runner.upgradeAvailable"
         :disabled="!helmInstalled"
         title-link="https://docs.gitlab.com/runner/"
       >

@@ -71,6 +71,10 @@ export default {
       type: String,
       required: false,
     },
+    upgradeAvailable: {
+      type: Boolean,
+      required: false,
+    },
     upgradedAt: {
       type: String,
       required: false,
@@ -177,9 +181,6 @@ export default {
 
       return s__('ClusterIntegration|Upgraded ');
     },
-    isUpgradable() {
-      return this.status === APPLICATION_STATUS.UPDATABLE;
-    },
     upgradeRequested() {
       return this.requestStatus === UPGRADE_REQUESTED;
     },
@@ -210,11 +211,11 @@ export default {
     },
     upgradeButtonLabel() {
       let label;
-      if (this.isUpgradable) {
+      if (this.upgradeAvailable && !this.upgradeFailed && !this.isUpgrading) {
         label = s__('ClusterIntegration|Upgrade');
       } else if (this.isUpgrading) {
         label = s__('ClusterIntegration|Upgrading');
-      } else {
+      } else if (this.upgradeFailed) {
         label = s__('ClusterIntegration|Retry upgrade');
       }
 
@@ -306,7 +307,7 @@ export default {
         </div>
 
         <div
-          v-if="upgradeSuccessful || upgradeFailed"
+          v-if="(upgradeSuccessful || upgradeFailed) && !upgradeAvailable"
           class="form-text text-muted label p-0 js-cluster-application-upgrade-details"
         >
           {{ versionLabel }}
@@ -348,7 +349,7 @@ export default {
         </div>
 
         <loading-button
-          v-if="isUpgradable || upgradeFailed || isUpgrading"
+          v-if="upgradeAvailable || upgradeFailed || isUpgrading"
           class="btn btn-primary js-cluster-application-upgrade-button mt-2"
           :loading="isUpgrading"
           :disabled="isUpgrading"

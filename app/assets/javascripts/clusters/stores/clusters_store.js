@@ -43,6 +43,7 @@ export default class ClusterStore {
           version: null,
           upgradedAt: null,
           chartRepo: 'https://gitlab.com/charts/gitlab-runner',
+          upgradeAvailable: null,
         },
         prometheus: {
           title: s__('ClusterIntegration|Prometheus'),
@@ -103,7 +104,13 @@ export default class ClusterStore {
     this.state.statusReason = serverState.status_reason;
 
     serverState.applications.forEach(serverAppEntry => {
-      const { name: appId, status, status_reason: statusReason, version } = serverAppEntry;
+      const {
+        name: appId,
+        status,
+        status_reason: statusReason,
+        version,
+        update_available: upgradeAvailable,
+      } = serverAppEntry;
 
       this.state.applications[appId] = {
         ...(this.state.applications[appId] || {}),
@@ -129,6 +136,7 @@ export default class ClusterStore {
           serverAppEntry.external_ip || this.state.applications.knative.externalIp;
       } else if (appId === RUNNER) {
         this.state.applications.runner.version = version;
+        this.state.applications.runner.upgradeAvailable = upgradeAvailable;
       }
     });
   }
