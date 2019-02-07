@@ -1953,10 +1953,10 @@ msgstr ""
 msgid "ClusterIntegration|Upgrade"
 msgstr ""
 
-msgid "ClusterIntegration|Upgrade failed "
+msgid "ClusterIntegration|Upgrade failed"
 msgstr ""
 
-msgid "ClusterIntegration|Upgraded "
+msgid "ClusterIntegration|Upgraded"
 msgstr ""
 
 msgid "ClusterIntegration|Upgrading"

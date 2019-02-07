@@ -135,6 +135,8 @@ export default class Clusters {
     if (this.showTokenButton) this.showTokenButton.removeEventListener('click', this.showToken);
     eventHub.$off('installApplication', this.installApplication);
     eventHub.$off('upgradeApplication', this.upgradeApplication);
+    eventHub.$off('upgradeFailed', this.upgradeFailed);
+    eventHub.$off('dismissUpgradeSuccess', this.dismissUpgradeSuccess);
   }
 
   initPolling() {
