@@ -95,10 +95,16 @@
   margin-bottom: 16px;
 }
 
-.new-project-feature-settings {
-  background: transparent;
-  border:none;
-  padding:0;
+.new_project {
+  .project-feature-settings {
+    background: transparent;
+    border:none;
+    padding:0;
+  }
+
+  .dropdown-menu-toggle {
+    max-width:$dropdown-width;
+  }
 }
 
 .project-repo-select {
@@ -1314,9 +1320,11 @@ pre.light-well {
 }
 
 .project-path-slug-separator {
-  position:relative;
-  top:6px;
-  left:16px;
+  position: relative;
+  top: 6px;
+  left: 16px;
+  display: none;
+  @include media-breakpoint-up(sm) { display: block; }
 }
 
 .project-home-empty {
