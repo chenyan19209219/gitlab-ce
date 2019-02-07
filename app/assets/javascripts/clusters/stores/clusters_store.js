@@ -41,7 +41,6 @@ export default class ClusterStore {
           requestStatus: null,
           requestReason: null,
           version: null,
-          upgradedAt: null,
           chartRepo: 'https://gitlab.com/charts/gitlab-runner',
           upgradeAvailable: null,
         },

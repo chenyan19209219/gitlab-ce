@@ -75,10 +75,6 @@ export default {
       type: Boolean,
       required: false,
     },
-    upgradedAt: {
-      type: String,
-      required: false,
-    },
     installApplicationRequestParams: {
       type: Object,
       required: false,
@@ -174,12 +170,12 @@ export default {
     },
     versionLabel() {
       if (this.upgradeFailed) {
-        return s__('ClusterIntegration|Upgrade failed ');
+        return s__('ClusterIntegration|Upgrade failed');
       } else if (this.isUpgrading) {
         return s__('ClusterIntegration|Upgrading');
       }
 
-      return s__('ClusterIntegration|Upgraded ');
+      return s__('ClusterIntegration|Upgraded');
     },
     upgradeRequested() {
       return this.requestStatus === UPGRADE_REQUESTED;
@@ -312,13 +308,7 @@ export default {
         >
           {{ versionLabel }}
 
-          <timeago-tooltip
-            v-if="!isUpgrading && upgradedAt"
-            :time="upgradedAt"
-            tooltip-placement="bottom"
-          />
-
-          <span v-if="upgradeSuccessful">to</span>
+          <span v-if="upgradeSuccessful"> to</span>
 
           <gl-link
             v-if="upgradeSuccessful"

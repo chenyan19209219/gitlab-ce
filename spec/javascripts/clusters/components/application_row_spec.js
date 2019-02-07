@@ -234,7 +234,6 @@ describe('Application Row', () => {
       vm = mountComponent(ApplicationRow, {
         ...DEFAULT_APPLICATION_STATE,
         status: APPLICATION_STATUS.UPDATE_ERRORED,
-        upgradedAt: '2018-11-30T07:15:22.636Z',
       });
       const upgradeBtn = vm.$el.querySelector('.js-cluster-application-upgrade-button');
 
@@ -260,7 +259,6 @@ describe('Application Row', () => {
       vm = mountComponent(ApplicationRow, {
         ...DEFAULT_APPLICATION_STATE,
         status: APPLICATION_STATUS.UPDATE_ERRORED,
-        upgradedAt: '2018-11-30T07:15:22.636Z',
       });
       const upgradeBtn = vm.$el.querySelector('.js-cluster-application-upgrade-button');
 
@@ -290,7 +288,6 @@ describe('Application Row', () => {
         ...DEFAULT_APPLICATION_STATE,
         title: 'GitLab Runner',
         status: APPLICATION_STATUS.UPDATE_ERRORED,
-        upgradedAt: '2018-11-30T07:15:22.636Z',
       });
       const failureMessage = vm.$el.querySelector(
         '.js-cluster-application-upgrade-failure-message',
@@ -309,7 +306,6 @@ describe('Application Row', () => {
       vm = mountComponent(ApplicationRow, {
         ...DEFAULT_APPLICATION_STATE,
         status: APPLICATION_STATUS.UPDATED,
-        upgradedAt: '2018-11-30T07:15:22.636Z',
         version,
       });
       const upgradeDetails = vm.$el.querySelector('.js-cluster-application-upgrade-details');
@@ -326,7 +322,6 @@ describe('Application Row', () => {
       vm = mountComponent(ApplicationRow, {
         ...DEFAULT_APPLICATION_STATE,
         status: APPLICATION_STATUS.UPDATED,
-        upgradedAt: '2018-11-30T07:15:22.636Z',
         chartRepo,
         version,
       });
@@ -341,7 +336,6 @@ describe('Application Row', () => {
       vm = mountComponent(ApplicationRow, {
         ...DEFAULT_APPLICATION_STATE,
         status: APPLICATION_STATUS.UPDATE_ERRORED,
-        upgradedAt: '2018-11-30T07:15:22.636Z',
         version,
       });
       const upgradeDetails = vm.$el.querySelector('.js-cluster-application-upgrade-details');
