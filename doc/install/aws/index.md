@@ -204,7 +204,7 @@ create the actual RDS instance.
 
 Now, it's time to create the database:
 
-1. Select **Instances** from the left menu and click **Create database**.
+1. Select **Databases** from the left menu and click **Create database**.
 1. Select PostgreSQL and click **Next**.
 1. Since this is a production server, let's choose "Production". Click **Next**.
 1. Let's see the instance specifications:
@@ -230,8 +230,25 @@ Now, it's time to create the database:
     `gitlabhq_production`. At the very bottom, there's an option to enable
     auto updates to minor versions. You may want to turn it off.
 1. When done, click **Create database**.
+1. When the next screen comes up, scroll down to "Details" and find the "Security groups" entry. It will probably start with `rds-launch-wizard`. Make a note of that value.
+
+### Connect the RDS Security Group
+
+Let's navigate to our EC2 security groups and add a small change for our EC2
+instances to be able to connect to RDS. In the EC2 section:
+
+1. Select "Security Groups" from the left nav
+1. Choose the RDS security group that you noted above, with the name starting `rds-launch-wizard`
+1. Edit the Inbound rules and click **Add Rule**. Choose PostgreSQL as the Type and under Source choose your main security group, i.e. `gitlab-security-group`. Click Save
+1. Back in the main security group list, choose your main security group, i.e. `gitlab-security-group`
+1. Edit the Inbound rules and click **Add Rule**. Choose Custom TCP Rule as the Type, 6379 (Redis) as the port range, and under Source choose the same security group, i.e. `gitlab-security-group`
+
+**_The document said, "Similar to the above, jump to the `gitlab-security-group` group and add a custom TCP rule for port `6379` accessible within itself." It's not clear why this couldn't have been done when we created the security group in the first place, above. For that matter, we could have created our PostgreSQL security group at that time, and connected them, and selected our PostgreSQL security group when creating the RDS instance. In any case, I'm not 100% certain the last step in this list is correct._**
+
 
 ### Installing the `pg_trgm` extension for PostgreSQL
+
+**_This section assumes you have an instance from which you can access the database, and that the instance has an /opt/gitlab directory. Neither of those is true if you've just been following the instructions. I'm going to hold off on this step, on the assumption I'll be able to do it later (from a bastion host?)_**
 
 Once the database is created, connect to your new RDS instance to verify access
 and to install a required extension.
@@ -294,16 +311,13 @@ To set up Redis:
 1. Leave the rest of the settings to their default values or edit to your liking.
 1. When done, click **Create**.
 
-## RDS and Redis Security Group
+## Security Certificate
 
-Let's navigate to our EC2 security groups and add a small change for our EC2
-instances to be able to connect to RDS. First, copy the security group name we
-defined, namely `gitlab-security-group`, select the RDS security group and edit the
-inbound rules. Choose the rule type to be PostgreSQL and paste the name under
-source.
+If you don't already have a security certificate for the domain you intend to use, create one using ACM.
 
-Similar to the above, jump to the `gitlab-security-group` group
-and add a custom TCP rule for port `6379` accessible within itself.
+1. Go to the ACM service
+1. Click **Request a Certificate** and **Request a public certificate**
+1. Enter the domain name and follow the process to validate ownership using DNS or email
 
 ## Load Balancer
 
@@ -325,82 +339,50 @@ On the EC2 dashboard, look for Load Balancer on the left column:
    ping and what makes up a healthy or unhealthy instance.
 1. Leave the "Register Targets" section as is, and finally review the settings
    and create the ELB.
+   
+**_The document said "select an existing target group" but there wasn't one there because one had not yet been created._**
+
+1. Give your target group a name, i.e. `gitlab-target-group`
+1. Leave the Protocol at HTTP (**_right? because this is all traffic within a subnet?_**)
+1. Under Health checks, choose the HTTPS Protocol (**_right? Best to make sure the cert is working too?_**)
+
 
 After the Load Balancer is up and running, you can revisit your Security
 Groups to refine the access only through the ELB and any other requirement
 you might have.
 
+**_I think this means change the original security group so it only accepts HTTP and HTTPS traffic from the load balancer. But if that's the case, then why did we set it up that way in the first place?_**
+
 ## Deploying GitLab inside an auto scaling group
 
-We'll use AWS's wizard to deploy GitLab and then SSH into the instance to
-configure the PostgreSQL and Redis connections.
+It's time to deploy GitLab itself. In the EC2 console:
 
-The Auto Scaling Group option is available through the EC2 dashboard on the left
-sidebar.
-
-1. Click **Create Auto Scaling group**.
-1. Create a new launch configuration.
-
-### Choose the AMI
-
-Choose the AMI:
-
-1. Go to the Community AMIs and search for `GitLab EE <version>`
-   where `<version>` the latest version as seen on the
-   [releases page](https://about.gitlab.com/releases/).
-
-    ![Choose AMI](img/choose_ami.png)
-
-### Choose an instance type
-
-You should choose an instance type based on your workload. Consult
-[the hardware requirements](../requirements.md#hardware-requirements) to choose
-one that fits your needs (at least `c4.xlarge`, which is enough to accommodate 100 users):
-
-1. Choose the your instance type.
-1. Click **Next: Configure Instance Details**.
-
-### Configure details
-
-In this step we'll configure some details:
-
-1. Enter a name (`gitlab-autoscaling`).
-1. Select the IAM role we created.
+1. Go to the [releases page](https://about.gitlab.com/releases/) and make note of the latest release version number
+1. Choose **Launch Configurations** from the left nav and click **Create launch configuration**
+1. Choose **Community AMIs** in the left nav and enter `gitlab ee` and the version number in the search box (i.e. `gitlab ee 11.7`). Select the highest numbered version in the results.
+        ![Choose AMI](img/choose_ami.png)
+1. Consult [the hardware requirements](../requirements.md#hardware-requirements) to choose an instance type that fits your needs (at least `c4.xlarge`, which is enough to accommodate 100 users)
+1. On the "Configure Details" screen, enter a name, i.e. `gitlab-autoscaling`
+1. Select the IAM role you created at the beginning of the process
 1. Optionally, enable CloudWatch and the EBS-optimized instance settings.
-1. In the "Advanced Details" section, set the IP address type to
-   "Do not assign a public IP address to any instances."
+1. In the "Advanced Details" section, set the IP address type to "Do not assign a public IP address to any instances."
 1. Click **Next: Add Storage**.
-
-### Add storage
-
-The root volume is 8GB by default and should be enough given that we won't store
-any data there. Let's create a new EBS volume that will host the Git data. Its
+1. The root volume is 8GB by default and should be enough given that we won't store
+any data there.
+1. Create a new EBS volume that will host the Git data. Its
 size depends on your needs and you can always migrate to a bigger volume later.
 You will be able to [set up that volume](#setting-up-the-ebs-volume)
 after the instance is created.
-
-### Configure security group
-
-As a last step, configure the security group:
-
-1. Select the existing load balancer security group we have [created](#load-balancer).
+1. Click **Next: Create security group**
+1. Select the existing load balancer that you created at the beginning - not the load balancer's security group (**_right??_**)
 1. Select **Review**.
-
-### Review and launch
-
-Now is a good time to review all the previous settings. When ready, click
-**Create launch configuration** and select the SSH key pair with which you will
-connect to the instance.
-
-### Create Auto Scaling Group
-
-We are now able to start creating our Auto Scaling Group:
-
+1. Click **Create launch configuration** and choose a keypair (if you have one) or create and download a keypair (keep it!)
+1. Click **Create an Auto Scaling group using this launch configuration**
 1. Give it a group name.
 1. Set the group size to 2 as we want to always start with two instances.
 1. Assign it our network VPC and add the **private subnets**.
 1. In the "Advanced Details" section, choose to receive traffic from ELBs
-   and select our ELB.
+   and select the target group you created previously
 1. Choose the ELB health check.
 1. Click **Next: Configure scaling policies**.
 
@@ -425,6 +407,10 @@ After a few minutes, the instances should be up and accessible via the internet.
 Let's connect to the primary and configure some things before logging in.
 
 ### Configuring GitLab to connect with postgres and Redis
+
+**_We're still assuming that we have the ability to connect directly to RDS, which is not and should not be possible. In fact, at this point, we can't connect to our GitLab servers either, because we created them without public IPs. So I think we need a bastion host at this point in order to proceed._**
+
+**_THIS IS WHERE I LEFT OFF_**
 
 While connected to your server, let's connect to the RDS instance to verify
 access and to install a required extension:
