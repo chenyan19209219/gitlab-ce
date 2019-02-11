@@ -20,4 +20,14 @@ describe 'Projects > Settings > For a forked project', :js do
       expect(page).to have_selector('a[title="Operations"]', visible: false)
     end
   end
+
+  describe 'Settings > Operations' do
+    it 'renders the Error Tracking settings' do
+      visit project_settings_operations_path(project)
+
+      wait_for_requests
+
+      expect(page).to have_content('Sentry API URL')
+    end
+  end
 end
