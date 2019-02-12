@@ -245,7 +245,7 @@ export default {
     <div :class="{ 'highlight-changes': highlightChangesClass }" class="project-feature-settings">
       <project-setting-row
         label="Issues"
-        help-text="Lightweight issue tracking system for this project"
+        help-text="System for tracking feature requests and bugs"
       >
         <project-feature-setting
           v-model="issuesAccessLevel"
