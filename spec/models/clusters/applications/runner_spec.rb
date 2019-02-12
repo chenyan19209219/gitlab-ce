@@ -11,16 +11,17 @@ describe Clusters::Applications::Runner do
 
   it { is_expected.to belong_to(:runner) }
 
-  describe '.installed' do
-    subject { described_class.installed }
+  describe '.available' do
+    subject { described_class.available }
 
-    let!(:cluster) { create(:clusters_applications_runner, :installed) }
+    let!(:installed_cluster) { create(:clusters_applications_runner, :installed) }
+    let!(:updated_cluster) { create(:clusters_applications_runner, :updated) }
 
     before do
       create(:clusters_applications_runner, :errored)
     end
 
-    it { is_expected.to contain_exactly(cluster) }
+    it { is_expected.to contain_exactly(installed_cluster, updated_cluster) }
   end
 
   describe '#install_command' do

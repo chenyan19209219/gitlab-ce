@@ -9,16 +9,17 @@ describe Clusters::Applications::Prometheus do
   include_examples 'cluster application helm specs', :clusters_applications_prometheus
   include_examples 'cluster application initial status specs'
 
-  describe '.installed' do
-    subject { described_class.installed }
+  describe '.available' do
+    subject { described_class.available }
 
-    let!(:cluster) { create(:clusters_applications_prometheus, :installed) }
+    let!(:installed_cluster) { create(:clusters_applications_prometheus, :installed) }
+    let!(:updated_cluster) { create(:clusters_applications_prometheus, :updated) }
 
     before do
       create(:clusters_applications_prometheus, :errored)
     end
 
-    it { is_expected.to contain_exactly(cluster) }
+    it { is_expected.to contain_exactly(installed_cluster, updated_cluster) }
   end
 
   describe 'transition to installed' do
@@ -192,7 +193,7 @@ describe Clusters::Applications::Prometheus do
     end
 
     context 'with knative installed' do
-      let(:knative) { create(:clusters_applications_knative, :installed ) }
+      let(:knative) { create(:clusters_applications_knative, :updated ) }
       let(:prometheus) { create(:clusters_applications_prometheus, cluster: knative.cluster) }
 
       subject { prometheus.install_command }

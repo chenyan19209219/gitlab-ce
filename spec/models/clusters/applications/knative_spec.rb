@@ -25,27 +25,16 @@ describe Clusters::Applications::Knative do
   end
 
   describe '.installed' do
-    subject { described_class.installed }
+    subject { described_class.available }
 
-    let!(:cluster) { create(:clusters_applications_knative, :installed) }
-
-    before do
-      create(:clusters_applications_knative, :errored)
-    end
-
-    it { is_expected.to contain_exactly(cluster) }
-  end
-
-  describe '#make_installed' do
-    subject { described_class.installed }
-
-    let!(:cluster) { create(:clusters_applications_knative, :installed) }
+    let!(:installed_cluster) { create(:clusters_applications_knative, :installed) }
+    let!(:updated_cluster) { create(:clusters_applications_knative, :updated) }
 
     before do
       create(:clusters_applications_knative, :errored)
     end
 
-    it { is_expected.to contain_exactly(cluster) }
+    it { is_expected.to contain_exactly(installed_cluster, updated_cluster) }
   end
 
   describe 'make_installed with external_ip' do
