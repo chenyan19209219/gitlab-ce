@@ -4,15 +4,30 @@ module Projects
   module Operations
     class UpdateService < BaseService
       def execute
-        Projects::UpdateService
-          .new(project, current_user, project_update_params)
-          .execute
+        setting = project.error_tracking_setting
+
+        result = if setting.nil?
+                   project.create_error_tracking_setting(
+                     error_tracking_params.merge(project_id: project.id)
+                   )
+                 else
+                   setting.update(error_tracking_params)
+                 end
+
+        if result
+          success
+        else
+          update_failed!
+        end
       end
 
       private
 
-      def project_update_params
-        error_tracking_params
+      def update_failed!
+        model_errors = project.error_tracking_setting&.errors&.full_messages
+        error_message = model_errors.presence || 'Error tracking settings could not be updated!'
+
+        error(error_message)
       end
 
       def error_tracking_params
@@ -26,13 +41,11 @@ module Projects
         )
 
         {
-          error_tracking_setting_attributes: {
-            api_url: api_url,
-            token: settings[:token],
-            enabled: settings[:enabled],
-            project_name: settings.dig(:project, :name),
-            organization_name: settings.dig(:project, :organization_name)
-          }
+          api_url: api_url,
+          token: settings[:token],
+          enabled: settings[:enabled],
+          project_name: settings.dig(:project, :name),
+          organization_name: settings.dig(:project, :organization_name)
         }
       end
     end

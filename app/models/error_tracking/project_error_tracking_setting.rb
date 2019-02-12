@@ -10,11 +10,9 @@ module ErrorTracking
 
     validates :api_url, length: { maximum: 255 }, public_url: true, url: { enforce_sanitization: true, ascii_only: true }, allow_nil: true
 
-    validates :api_url, presence: true, if: :enabled
-
     validate :validate_api_url_path, if: :enabled
 
-    validates :token, presence: true, if: :enabled
+    validate :validate_api_url_token_presence, if: :enabled
 
     attr_encrypted :token,
       mode: :per_attribute_iv,
@@ -118,6 +116,16 @@ module ErrorTracking
 
       @slug_match ||= url.path.match(%r{^/api/0/projects/+(?<organization>[^/]+)/+(?<project>[^/|$]+)}) || {}
       @slug_match[capture]
+    end
+
+    def validate_api_url_token_presence
+      if self.api_url.blank?
+        errors.add(:base, 'Sentry API URL is a required field.')
+      end
+
+      if self.token.blank?
+        errors.add(:base, 'Sentry API Auth Token is a required field.')
+      end
     end
 
     def validate_api_url_path
