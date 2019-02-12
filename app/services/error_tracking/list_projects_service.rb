@@ -15,7 +15,7 @@ module ErrorTracking
 
       # our results are not yet ready
       if result.nil?
-        return error('not ready', :no_content)
+        return error('Calculating cache entry, try again later', :no_content)
       end
 
       if result[:error].present?

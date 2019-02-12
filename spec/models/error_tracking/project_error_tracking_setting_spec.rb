@@ -175,12 +175,19 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
     context 'when cached' do
       let(:sentry_client) { spy(:sentry_client) }
 
+      let(:opts) do
+        {
+          api_url: subject.api_url,
+          token: subject.token
+        }
+      end
+
       before do
-        stub_reactive_cache(subject, projects, {})
+        stub_reactive_cache(subject, projects, opts)
         synchronous_reactive_cache(subject)
 
-        expect(subject).to receive(:sentry_client).and_return(sentry_client)
-        expect(sentry_client).to receive(:list_projects)
+        allow(subject).to receive(:sentry_client).and_return(sentry_client)
+        allow(sentry_client).to receive(:list_projects)
           .and_return(projects)
       end
 
@@ -223,6 +230,57 @@ describe ErrorTracking::ProjectErrorTrackingSetting do
           error: 'error message',
           http_status: :unprocessable_entity
         )
+      end
+    end
+
+    context 'different cache entries' do
+      let(:sentry_client1) { spy(:sentry_client) }
+      let(:sentry_client2) { spy(:sentry_client) }
+      let(:new_api_url) { 'http://sentry.some_new_server.com/api/0/projects/org/proj' }
+      let(:new_token) { 'new-token' }
+      let(:new_projects) { [:new, :projects] }
+
+      let(:opts) do
+        {
+          api_url: subject.api_url,
+          token: subject.token
+        }
+      end
+
+      let(:new_opts) do
+        {
+          api_url: new_api_url,
+          token: new_token
+        }
+      end
+
+      before do
+        stub_reactive_cache(subject, projects, opts)
+        stub_reactive_cache(subject, new_projects, new_opts)
+        synchronous_reactive_cache(subject)
+
+        allow(subject).to receive(:sentry_client).and_call_original
+
+        allow(Sentry::Client).to receive(:new).with(subject.api_url, subject.token)
+          .and_return(sentry_client1)
+        allow(sentry_client1).to receive(:list_projects).and_return(projects)
+
+        allow(Sentry::Client).to receive(:new).with(new_api_url, new_token)
+          .and_return(sentry_client2)
+        allow(sentry_client2).to receive(:list_projects).and_return(new_projects)
+      end
+
+      it 'returns correct cached projects' do
+        result = subject.list_sentry_projects
+        expect(result).to eq(projects: projects)
+        expect(Sentry::Client).to have_received(:new).with(subject.api_url, subject.token)
+
+        subject.api_url = new_api_url
+        subject.token = new_token
+
+        result = subject.list_sentry_projects
+        expect(result).to eq(projects: new_projects)
+        expect(Sentry::Client).to have_received(:new).with(new_api_url, new_token)
       end
     end
   end

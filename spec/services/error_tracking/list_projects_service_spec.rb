@@ -54,6 +54,37 @@ describe ErrorTracking::ListProjectsService do
         end
       end
 
+      context 'error tracking setting returns error' do
+        before do
+          allow(error_tracking_setting).to receive(:list_sentry_projects)
+            .and_return({
+              error: 'Sentry response error: 500',
+              http_status: :bad_request
+            })
+        end
+
+        it 'returns error response' do
+          expect(result[:message]).to eq('Sentry response error: 500')
+          expect(result[:http_status]).to eq(:bad_request)
+          expect(result[:status]).to eq(:error)
+          expect(error_tracking_setting).to have_received(:list_sentry_projects)
+        end
+      end
+
+      context 'error tracking setting returns nil' do
+        before do
+          allow(error_tracking_setting).to receive(:list_sentry_projects)
+            .and_return(nil)
+        end
+
+        it 'returns 204' do
+          expect(result[:message]).to eq('Calculating cache entry, try again later')
+          expect(result[:http_status]).to eq(:no_content)
+          expect(result[:status]).to eq(:error)
+          expect(error_tracking_setting).to have_received(:list_sentry_projects)
+        end
+      end
+
       context 'with invalid url' do
         let(:params) do
           ActionController::Parameters.new(
@@ -82,23 +113,6 @@ describe ErrorTracking::ListProjectsService do
 
         it 'returns the projects' do
           expect(result).to eq(status: :success, projects: projects)
-        end
-      end
-
-      context 'when list_sentry_projects returns nil' do
-        before do
-          expect(error_tracking_setting)
-            .to receive(:list_sentry_projects).and_return(nil)
-        end
-
-        it 'result is not ready' do
-          result = subject.execute
-
-          expect(result).to eq(
-            status: :error,
-            http_status: :no_content,
-            message: 'not ready'
-          )
         end
       end
 

@@ -63,7 +63,11 @@ module ErrorTracking
     end
 
     def list_sentry_projects
-      with_reactive_cache('list_projects', {}) do |result|
+      opts = {
+        'api_url' => self.api_url,
+        'token' => self.token
+      }
+      with_reactive_cache('list_projects', opts) do |result|
         result
       end
     end
@@ -73,6 +77,11 @@ module ErrorTracking
       when 'list_issues'
         { issues: sentry_client.list_issues(**opts.symbolize_keys) }
       when 'list_projects'
+        opts.symbolize_keys!
+        self.api_url = opts[:api_url]
+        self.token = opts[:token]
+        self.enabled = true
+
         { projects: sentry_client.list_projects }
       end
     rescue Sentry::Client::SentryError => e
