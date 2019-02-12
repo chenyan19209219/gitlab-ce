@@ -57,7 +57,7 @@
           .option-description
             Allows you to immediately clone this project’s repository. Skip this if you plan to push up an existing repository.
 -# TODO: move some of this into another file
-%section.settings#new-project-settings.no-animate{ class: ('expanded' if expanded) }
+%section.settings.no-animate{ class: ('expanded' if expanded) }
   %button.btn.btn-link.js-settings-toggle{ type: 'button' }
     = expanded ? _('Hide avatar, license and features settings') : _('Show avatar, license and features settings')
 
@@ -69,28 +69,23 @@
       = f.text_area :description, placeholder: 'Description format', class: "form-control", rows: 3, maxlength: 250, data: { track_label: "#{track_label}", track_event: "activate_form_input", track_property: "project_description", track_value: "" }
 
     .form-group
-      = f.label :path, class: 'label-bold' do
+      = f.label name: 'project[avatar]', class: 'label-bold' do
         %span= _("Project avatar")
       .prepend-top-5.append-bottom-10
         %button.btn.js-choose-project-avatar-button{ type: 'button' }= _("Choose file...")
         %span.file_name.prepend-left-default.js-filename= _("No file chosen")
-        = f.file_field :avatar, class: "js-project-avatar-input hidden"
-      .form-text.text-muted= _("The maximum file size allowed is 200KB.") 
+        = f.file_field name: 'project[avatar]', class: "js-project-avatar-input hidden"
+      .form-text.text-muted= _("The maximum file size allowed is 200KB.")
 
-
-      -# TODO: fix license selector form
     .form-group
-      = f.label :path, class: 'label-bold' do
+      = f.label :license, class: 'label-bold' do
         %span= _("License")
       .license-selector.js-license-selector-wrap.js-template-selector-wrap
         = dropdown_tag("Apply a license template", options: { toggle_class: 'js-license-selector qa-license-dropdown', title: "Apply a license", filter: true, placeholder: "Filter", data: { data: licenses_for_select(@project) } } )
         %input.js-project-license{ :name => "project[license]", :type => "hidden", :value => "" }
-        -# = dropdown_tag("Apply a license template", options: { toggle_class: 'js-license-selector qa-license-dropdown', title: "Apply a license", filter: true, placeholder: "Filter", data: { data: licenses_for_select(@project), project: @project.name, fullname: @project.namespace.human_name } } )
 
-    -# Project settings toggles
-    -# TODO: this was originally a vue component, should we convert it or add the toggle behaviour with JS
     .form-group
-      = f.label :path, class: 'label-bold' do
+      = f.label :project_feature_attributes, class: 'label-bold' do
         %span= _("Features")
       .project-feature-settings
         .project-feature-row
@@ -98,81 +93,81 @@
             Issues
             /
           %span.form-text.text-muted Lightweight issue tracking system for this project
-          .project-feature-controls{"data-for" => "project[project_feature_attributes][issues_access_level]"}
+          .project-feature-controls{ "data-for" => "project[project_feature_attributes][issues_access_level]" }
             %label.toggle-wrapper
-              / 
-              %button.js-project-feature-toggle.project-feature-toggle{"aria-label" => "Toggle Status: OFF", :type => "button"}
-                %input.js-project-feature-toggle-input{:name => "project[project_feature_attributes][issues_access_level]", :type => "hidden", :value => "0"}/            
+              /
+              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button" }
+                %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                 .loading-container.text-center.loading-icon
-                  %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+                  %i.fa.fa-spinner.fa-1x.fa-spin{ "aria-hidden" => "true", "aria-label" => "Loading" }
                 %span.toggle-icon
-                  %svg.s16.ic-status_failed_borderless.toggle-icon-svg{"aria-hidden" => "true"}
-                    %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_failed_borderless"}
+                  %svg.s16.ic-status_failed_borderless.toggle-icon-svg{ "aria-hidden" => "true" }
+                    %use{ "xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_failed_borderless" }
             .select-wrapper
-              %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
-                %option{:value => "0"}
+              %select.form-control.project-repo-select.select-control{ :disabled => "disabled", :name => "project[project_feature_attributes][issues_access_level]" }
+                %option{ :value => "0" }
                   Enable feature to choose access level
-              %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+              %i.fa.fa-chevron-down{ "aria-hidden" => "true" }
         .project-feature-row
           %label.label-bold
             Repository
             /
           %span.form-text.text-muted View and edit files in this project
-          .project-feature-controls{"data-for" => "project[project_feature_attributes][repository_access_level]"}
+          .project-feature-controls{ "data-for" => "project[project_feature_attributes][repository_access_level]" }
             %label.toggle-wrapper
-              / 
-              %button.js-project-feature-toggle.project-feature-toggle.is-checked{"aria-label" => "Toggle Status: ON", :type => "button"}
-                %input.js-project-feature-toggle-input{:name => "project[project_feature_attributes][repository_access_level]", :type => "hidden", :value => "10"}/            
+              /
+              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button" }
+                %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                 .loading-container.text-center.loading-icon
-                  %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+                  %i.fa.fa-spinner.fa-1x.fa-spin{ "aria-hidden" => "true", "aria-label" => "Loading" }
                 %span.toggle-icon
-                  %svg.s16.ic-status_success_borderless.toggle-icon-svg{"aria-hidden" => "true"}
-                    %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless"}
+                  %svg.s16.ic-status_success_borderless.toggle-icon-svg{ "aria-hidden" => "true" }
+                    %use{ "xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless" }
             .select-wrapper
-              %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
-                %option{:value => "10"}
-                  Only Project Members
-              %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+              %select.form-control.project-repo-select.select-control{ :disabled => "disabled", :name => "project[project_feature_attributes][repository_access_level]", }
+                %option{ :value => "0" }
+                  Enable feature to choose access level
+              %i.fa.fa-chevron-down{ "aria-hidden" => "true" }
         .project-feature-row
           %label.label-bold
             Wiki
-            / 
+            /
           %span.form-text.text-muted Pages for project documentation
-          .project-feature-controls{"data-for" => "project[project_feature_attributes][wiki_access_level]"}
+          .project-feature-controls{ "data-for" => "project[project_feature_attributes][wiki_access_level]" }
             %label.toggle-wrapper
-              / 
-              %button.js-project-feature-toggle.project-feature-toggle.is-checked{"aria-label" => "Toggle Status: ON", :type => "button"}
-                %input.js-project-feature-toggle-input{:name => "project[project_feature_attributes][wiki_access_level]", :type => "hidden", :value => "20"}/            
+              /
+              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button" }
+                %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                 .loading-container.text-center.loading-icon
-                  %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+                  %i.fa.fa-spinner.fa-1x.fa-spin{ "aria-hidden" => "true", "aria-label" => "Loading" }
                 %span.toggle-icon
-                  %svg.s16.ic-status_success_borderless.toggle-icon-svg{"aria-hidden" => "true"}
-                    %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless"}
+                  %svg.s16.ic-status_success_borderless.toggle-icon-svg{ "aria-hidden" => "true" }
+                    %use{ "xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless" }
             .select-wrapper
-              %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
-                %option{:value => "10"}
-                  Only Project Members
-              %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+              %select.form-control.project-repo-select.select-control{ :disabled => "disabled", :name => "project[project_feature_attributes][wiki_access_level]" }
+                %option{ :value => "0" }
+                  Enable feature to choose access level
+              %i.fa.fa-chevron-down{ "aria-hidden" => "true" }
         .project-feature-row
           %label.label-bold
             Snippets
-            / 
+            /
           %span.form-text.text-muted Share code pastes with others out of Git repository
-          .project-feature-controls{"data-for" => "project[project_feature_attributes][snippets_access_level]"}
+          .project-feature-controls{ "data-for" => "project[project_feature_attributes][snippets_access_level]" }
             %label.toggle-wrapper
-              / 
-              %button.js-project-feature-toggle.project-feature-toggle.is-checked{"aria-label" => "Toggle Status: ON", :type => "button"}
-                %input.js-project-feature-toggle-input{:name => "project[project_feature_attributes][snippets_access_level]", :type => "hidden", :value => "20"}/            
+              /
+              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button" }
+                %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                 .loading-container.text-center.loading-icon
-                  %i.fa.fa-spinner.fa-1x.fa-spin{"aria-hidden" => "true", "aria-label" => "Loading"}
+                  %i.fa.fa-spinner.fa-1x.fa-spin{ "aria-hidden" => "true", "aria-label" => "Loading" }
                 %span.toggle-icon
-                  %svg.s16.ic-status_success_borderless.toggle-icon-svg{"aria-hidden" => "true"}
-                    %use{"xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless"}
+                  %svg.s16.ic-status_success_borderless.toggle-icon-svg{ "aria-hidden" => "true" }
+                    %use{ "xlink:href" => "/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#status_success_borderless" }
             .select-wrapper
-              %select.form-control.project-repo-select.select-control{:disabled => "disabled"}
-                %option{:value => "10"}
-                  Only Project Members
-              %i.fa.fa-chevron-down{"aria-hidden" => "true"}
+              %select.form-control.project-repo-select.select-control{ :disabled => "disabled", :name => "project[project_feature_attributes][snippets_access_level]" }
+                %option{ :value => "0" }
+                  Enable feature to choose access level
+              %i.fa.fa-chevron-down{ "aria-hidden" => "true" }
         /
 
 

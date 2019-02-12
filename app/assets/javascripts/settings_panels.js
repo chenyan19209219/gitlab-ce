@@ -1,6 +1,8 @@
 import $ from 'jquery';
 import { __ } from './locale';
 
+const DEFAULT_OPTS = { expandedText: 'Expand', collapsedText: 'Collapse' };
+
 function expandSection($section, text = null) {
   $section
     .find('.js-settings-toggle:not(.js-settings-toggle-trigger-only)')
@@ -32,7 +34,7 @@ function closeSection($section, text = null) {
   }
 }
 
-function toggleSection($section, opts) {
+function toggleSection($section, opts = DEFAULT_OPTS) {
   $section.removeClass('no-animate');
   if ($section.hasClass('expanded')) {
     closeSection($section, opts.collapsedText);
@@ -48,9 +50,7 @@ function updateText($section, text = '') {
     .text(text || __('Expand'));
 }
 
-export default function initSettingsPanels(
-  opts = { expandedText: 'Expand', collapsedText: 'Collapse' },
-) {
+export default function initSettingsPanels(opts = DEFAULT_OPTS) {
   $('.settings').each((i, elm) => {
     const $section = $(elm);
     $section.on('click.toggleSection', '.js-settings-toggle', () => toggleSection($section, opts));

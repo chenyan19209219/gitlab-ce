@@ -18,7 +18,6 @@ function updateToggle(toggle, isOn) {
 }
 
 function onToggleClicked(toggle, input, clickCallback) {
-  console.log('onToggleClicked', toggle, input);
   const previousIsOn = parseBoolean(input.value);
 
   // Visually change the toggle and start loading
@@ -50,15 +49,9 @@ function onToggleClicked(toggle, input, clickCallback) {
 export default function setupToggleButtons(container, clickCallback = () => {}) {
   const toggles = container.querySelectorAll('.js-project-feature-toggle');
 
-  console.log('setupToggleButtons::container', container);
-  console.log('setupToggleButtons::toggles', toggles);
-
   toggles.forEach(toggle => {
     const input = toggle.querySelector('.js-project-feature-toggle-input');
     const isOn = parseBoolean(input.value);
-
-    console.log('setupToggleButtons::toggle::input', input);
-    console.log('setupToggleButtons::toggle::isOn', isOn);
 
     // Get the visible toggle in sync with the hidden input
     updateToggle(toggle, isOn);
