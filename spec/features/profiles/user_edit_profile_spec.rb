@@ -327,5 +327,39 @@ describe 'User edit profile' do
         end
       end
     end
+
+    context 'User time preferences', :js do
+      let(:issue) { create(:issue, project: project)}
+      let(:project) { create(:project) }
+
+      it 'shows the user time preferences form' do
+        expect(page).to have_content('Time settings')
+      end
+
+      it 'allows the user to select a time zone from a dropdown list of options' do
+        expect(page.find('.user-time-preferences .dropdown')).not_to have_css('.show')
+
+        page.find('.user-time-preferences .js-timezone-dropdown').click
+        expect(page.find('.user-time-preferences .dropdown')).to have_css('.show')
+
+        page.find("a", text: "Nuku'alofa").click
+
+        tz = page.find('.user-time-preferences #user_timezone', visible: false)
+        expect(tz.value).to eq('Pacific/Tongatapu')
+      end
+
+      it 'timezone defaults to UTC' do
+        expect(page.find('.user-time-preferences #user_timezone', visible: false).value).to eq('UTC')
+      end
+
+      it 'allows the user to toggle their time format and display preferences' do
+        %w[time_format time_display].each do |field_selector|
+          field = page.find_field("user[#{field_selector}]")
+          expect(field).not_to be_checked
+          field.click
+          expect(field).to be_checked
+        end
+      end
+    end
   end
 end
