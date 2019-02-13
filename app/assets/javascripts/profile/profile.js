@@ -2,6 +2,7 @@ import $ from 'jquery';
 import axios from '~/lib/utils/axios_utils';
 import flash from '../flash';
 import { parseBoolean } from '~/lib/utils/common_utils';
+import TimezoneDropdown from '~/pages/projects/pipeline_schedules/shared/components/timezone_dropdown';
 
 export default class Profile {
   constructor({ form } = {}) {
@@ -10,6 +11,7 @@ export default class Profile {
     this.setRepoRadio();
     this.bindEvents();
     this.initAvatarGlCrop();
+    gl.timezoneDropdown = new TimezoneDropdown();
   }
 
   initAvatarGlCrop() {

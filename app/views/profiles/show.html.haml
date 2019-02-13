@@ -68,6 +68,30 @@
   %hr
   .row
     .col-lg-4.profile-settings-sidebar
+      %h4.prepend-top-0= s_("Profiles|Time settings")
+      %p= s_("Profiles|This settings will update how dates and times are displayed for you.")
+    .col-lg-8
+      -# TODO: might need an entry in user/profile to describe some of these settings
+      %h5= ("Time zone")
+      = dropdown_tag(_("Select a timezone"), options: { toggle_class: 'btn js-timezone-dropdown', title: _("Select a timezone"), filter: true, placeholder: s_("OfSearchInADropdown|Filter"), data: { data: timezone_data } } )
+      %h5= ("Time format")
+      .checkbox-icon-inline-wrapper
+        .form-check
+          %input.form-check-input{ :name => "time_format", :type => "checkbox" }/
+          %label.form-check-label
+            = s_("Profiles|Display time in 24 hour format")
+            = link_to icon('question-circle'), help_page_path('user/profile/index.md', anchor: 'time-settings')
+      %h5= ("Time display")
+      .checkbox-icon-inline-wrapper
+        .form-check
+          %input.form-check-input{ :name => "time_display", :type => "checkbox" }/
+          %label.form-check-label
+            = s_("Profiles|Use relative times")
+          = link_to icon('question-circle'), help_page_path('user/profile/index.md', anchor: 'time-settings')
+
+  %hr
+  .row
+    .col-lg-4.profile-settings-sidebar
       %h4.prepend-top-0
         = s_("Profiles|Main settings")
       %p
