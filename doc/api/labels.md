@@ -177,7 +177,7 @@ Example response:
 Promotes a project label to a group label.
 
 ```
-POST /projects/:id/labels/promote
+PUT /projects/:id/labels/promote
 ```
 
 | Attribute       | Type    | Required                          | Description                      |
@@ -186,7 +186,7 @@ POST /projects/:id/labels/promote
 | `name`          | string  | yes                               | The name of the existing label   |
 
 ```bash
-curl --request POST --data "name=documentation" --header "PRIVATE-TOKEN: <your_access_token>" "https://gitlab.example.com/api/v4/projects/1/labels/promote"
+curl --request PUT --data "name=documentation" --header "PRIVATE-TOKEN: <your_access_token>" "https://gitlab.example.com/api/v4/projects/1/labels/promote"
 ```
 
 Example response:
