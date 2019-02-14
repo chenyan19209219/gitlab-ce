@@ -7,9 +7,7 @@ module Types
     field :project, Types::ProjectType,
           null: true,
           resolver: Resolvers::ProjectResolver,
-          description: "Find a project" do
-      authorize :read_project
-    end
+          description: "Find a project"
 
     field :echo, GraphQL::STRING_TYPE, null: false, function: Functions::Echo.new
   end

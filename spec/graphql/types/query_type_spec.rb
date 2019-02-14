@@ -15,9 +15,5 @@ describe GitlabSchema.types['Query'] do
       is_expected.to have_graphql_type(Types::ProjectType)
       is_expected.to have_graphql_resolver(Resolvers::ProjectResolver)
     end
-
-    it 'authorizes with read_project' do
-      is_expected.to require_graphql_authorizations(:read_project)
-    end
   end
 end

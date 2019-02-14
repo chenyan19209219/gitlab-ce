@@ -6,6 +6,8 @@ module Types
 
     graphql_name 'Project'
 
+    authorize :read_project
+
     field :id, GraphQL::ID_TYPE, null: false
 
     field :full_path, GraphQL::ID_TYPE, null: false
@@ -69,9 +71,7 @@ module Types
     field :merge_request,
           Types::MergeRequestType,
           null: true,
-          resolver: Resolvers::MergeRequestResolver do
-      authorize :read_merge_request
-    end
+          resolver: Resolvers::MergeRequestResolver
 
     field :issues,
           Types::IssueType.connection_type,

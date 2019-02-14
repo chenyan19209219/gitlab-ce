@@ -42,6 +42,23 @@ module Gitlab
             Ability.allowed?(current_user, ability, object, scope: :user)
           end
         end
+
+        module ClassMethods
+          def required_permissions
+            # If the `#authorize` call is used on multiple classes, we add the
+            # permissions specified on a subclass, to the ones that were specified
+            # on it's superclass.
+            @required_permissions ||= if self.respond_to?(:superclass) && superclass.respond_to?(:required_permissions)
+                                        superclass.required_permissions.dup
+                                      else
+                                        []
+                                      end
+          end
+
+          def authorize(*permissions)
+            required_permissions.concat(permissions)
+          end
+        end
       end
     end
   end

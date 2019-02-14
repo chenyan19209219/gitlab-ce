@@ -5,18 +5,11 @@ describe GitlabSchema.types['Project'] do
 
   it { expect(described_class.graphql_name).to eq('Project') }
 
-  describe 'nested merge request' do
-    it { expect(described_class).to have_graphql_field(:merge_request) }
+  it { is_expected.to require_graphql_authorizations(:read_project) }
 
-    it 'authorizes the merge request' do
-      expect(described_class.fields['mergeRequest'])
-        .to require_graphql_authorizations(:read_merge_request)
-    end
-  end
+  it { is_expected.to have_graphql_field(:merge_request) }
 
-  describe 'nested issues' do
-    it { expect(described_class).to have_graphql_field(:issues) }
-  end
+  it { is_expected.to have_graphql_field(:issues) }
 
   it { is_expected.to have_graphql_field(:pipelines) }
 end

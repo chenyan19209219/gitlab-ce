@@ -15,18 +15,14 @@ module Types
 
     field :author, Types::UserType,
           null: false,
-          resolve: -> (obj, _args, _ctx) { Gitlab::Graphql::Loaders::BatchModelLoader.new(User, obj.author_id).find } do
-      authorize :read_user
-    end
+          resolve: -> (obj, _args, _ctx) { Gitlab::Graphql::Loaders::BatchModelLoader.new(User, obj.author_id).find }
 
     field :assignees, Types::UserType.connection_type, null: true
 
     field :labels, Types::LabelType.connection_type, null: true
     field :milestone, Types::MilestoneType,
           null: true,
-          resolve: -> (obj, _args, _ctx) { Gitlab::Graphql::Loaders::BatchModelLoader.new(Milestone, obj.milestone_id).find } do
-      authorize :read_milestone
-    end
+          resolve: -> (obj, _args, _ctx) { Gitlab::Graphql::Loaders::BatchModelLoader.new(Milestone, obj.milestone_id).find }
 
     field :due_date, Types::TimeType, null: true
     field :confidential, GraphQL::BOOLEAN_TYPE, null: false
