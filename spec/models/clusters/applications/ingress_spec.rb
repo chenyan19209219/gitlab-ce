@@ -16,19 +16,6 @@ describe Clusters::Applications::Ingress do
     allow(ClusterWaitForIngressIpAddressWorker).to receive(:perform_async)
   end
 
-  describe '.available' do
-    subject { described_class.available }
-
-    let!(:installed_cluster) { create(:clusters_applications_ingress, :installed) }
-    let!(:updated_cluster) { create(:clusters_applications_ingress, :updated) }
-
-    before do
-      create(:clusters_applications_ingress, :errored)
-    end
-
-    it { is_expected.to contain_exactly(installed_cluster, updated_cluster) }
-  end
-
   describe '#make_installed!' do
     before do
       application.make_installed!

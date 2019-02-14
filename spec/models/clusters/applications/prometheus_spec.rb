@@ -9,19 +9,6 @@ describe Clusters::Applications::Prometheus do
   include_examples 'cluster application helm specs', :clusters_applications_prometheus
   include_examples 'cluster application initial status specs'
 
-  describe '.available' do
-    subject { described_class.available }
-
-    let!(:installed_cluster) { create(:clusters_applications_prometheus, :installed) }
-    let!(:updated_cluster) { create(:clusters_applications_prometheus, :updated) }
-
-    before do
-      create(:clusters_applications_prometheus, :errored)
-    end
-
-    it { is_expected.to contain_exactly(installed_cluster, updated_cluster) }
-  end
-
   describe 'transition to installed' do
     let(:project) { create(:project) }
     let(:cluster) { create(:cluster, :with_installed_helm, projects: [project]) }
