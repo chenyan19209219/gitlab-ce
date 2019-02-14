@@ -68,6 +68,7 @@ export default {
           :fields="$options.fields"
           :show-empty="true"
           :empty-text="__('No errors to display')"
+          class="error-tracking-table"
         >
           <template slot="HEAD_events" slot-scope="data">
             <div class="text-right">{{ data.label }}</div>
@@ -79,12 +80,14 @@ export default {
             <div class="d-flex flex-column">
               <div class="d-flex">
                 <gl-link :href="errors.item.externalUrl" class="d-flex text-dark" target="_blank">
-                  <strong>{{ errors.item.title.trim() }}</strong>
+                  <strong class="text-truncate">{{ errors.item.title.trim() }}</strong>
                   <icon name="external-link" class="ml-1" />
                 </gl-link>
-                <span class="text-secondary ml-2">{{ errors.item.culprit }}</span>
+                <span class="text-secondary text-truncate ml-2">{{ errors.item.culprit }}</span>
               </div>
-              {{ errors.item.message || __('No details available') }}
+              <div class="text-truncate">
+                {{ errors.item.message || __('No details available') }}
+              </div>
             </div>
           </template>
 
@@ -116,3 +119,19 @@ export default {
     </div>
   </div>
 </template>
+
+<style>
+.error-tracking-table th + th,
+.error-tracking-table td + td {
+  width: 80px;
+}
+
+.error-tracking-table th:last-child,
+.error-tracking-table td:last-child {
+  width: 140px;
+}
+
+.error-tracking-table {
+  table-layout: fixed;
+}
+</style>

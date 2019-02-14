@@ -1,0 +1,5 @@
+---
+title: Fix mobile layout of error tracking table
+merge_request: 25184
+author:
+type: fixed

@@ -100,6 +100,7 @@ module Sentry
 
       frequency = issue.dig('stats', '24h')
       message = issue.dig('metadata', 'value')
+      title = issue.dig('metadata', 'type') || issue.fetch('title', nil)
 
       external_url = issue_url(id)
 
@@ -107,7 +108,7 @@ module Sentry
         id: id,
         first_seen: issue.fetch('firstSeen', nil),
         last_seen: issue.fetch('lastSeen', nil),
-        title: issue.fetch('title', nil),
+        title: title,
         type: issue.fetch('type', nil),
         user_count: issue.fetch('userCount', nil),
         count: count,
