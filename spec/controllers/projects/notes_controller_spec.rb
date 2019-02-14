@@ -266,6 +266,22 @@ describe Projects::NotesController do
       end
     end
 
+    context 'when creating a comment on a commit with large SHA1' do
+      let(:commit) { create(:commit, project: project, id: '842616594688d2351480dfebd67b3d8d15571e6d') }
+
+      it 'creates a note successfully' do
+        expect do
+          post :create, params: {
+            note: { note: 'some note', commit_id: commit.id },
+            namespace_id: project.namespace,
+            project_id: project,
+            target_type: 'commit',
+            target_id: commit.id
+          }
+        end.to change { Note.count }.by(1)
+      end
+    end
+
     context 'when creating a commit comment from an MR fork' do
       let(:project) { create(:project, :repository) }
 

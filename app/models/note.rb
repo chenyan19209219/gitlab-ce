@@ -142,7 +142,7 @@ class Note < ActiveRecord::Base
   scope :with_metadata, -> { includes(:system_note_metadata) }
 
   after_initialize :ensure_discussion_id
-  before_validation :nullify_blank_type, :nullify_blank_line_code
+  before_validation :nullify_blank_type, :nullify_blank_line_code, :nullify_unused_id
   before_validation :set_discussion_id, on: :create
   after_save :keep_around_commit, if: :for_project_noteable?
   after_save :expire_etag_cache
@@ -472,6 +472,14 @@ class Note < ActiveRecord::Base
 
   def nullify_blank_line_code
     self.line_code = nil if self.line_code.blank?
+  end
+
+  def nullify_unused_id
+    if for_commit?
+      self.noteable_id = nil
+    elsif !for_merge_request?
+      self.commit_id = nil
+    end
   end
 
   def ensure_discussion_id

@@ -19,6 +19,46 @@ describe Note do
     it { is_expected.to include_module(Awardable) }
   end
 
+  describe 'nullify unused id before validation' do
+    subject { described_class.new(noteable_id: 123, commit_id: 123) }
+
+    context 'when note is on commit' do
+      before do
+        subject.noteable_type = "Commit"
+        subject.valid?
+      end
+
+      it 'sets noteable_id to nil' do
+        expect(subject.noteable_id).to eq(nil)
+        expect(subject.commit_id).not_to eq(nil)
+      end
+    end
+
+    context 'when note is on merge request' do
+      before do
+        subject.noteable_type = "MergeRequest"
+        subject.valid?
+      end
+
+      it 'does not set ids to nil' do
+        expect(subject.noteable_id).not_to eq(nil)
+        expect(subject.commit_id).not_to eq(nil)
+      end
+    end
+
+    context 'when note is on other noteable' do
+      before do
+        subject.noteable_type = "PersonalSnippet"
+        subject.valid?
+      end
+
+      it 'sets commit_id to nil' do
+        expect(subject.noteable_id).not_to eq(nil)
+        expect(subject.commit_id).to eq(nil)
+      end
+    end
+  end
+
   describe 'validation' do
     it { is_expected.to validate_presence_of(:note) }
     it { is_expected.to validate_presence_of(:project) }
