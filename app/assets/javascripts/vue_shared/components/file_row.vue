@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex';
 import Icon from '~/vue_shared/components/icon.vue';
 import FileHeader from '~/vue_shared/components/file_row_header.vue';
 import FileIcon from '~/vue_shared/components/file_icon.vue';
@@ -43,6 +44,7 @@ export default {
     };
   },
   computed: {
+    ...mapState('diffs', ['currentDiffFileId']),
     isTree() {
       return this.file.type === 'tree';
     },
@@ -57,7 +59,8 @@ export default {
     fileClass() {
       return {
         'file-open': this.isBlob && this.file.opened,
-        'is-active': this.isBlob && this.file.active,
+        'is-active':
+          this.isBlob && (this.file.active || this.currentDiffFileId === this.file.fileHash),
         folder: this.isTree,
         'is-open': this.file.opened,
       };
