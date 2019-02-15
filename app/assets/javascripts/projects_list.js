@@ -8,7 +8,7 @@ import vProjectsList from './projects/components/projects_list.vue';
  */
 
 export function initProjectsList() {
-  const mountPoint = document.querySelector('.vjs-projects-list-holder');
+  const mountPoint = document.querySelector('.vjs-projects-list');
   // TODO: should we bootstrap the data in rails?
   // const componentPropsEl = document.querySelector('.vjs-project-list-form-data');
   // const componentProps = JSON.parse(componentPropsEl.innerHTML);

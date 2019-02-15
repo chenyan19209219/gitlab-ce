@@ -1,4 +1,10 @@
 <script>
+import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import Icon from '~/vue_shared/components/icon.vue';
+import ProjectAvatar from './project_avatar.vue';
+import ProjectMetadataInfo from './project_metadata_info.vue';
+import ProjectTitle from './project_title.vue';
+
 /**
  * Renders a project list item
  */
@@ -10,6 +16,10 @@ export default {
         required: true,
       },
       name: {
+        type: String,
+        required: true,
+      },
+      description: {
         type: String,
         required: true,
       },
@@ -61,7 +71,17 @@ export default {
         type: Number,
         required: true,
       },
+      open_issues_count: {
+        type: Number,
+        required: true,
+      },
+
+      // TODO: Currently returned from the API, but not the same value as last_activity_date
       last_activity_at: {
+        type: String,
+        required: true,
+      },
+      last_activity_date: {
         type: String,
         required: true,
       },
@@ -89,118 +109,98 @@ export default {
       },
     },
   },
-  components: {},
-  computed: {},
+  components: {
+    Icon,
+    TimeAgoTooltip,
+    ProjectAvatar,
+    ProjectMetadataInfo,
+    ProjectTitle,
+  },
+  computed: {
+    project_path: function() {
+      return `/${this.project.path_with_namespace}`;
+    },
+    avatarSizeClass() {
+      return `s${this.size}`;
+    },
+    merge_requests_count: () => 0,
+    issues_count: () => 0,
+    hasDescription: function() {
+      return this.project && this.project.description;
+    },
+  },
 };
 </script>
-<template>
+<template v-if="project">
   <!-- TODO: replace placeholder content -->
-  <div v-if="project" class="project-details d-sm-flex flex-sm-fill align-items-center">
-    <div class="flex-wrapper">
-      <div class="d-flex align-items-center flex-wrap project-title">
-        <h2 class="d-flex prepend-top-8">
-          <a class="text-plain" href="/h5bp/html5-boilerplate">
-            <span class="project-full-name append-right-8">
-              <span class="namespace-name">{{project.namespace.name}}&nbsp;/</span>
-              <span class="project-name">{{project.name}}</span>
-            </span>
-          </a>
-        </h2>
-        <span
-          class="metadata-info visibility-icon append-right-10 prepend-top-8 has-tooltip"
-          data-container="body"
-          data-placement="top"
-          title="Internal - The project can be accessed by any logged in user."
-        >
-          <i aria-hidden="true" data-hidden="true" class="fa fa-shield fa-fw"></i>
-        </span>
-
-        <div class="metadata-info prepend-top-8">
-          <span class="user-access-role d-block">Developer</span>
+  <li class="d-flex project-row">
+    <project-avatar :project="project"/>
+    <div class="project-details d-sm-flex flex-sm-fill align-items-center">
+      <div class="flex-wrapper">
+        <div class="d-flex align-items-center flex-wrap project-title">
+          <project-title
+            :project-name="project.name"
+            :project-path="project_path"
+            :project-namespace="project.namespace.name"
+          />
+          <project-metadata-info/>
+        </div>
+        <div v-if="hasDescription" class="description d-none d-sm-block append-right-default">
+          <p data-sourcepos="1:1-1:57" dir="auto">{{project.description}}</p>
         </div>
       </div>
-      <div class="description d-none d-sm-block append-right-default">
-        <p
-          data-sourcepos="1:1-1:57"
-          dir="auto"
-        >Ullam voluptas velit laudantium dolores error architecto.</p>
-      </div>
-    </div>
-    <div
-      class="align-items-center align-items-sm-end controls d-flex flex-lg-row flex-shrink-0 flex-sm-column flex-wrap justify-content-lg-between"
-    >
-      <div class="icon-container d-flex align-items-center">
-        <span
-          class="d-flex align-items-center icon-wrapper stars has-tooltip"
-          data-container="body"
-          data-placement="top"
-          title="Stars"
-        >
-          <svg class="s14 append-right-4">
-            <use
-              xlink:href="/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#star"
-            ></use>
-          </svg>
-          0
-        </span>
-        <a
-          class="align-items-center icon-wrapper forks has-tooltip"
-          title="Forks"
-          data-container="body"
-          data-placement="top"
-          href="/h5bp/html5-boilerplate/forks"
-        >
-          <svg class="s14 append-right-4">
-            <use
-              xlink:href="/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#fork"
-            ></use>
-          </svg>
-          0
-        </a>
-        <a
-          class="d-none d-xl-flex align-items-center icon-wrapper merge-requests has-tooltip"
-          title="Merge Requests"
-          data-container="body"
-          data-placement="top"
-          href="/h5bp/html5-boilerplate/merge_requests"
-        >
-          <svg class="s14 append-right-4">
-            <use
-              xlink:href="/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#git-merge"
-            ></use>
-          </svg>
-          1
-        </a>
-        <a
-          class="d-none d-xl-flex align-items-center icon-wrapper issues has-tooltip"
-          title="Issues"
-          data-container="body"
-          data-placement="top"
-          href="/h5bp/html5-boilerplate/issues"
-        >
-          <svg class="s14 append-right-4">
-            <use
-              xlink:href="/assets/icons-24aaa921aa9e411162e6913688816c79861d0de4bee876cf6fc4c794be34ee91.svg#issues"
-            ></use>
-          </svg>
-          8
-        </a>
-      </div>
-      <div class="updated-note">
-        <span>
-          Updated
-          <time
-            class="js-timeago"
-            title
-            datetime="2019-02-05T09:45:29Z"
-            data-toggle="tooltip"
-            data-placement="top"
+      <div
+        class="align-items-center align-items-sm-end controls d-flex flex-lg-row flex-shrink-0 flex-sm-column flex-wrap justify-content-lg-between"
+      >
+        <!-- TODO: re-usable -->
+        <div class="icon-container d-flex align-items-center">
+          <span
+            class="d-flex align-items-center icon-wrapper stars has-tooltip"
             data-container="body"
-            data-tid="4"
-            data-original-title="Feb 5, 2019 9:45am"
-          >1 week ago</time>
-        </span>
+            data-placement="top"
+            title="Stars"
+          >
+            <icon name="star" :size="14" css-classes="append-right-4"/>
+            {{project.star_count}}
+          </span>
+          <!-- TODO: re-usable -->
+          <a
+            class="align-items-center icon-wrapper forks has-tooltip"
+            title="Forks"
+            data-container="body"
+            data-placement="top"
+            :href="`${project_path}/forks`"
+          >
+            <icon name="fork" :size="14" css-classes="append-right-4"/>
+            {{project.forks_count}}
+          </a>
+          <a
+            class="d-none d-xl-flex align-items-center icon-wrapper merge-requests has-tooltip"
+            title="Merge Requests"
+            data-container="body"
+            data-placement="top"
+            :href="`${project_path}/merge_requests`"
+          >
+            <icon name="git-merge" :size="14" css-classes="append-right-4"/>
+            {{merge_requests_count}}
+          </a>
+          <a
+            class="d-none d-xl-flex align-items-center icon-wrapper issues has-tooltip"
+            title="Issues"
+            data-container="body"
+            data-placement="top"
+            :href="`${project_path}/issues`"
+          >
+            <icon name="issues" :size="14" css-classes="append-right-4"/>
+            {{project.open_issues_count}}
+          </a>
+        </div>
+        <div class="updated-note">
+          <span>Updated
+            <time-ago-tooltip :time="project.last_activity_at"/>
+          </span>
+        </div>
       </div>
     </div>
-  </div>
+  </li>
 </template>
