@@ -42,11 +42,11 @@ describe API::Users do
         expect(response).to have_gitlab_http_status(403)
       end
 
-      it "returns authorization error and excludes `secondary_emails` when the `username` parameter is not passed" do
+      it "returns authorization error and excludes `secondary_emails`" do
         get api("/users")
 
         expect(response).to have_gitlab_http_status(403)
-        expect(json_response.first.keys).not_to include 'secondary_emails'
+        expect(response).not_to include 'secondary_emails'
       end
 
       it "returns the user when a valid `username` parameter is passed" do
