@@ -1,7 +1,7 @@
 <script>
 import Api from '~/api';
-import ProjectDetail from './project_detail.vue';
-import ProjectAvatar from './project_avatar.vue';
+import ProjectListItem from './project_list_item.vue';
+import ProjectAvatar from '~/vue_shared/components/project_avatar/default.vue';
 
 const fetchProjects = () => Api.projects();
 
@@ -10,7 +10,9 @@ const fetchProjects = () => Api.projects();
  */
 export default {
   data: () => ({
+    // TODO: add type definitions
     projects: [],
+    projectAvatarSize: 48,
   }),
   created() {
     fetchProjects().then(res => {
@@ -20,7 +22,7 @@ export default {
   },
   methods: {},
   components: {
-    ProjectDetail,
+    ProjectListItem,
     ProjectAvatar,
   },
   props: {},
@@ -33,8 +35,12 @@ export default {
     <!-- TODO: empty project state -->
     <ul class="projects-list">
       <li class="d-flex project-row" v-for="project in projects" :key="project.id">
-        <project-avatar :project="project"></project-avatar>
-        <project-detail :project="project"></project-detail>
+        <project-avatar
+          :project="project"
+          class="flex-grow-0 flex-shrink-0"
+          :size="projectAvatarSize"
+        />
+        <project-list-item :project="project"/>
       </li>
     </ul>
   </div>

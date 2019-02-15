@@ -3,25 +3,106 @@
  * Renders a project list item
  */
 export default {
-  data: () => ({}),
+  props: {
+    project: {
+      id: {
+        type: Number,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      name_with_namespace: {
+        type: String,
+        required: true,
+      },
+      path: {
+        type: String,
+        required: true,
+      },
+      path_with_namespace: {
+        type: String,
+        required: true,
+      },
+      created_at: {
+        type: String,
+        required: true,
+      },
+      default_branch: {
+        type: String,
+        required: true,
+      },
+      ssh_url_to_repo: {
+        type: String,
+        required: true,
+      },
+      http_url_to_repo: {
+        type: String,
+        required: true,
+      },
+      web_url: {
+        type: String,
+        required: true,
+      },
+      readme_url: {
+        type: String,
+        required: true,
+      },
+      avatar_url: {
+        type: String,
+        required: true,
+      },
+      star_count: {
+        type: Number,
+        required: true,
+      },
+      forks_count: {
+        type: Number,
+        required: true,
+      },
+      last_activity_at: {
+        type: String,
+        required: true,
+      },
+      namespace: {
+        id: {
+          type: Number,
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        path: {
+          type: String,
+          required: true,
+        },
+        kind: {
+          type: String,
+          required: true,
+        },
+        full_path: {
+          type: String,
+          required: true,
+        },
+      },
+    },
+  },
   components: {},
-  props: {},
   computed: {},
 };
 </script>
 <template>
   <!-- TODO: replace placeholder content -->
-  <div class="project-details d-sm-flex flex-sm-fill align-items-center">
+  <div v-if="project" class="project-details d-sm-flex flex-sm-fill align-items-center">
     <div class="flex-wrapper">
       <div class="d-flex align-items-center flex-wrap project-title">
         <h2 class="d-flex prepend-top-8">
           <a class="text-plain" href="/h5bp/html5-boilerplate">
             <span class="project-full-name append-right-8">
-              <span class="namespace-name">
-                H5bp
-                /
-              </span>
-              <span class="project-name">Html5 Boilerplate</span>
+              <span class="namespace-name">{{project.namespace.name}}&nbsp;/</span>
+              <span class="project-name">{{project.name}}</span>
             </span>
           </a>
         </h2>
