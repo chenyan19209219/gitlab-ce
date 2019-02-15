@@ -14,4 +14,8 @@ module Maskable
   def masked?
     protected && REGEX.match?(value)
   end
+
+  def to_runner_variable
+    super.merge(masked: masked?)
+  end
 end
