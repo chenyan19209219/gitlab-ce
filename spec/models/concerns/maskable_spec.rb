@@ -41,62 +41,29 @@ describe Maskable do
   describe '#masked?' do
     subject { variable.masked? }
 
-    context 'when the variable is masked' do
+    context 'when variable is masked' do
       before do
         variable.masked = true
       end
 
-      context 'when the variable does not match the regex' do
-        before do
-          variable.value = 'hello world'
-        end
-
-        it { is_expected.to eq(false) }
-      end
-
-      context 'when the variable matches the regex' do
-        before do
-          variable.value = 'hello_world'
-        end
-
-        it { is_expected.to eq(true) }
-      end
+      it { is_expected.to eq(true) }
     end
 
-    context 'when the variable is not masked' do
+    context 'when variable is protected' do
       before do
+        variable.protected = true
+      end
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when variable is not masked or protected' do
+      before do
+        variable.protected = false
         variable.masked = false
       end
 
-      context 'when the variable is not protected' do
-        before do
-          variable.protected = false
-        end
-
-        it { is_expected.to eq(false) }
-      end
-
-      context 'when the variable is protected' do
-        before do
-          variable.protected = true
-        end
-
-        context 'when the variable does not match the regex' do
-          before do
-            variable.value = 'hello world'
-          end
-
-          it { is_expected.to eq(false) }
-        end
-
-        context 'when the variable matches the regex' do
-          before do
-            variable.value = 'hello_world'
-          end
-
-          it { is_expected.to eq(true) }
-        end
-      end
+      it { is_expected.to eq(false) }
     end
   end
 

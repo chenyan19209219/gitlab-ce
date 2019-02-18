@@ -9,14 +9,15 @@ module Maskable
   # * No spaces
   # * Minimal length of 8 characters
   # * Absolutely no fun is allowed
-  REGEX = /^\w{8,}$/
+  REGEX = /\A\w{8,}\z/
 
   included do
     validates :masked, inclusion: { in: [true, false] }
+    validates :value, format: { with: REGEX }, if: :masked?
   end
 
   def masked?
-    (masked || protected) && REGEX.match?(value)
+    masked || protected
   end
 
   def to_runner_variable
