@@ -1,5 +1,5 @@
 ---
-title: Resolve Return secondary emails when an admin calls api
+title: Return secondary emails when an admin calls the users API
 merge_request: 21024
 author:
 type: changed
