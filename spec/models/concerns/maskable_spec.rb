@@ -5,8 +5,6 @@ require 'spec_helper'
 describe Maskable do
   let(:variable) { build(:ci_variable) }
 
-  it { expect(variable).to validate_presence_of(:masked) }
-
   describe 'REGEX' do
     subject { Maskable::REGEX }
 

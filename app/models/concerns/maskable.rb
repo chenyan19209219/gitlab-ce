@@ -12,7 +12,7 @@ module Maskable
   REGEX = /^\w{8,}$/
 
   included do
-    validates :masked, presence: true
+    validates :masked, inclusion: { in: [true, false] }
   end
 
   def masked?
