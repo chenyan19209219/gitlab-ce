@@ -5,6 +5,8 @@ require 'spec_helper'
 describe Maskable do
   let(:variable) { build(:ci_variable) }
 
+  it { expect(variable).to validate_presence_of(:masked) }
+
   describe 'REGEX' do
     subject { Maskable::REGEX }
 
@@ -41,30 +43,62 @@ describe Maskable do
   describe '#masked?' do
     subject { variable.masked? }
 
-    context 'when the variable is not protected' do
+    context 'when the variable is masked' do
       before do
-        variable.protected = false
+        variable.masked = true
       end
 
-      it { is_expected.to eq(false) }
+      context 'when the variable does not match the regex' do
+        before do
+          variable.value = 'hello world'
+        end
+
+        it { is_expected.to eq(false) }
+      end
+
+      context 'when the variable matches the regex' do
+        before do
+          variable.value = 'hello_world'
+        end
+
+        it { is_expected.to eq(true) }
+      end
     end
 
-    context 'when the variable does not match the regex' do
+    context 'when the variable is not masked' do
       before do
-        variable.protected = true
-        variable.value = 'hello world'
+        variable.masked = false
       end
 
-      it { is_expected.to eq(false) }
-    end
+      context 'when the variable is not protected' do
+        before do
+          variable.protected = false
+        end
 
-    context 'when the variable is protected and matches the regex' do
-      before do
-        variable.protected = true
-        variable.value = 'helloworld'
+        it { is_expected.to eq(false) }
       end
 
-      it { is_expected.to eq(true) }
+      context 'when the variable is protected' do
+        before do
+          variable.protected = true
+        end
+
+        context 'when the variable does not match the regex' do
+          before do
+            variable.value = 'hello world'
+          end
+
+          it { is_expected.to eq(false) }
+        end
+
+        context 'when the variable matches the regex' do
+          before do
+            variable.value = 'hello_world'
+          end
+
+          it { is_expected.to eq(true) }
+        end
+      end
     end
   end
 

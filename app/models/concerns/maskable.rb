@@ -11,8 +11,12 @@ module Maskable
   # * Absolutely no fun is allowed
   REGEX = /^\w{8,}$/
 
+  included do
+    validates :masked, presence: true
+  end
+
   def masked?
-    protected && REGEX.match?(value)
+    (masked || protected) && REGEX.match?(value)
   end
 
   def to_runner_variable
