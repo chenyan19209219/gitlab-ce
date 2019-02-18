@@ -9,8 +9,12 @@ module Labels
       return unless project.group &&
           label.is_a?(ProjectLabel)
 
+      pp "First check"
+
       Label.transaction do
         new_label = clone_label_to_group_label(label)
+
+        pp "label cloned"
 
         label_ids_for_merge(new_label).find_in_batches(batch_size: BATCH_SIZE) do |batched_ids|
           update_issuables(new_label, batched_ids)
@@ -22,8 +26,13 @@ module Labels
           update_project_labels(batched_ids)
         end
 
+        pp "pre validation"
+
+
         # We skipped validations during creation. Let's run them now, after deleting conflicting labels
         raise ActiveRecord::RecordInvalid.new(new_label) unless new_label.valid?
+
+        pp "validated"
 
         new_label
       end
@@ -93,12 +102,19 @@ module Labels
 
     def clone_label_to_group_label(label)
       params = label.attributes.slice('title', 'description', 'color')
+
+      pp "clone label"
+      pp label
+      pp params
       # Since the title of the new label has to be the same as the previous labels
       # and we're merging old labels in batches we'll skip validation to omit 2-step
       # merge process and do it in one batch
       # We'll be forcing validation at the end of the transaction to ensure everything
       # was merged correctly
       new_label = GroupLabel.new(params.merge(group: project.group))
+
+      pp new_label
+
       new_label.save(validate: false)
 
       new_label

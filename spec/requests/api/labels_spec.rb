@@ -380,9 +380,26 @@ describe API::Labels do
     end
 
     it 'returns 400 if group label already exists' do
+      pp label1
+
       create(:group_label, title: label1.name, group: group)
 
+      pp group.labels
+      l = group.labels.first
+      pp l.title
+      
+      pp l.group
+      pp project.labels
+
       put api("/projects/#{project.id}/labels/promote", user), params: { name: label1.name }
+
+      pp json_response
+      pp project.labels
+
+      group.labels.each do |l|
+        pp l
+        pp l.title
+      end
 
       expect(response).to have_gitlab_http_status(400)
       expect(json_response['message']).to eq('Failed to promote project label to group label')
