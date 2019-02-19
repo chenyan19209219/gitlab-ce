@@ -16,10 +16,6 @@ module Maskable
     validates :value, format: { with: REGEX }, if: :masked?
   end
 
-  def masked?
-    masked || protected
-  end
-
   def to_runner_variable
     super.merge(masked: masked?)
   end

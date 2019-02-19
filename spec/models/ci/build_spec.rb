@@ -2357,7 +2357,7 @@ describe Ci::Build do
       let(:ref) { Gitlab::Git::BRANCH_REF_PREFIX + build.ref }
 
       let(:protected_variable) do
-        { key: 'PROTECTED_KEY', value: 'protected_value', public: false, masked: true }
+        { key: 'PROTECTED_KEY', value: 'protected_value', public: false, masked: false }
       end
 
       before do
@@ -2404,7 +2404,7 @@ describe Ci::Build do
       let(:ref) { Gitlab::Git::BRANCH_REF_PREFIX + build.ref }
 
       let(:protected_variable) do
-        { key: 'PROTECTED_KEY', value: 'protected_value', public: false, masked: true }
+        { key: 'PROTECTED_KEY', value: 'protected_value', public: false, masked: false }
       end
 
       before do

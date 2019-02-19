@@ -38,35 +38,6 @@ describe Maskable do
     end
   end
 
-  describe '#masked?' do
-    subject { variable.masked? }
-
-    context 'when variable is masked' do
-      before do
-        variable.masked = true
-      end
-
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when variable is protected' do
-      before do
-        variable.protected = true
-      end
-
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when variable is not masked or protected' do
-      before do
-        variable.protected = false
-        variable.masked = false
-      end
-
-      it { is_expected.to eq(false) }
-    end
-  end
-
   describe '#to_runner_variable' do
     subject { variable.to_runner_variable }
 
