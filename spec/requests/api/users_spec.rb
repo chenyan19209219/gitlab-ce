@@ -101,15 +101,13 @@ describe API::Users do
           stub_application_setting(restricted_visibility_levels: [Gitlab::VisibilityLevel::PUBLIC])
         end
 
-        context 'when authenticate as a regular user' do
+        context 'when authenticated as a regular user' do
           it "renders 200" do
             get api("/users", user)
 
             expect(response).to match_response_schema('public_api/v4/user/basics')
           end
-        end
 
-        context 'when authenticated as a regular user' do
           it "does not return secondary_emails" do
             get api("/users", user)
 
@@ -119,19 +117,17 @@ describe API::Users do
         end
 
         context 'when authenticated as an admin' do
-          it "does return secondary_emails" do
-            get api("/users", admin)
-
-            expect(response).to match_response_schema('public_api/v4/user/basics')
-            expect(json_response.first.keys).to include 'secondary_emails'
-          end
-        end
-
-        context 'when authenticate as an admin' do
           it "renders 200" do
             get api("/users", admin)
 
             expect(response).to match_response_schema('public_api/v4/user/basics')
+          end
+
+          it "returns secondary_emails" do
+            get api("/users", admin)
+
+            expect(response).to match_response_schema('public_api/v4/user/admin')
+            expect(json_response.first.keys).to include 'secondary_emails'
           end
         end
       end
