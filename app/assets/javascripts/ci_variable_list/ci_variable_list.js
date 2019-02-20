@@ -40,6 +40,12 @@ export default class VariableList {
         // converted. we need the value as a string.
         default: $('.js-ci-variable-input-protected').attr('data-default'),
       },
+      masked: {
+        selector: '.js-ci-variable-input-masked',
+        // use `attr` instead of `data` as we don't want the value to be
+        // converted. we need the value as a string.
+        default: $('.js-ci-variable-input-masked').attr('data-default'),
+      },
       environment_scope: {
         // We can't use a `.js-` class here because
         // gl_dropdown replaces the <input> and doesn't copy over the class
