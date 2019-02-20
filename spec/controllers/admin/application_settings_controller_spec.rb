@@ -114,6 +114,20 @@ describe Admin::ApplicationSettingsController do
         end
       end
     end
+
+    context 'when validating' do
+      it 'renders correct action on error' do
+        put :network, params: { application_setting: { domain_blacklist_enabled: true } }
+
+        expect(subject).to render_template(:network)
+      end
+
+      it 'renders default action show' do
+        put :network, params: { application_setting: { domain_blacklist_enabled: true } }
+
+        expect(subject).to render_template(:show)
+      end
+    end
   end
 
   describe 'PUT #reset_registration_token' do
