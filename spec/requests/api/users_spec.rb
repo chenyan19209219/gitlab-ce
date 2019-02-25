@@ -127,7 +127,6 @@ describe API::Users do
             get api("/users", admin)
 
             expect(response).to match_response_schema('public_api/v4/user/admin')
-            expect(json_response.first.keys).to include 'secondary_emails'
           end
         end
       end
