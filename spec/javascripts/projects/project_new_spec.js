@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import projectNew from '~/projects/project_new';
-import { visibilityOptions } from '~/pages/projects/shared/permissions/constants';
 
 describe('New Project', () => {
   let $projectImportUrl;
@@ -167,12 +166,14 @@ describe('New Project', () => {
 
 describe('getAccessLevelOptionsForFeature', () => {
   it('returns Public options if the feature is enabled', () => {
-    const publicRes = [[10, 'Only Project Members'], [20, 'Everyone With Access']];    
+    const publicRes = [[10, 'Only Project Members'], [20, 'Everyone With Access']];
+
     expect(projectNew.getAccessLevelOptionsForFeature(true)).toEqual(publicRes);
   });
-  
+
   it('returns only PRIVATE option if the feature is not enabled', () => {
     const privateRes = [[0, 'Enable feature to choose access level']];
+
     expect(projectNew.getAccessLevelOptionsForFeature(false)).toEqual(privateRes);
   });
 });

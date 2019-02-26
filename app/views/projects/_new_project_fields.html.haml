@@ -56,9 +56,9 @@
             %strong Initialize repository with a README
           .option-description
             Allows you to immediately clone this project’s repository. Skip this if you plan to push up an existing repository.
--# TODO: move some of this into another file
+
 %section.settings.no-animate{ class: ('expanded' if expanded) }
-  %button.btn.btn-link.js-settings-toggle{ type: 'button' }
+  %button.btn.btn-link.js-settings-toggle{ type: 'button', track_label: "#{track_label}", track_event: "click_button", track_property: "toggle_hidden_fields" }
     = expanded ? _('Hide avatar, license and features settings') : _('Show avatar, license and features settings')
 
   .settings-content
@@ -72,16 +72,16 @@
       = f.label name: 'project[avatar]', class: 'label-bold' do
         %span= _("Project avatar")
       .prepend-top-5.append-bottom-10
-        %button.btn.js-choose-project-avatar-button{ type: 'button' }= _("Choose file...")
+        %button.btn.js-choose-project-avatar-button{ type: 'button', track_label: "#{track_label}", track_event: "click_button", track_property: "select_project_avatar" }= _("Choose file...")
         %span.file_name.prepend-left-default.js-filename= _("No file chosen")
-        = f.file_field name: 'project[avatar]', class: "js-project-avatar-input hidden"
+        = f.file_field 'project[avatar]', class: "js-project-avatar-input hidden"
       .form-text.text-muted= _("The maximum file size allowed is 200KB.")
 
     .form-group
       = f.label :license, class: 'label-bold' do
         %span= _("License")
       .license-selector.js-license-selector-wrap.js-template-selector-wrap
-        = dropdown_tag("Apply a license template", options: { toggle_class: 'js-license-selector qa-license-dropdown', title: "Apply a license", filter: true, placeholder: "Filter", data: { data: licenses_for_select(@project) } } )
+        = dropdown_tag("Apply a license template", options: { toggle_class: 'js-license-selector qa-license-dropdown', title: "Apply a license", filter: true, placeholder: "Filter", data: { data: licenses_for_select(@project), track_label: "#{track_label}", track_event: "click_form_input", track_property: "select_project_license" } } )
         %input.js-project-license{ :name => "project[license]", :type => "hidden", :value => "" }
 
     .form-group
@@ -96,7 +96,7 @@
           .project-feature-controls{ "data-for" => "project[project_feature_attributes][issues_access_level]" }
             %label.toggle-wrapper
               /
-              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button" }
+              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button", track_label: "#{track_label}", track_event: "click_feature_toggle", track_property: "issues_access_level" }
                 %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                 .loading-container.text-center.loading-icon
                   %i.fa.fa-spinner.fa-1x.fa-spin{ "aria-hidden" => "true", "aria-label" => "Loading" }
@@ -116,7 +116,7 @@
           .project-feature-controls{ "data-for" => "project[project_feature_attributes][repository_access_level]" }
             %label.toggle-wrapper
               /
-              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button" }
+              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button", track_label: "#{track_label}", track_event: "click_feature_toggle", track_property: "repository_access_level" }
                 %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                 .loading-container.text-center.loading-icon
                   %i.fa.fa-spinner.fa-1x.fa-spin{ "aria-hidden" => "true", "aria-label" => "Loading" }
@@ -136,7 +136,7 @@
           .project-feature-controls{ "data-for" => "project[project_feature_attributes][wiki_access_level]" }
             %label.toggle-wrapper
               /
-              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button" }
+              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button", track_label: "#{track_label}", track_event: "click_feature_toggle", track_property: "wiki_access_level" }
                 %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                 .loading-container.text-center.loading-icon
                   %i.fa.fa-spinner.fa-1x.fa-spin{ "aria-hidden" => "true", "aria-label" => "Loading" }
@@ -156,7 +156,7 @@
           .project-feature-controls{ "data-for" => "project[project_feature_attributes][snippets_access_level]" }
             %label.toggle-wrapper
               /
-              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button" }
+              %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button", track_label: "#{track_label}", track_event: "click_feature_toggle", track_property: "snippets_access_level" }
                 %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                 .loading-container.text-center.loading-icon
                   %i.fa.fa-spinner.fa-1x.fa-spin{ "aria-hidden" => "true", "aria-label" => "Loading" }

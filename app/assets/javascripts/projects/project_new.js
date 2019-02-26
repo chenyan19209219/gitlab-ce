@@ -1,12 +1,10 @@
 import $ from 'jquery';
-import { addSelectOnFocusBehaviour } from '../lib/utils/common_utils';
+import { addSelectOnFocusBehaviour, parseBoolean } from '../lib/utils/common_utils';
 import { slugifyWithHyphens } from '../lib/utils/text_utility';
 import initSettingsPanels from '~/settings_panels';
 import LicenseSelector from '~/blob/template_selectors/license_selector';
 import fileUpload from '~/lib/utils/file_upload';
-import { visibilityOptions } from '~/pages/projects/shared/permissions/constants';
-import setupToggleButtons from '~/toggle_buttons'
-import { parseBoolean } from '../lib/utils/common_utils';
+import setupToggleButtons from '~/toggle_buttons';
 
 let hasUserDefinedProjectPath = false;
 
@@ -47,19 +45,21 @@ const initLicenseField = field => {
   const newProjectFileMediator = {
     selectTemplateFile: (_, query) => {
       field.val(query);
-    }
+    },
   };
 
   return new LicenseSelector({ mediator: newProjectFileMediator }).show();
 };
 
-const ACCESS_LEVEL_OPTIONS_PRIVATE = [[0, 'Enable feature to choose access level']]
-const ACCESS_LEVEL_OPTIONS_PUBLIC = [[10, 'Only Project Members'], [20, 'Everyone With Access']]
+const ACCESS_LEVEL_OPTIONS_PRIVATE = [[0, 'Enable feature to choose access level']];
+const ACCESS_LEVEL_OPTIONS_PUBLIC = [[10, 'Only Project Members'], [20, 'Everyone With Access']];
 
-const getAccessLevelOptionsForFeature = (featureEnabled = false) => 
-  featureEnabled ? ACCESS_LEVEL_OPTIONS_PUBLIC : ACCESS_LEVEL_OPTIONS_PRIVATE;  
+const getAccessLevelOptionsForFeature = (featureEnabled = false) =>
+  featureEnabled ? ACCESS_LEVEL_OPTIONS_PUBLIC : ACCESS_LEVEL_OPTIONS_PRIVATE;
 
-const getProjectVisibilityLevel = (projectVisibilitySelector = `[name='project[visibility_level]']:checked` ) => $(projectVisibilitySelector).val()
+const getProjectVisibilityLevel = (
+  projectVisibilitySelector = `[name='project[visibility_level]']:checked`,
+) => $(projectVisibilitySelector).val();
 
 function updateFeatureVisibilityOptions(
   visibilitySelector, // jquery element
@@ -73,29 +73,38 @@ function updateFeatureVisibilityOptions(
   }
 
   const accessLevelOptions = getAccessLevelOptionsForFeature(featureEnabled);
-  
-  // if the feature is enabled, we should always default to the internal access level even if visibility is private
-  const visibility = (!projectVisibilityLevel && featureEnabled) ? visibilityOptions.INTERNAL : projectVisibilityLevel 
-
-  // set the selected index for the feature selector
-  const computedSelectedIndex = 
-    accessLevelOptions.findIndex(opt => opt[0] == projectVisibilityLevel)
-  const selectedIndex = computedSelectedIndex > -1 ? computedSelectedIndex : 0
+  const computedSelectedIndex = accessLevelOptions.findIndex(
+    opt => opt[0] === projectVisibilityLevel,
+  );
+  const selectedIndex = computedSelectedIndex > -1 ? computedSelectedIndex : 0;
 
   const options = accessLevelOptions.map((alo, index) => {
-    const selected = selectedIndex === index ? 'selected="selected"' : ''
-    return `<option ${selected} value="${alo[0]}">${alo[1]}</option>`
+    const selected = selectedIndex === index ? 'selected="selected"' : '';
+    return `<option ${selected} value="${alo[0]}">${alo[1]}</option>`;
   });
-  $(visibilitySelector).html(options);
 
+  $(visibilitySelector).html(options);
 }
 
 function onToggleFeatureSetting(featureEnabled, toggle) {
   const projectVisibilityLevel = getProjectVisibilityLevel();
-  const toggleContext = $(toggle).closest('.project-feature-controls')
+  const toggleContext = $(toggle).closest('.project-feature-controls');
   const visibilitySelector = $('.select-control', toggleContext);
   updateFeatureVisibilityOptions(visibilitySelector, projectVisibilityLevel, featureEnabled);
-  // TOOD: update toggle aria-label
+  $(toggle).attr('aria-label', featureEnabled ? 'Toggle Status: ON' : 'Toggle Status: OFF');
+}
+
+function onProjectVisitbilityChange(featuresSelectors) {
+  const projectVisibilityLevel = getProjectVisibilityLevel();
+
+  featuresSelectors.forEach(context => {
+    const featureEnabled = parseBoolean(
+      context.querySelector('.js-project-feature-toggle-input').getAttribute('value'),
+    );
+
+    const visibilitySelector = $('.select-control', context);
+    updateFeatureVisibilityOptions(visibilitySelector, projectVisibilityLevel, featureEnabled);
+  });
 }
 
 const bindEvents = () => {
@@ -111,6 +120,7 @@ const bindEvents = () => {
   const $projectTemplateButtons = $('.project-templates-buttons');
   const $projectName = $('.tab-pane.active #project_name');
   const $projectVisibilityLevel = $('.visibility-level-setting [name="project[visibility_level]"]');
+  const $projectFeatures = document.querySelectorAll('.project-feature-row');
 
   if ($newProjectForm.length !== 1) {
     return;
@@ -284,18 +294,7 @@ const bindEvents = () => {
     hasUserDefinedProjectPath = $projectPath.val().trim().length > 0;
   });
 
-  $projectVisibilityLevel.on('change', e => {  
-    const projectVisibilityLevel = getProjectVisibilityLevel();
-    const features = document.querySelectorAll('.project-feature-row');
-    features.forEach(context => {
-      const featureEnabled = parseBoolean(context
-        .querySelector('.js-project-feature-toggle-input')
-        .getAttribute('value'));
-
-      const visibilitySelector = $('.select-control', context);
-      updateFeatureVisibilityOptions(visibilitySelector, projectVisibilityLevel, featureEnabled);
-    });
-  });
+  $projectVisibilityLevel.on('change', onProjectVisitbilityChange($projectFeatures));
 
   // select all the hidden fields
 
@@ -303,26 +302,6 @@ const bindEvents = () => {
     expandedText: 'Hide avatar, license and features settings',
     collapsedText: 'Show avatar, license and features settings',
   });
-
-  // TODO: Fixup behaviour for the toggles
-  // - Dropdown should be available with all options on load
-  // - Hide toggles on load
-  // - If js
-  //   - show toggles
-  //   - dropdown should default to 0 (enable ....)
-  //   - if a toggle is on, then set the options to (10 only members, 20 everyone..)
-  // const $issuesAccessLevelHiddenField = document.querySelector(
-  //   `[name='project[project_feature_attributes][issues_access_level]]`,
-  // );
-  // const $repositoryAccessLevelHiddenField = document.querySelector(
-  //   `[name='project[project_feature_attributes][repository_access_level]]`,
-  // );
-  // const $wikiAccessLevelHiddenField = document.querySelector(
-  //   `[name='project[project_feature_attributes][wiki_access_level]]`,
-  // );
-  // const $snippetsAccessLevelHiddenField = document.querySelector(
-  //   `[name='project[project_feature_attributes][snippets_access_level]]`,
-  // );
 
   const $toggleContainer = document.querySelector('.project-feature-settings');
   setupToggleButtons($toggleContainer, onToggleFeatureSetting);
