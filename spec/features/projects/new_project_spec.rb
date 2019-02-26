@@ -9,6 +9,19 @@ describe 'New project' do
     sign_in(user)
   end
 
+  def select_license(template)
+    page.within('.js-license-selector-wrap') do
+      click_button 'Apply a license template'
+      click_link template
+      wait_for_requests
+    end
+  end
+
+  def select_project_visibility(visibility_level, value)
+    choose(visibility_level)
+    expect(find_field("project[visibility_level]", checked: true).value.to_i).to eq(value)
+  end
+
   it 'shows "New project" page', :js do
     visit new_project_path
 
@@ -93,12 +106,26 @@ describe 'New project' do
     end
   end
 
+  context 'License', :js do
+    license = 'MIT License'
+
+    before do
+      visit new_project_path
+      select_license(license)
+    end
+
+    it 'will set the license field when we select a license from the list' do
+      expect(find('.dropdown-toggle-text').text).to eq(license)
+      expect(find('[name="project[license]"]', visible: false).value).to eq("mit")
+    end
+  end
+
   context 'Feature settings', :js do
     context 'with private visibility' do
       before do
         visit new_project_path
-        choose("Private")
-        expect(find_field("project[visibility_level]", checked: true).value.to_i).to eq(Gitlab::VisibilityLevel::PRIVATE)
+
+        select_project_visibility('Private', Gitlab::VisibilityLevel::PRIVATE)
 
         page.all('.project-feature-controls').each do |el|
           el.find('.project-feature-toggle').click
@@ -126,8 +153,8 @@ describe 'New project' do
       context 'with each feature enabled' do
         before do
           visit new_project_path
-          choose("Private")
 
+          select_project_visibility('Private', Gitlab::VisibilityLevel::PRIVATE)
           page.all('.project-feature-controls').each do |el|
             el.find('.project-feature-toggle').click
           end
@@ -157,8 +184,7 @@ describe 'New project' do
       before do
         visit new_project_path
 
-        choose("Internal")
-        expect(find_field("project[visibility_level]", checked: true).value.to_i).to eq(Gitlab::VisibilityLevel::INTERNAL)
+        select_project_visibility('Internal', Gitlab::VisibilityLevel::INTERNAL)
       end
 
       it 'enables feature select boxes when the feature is also enabled' do
@@ -180,7 +206,8 @@ describe 'New project' do
         before do
           visit new_project_path
 
-          choose('Internal')
+          select_project_visibility('Internal', Gitlab::VisibilityLevel::INTERNAL)
+
           page.all('.project-feature-controls').each do |el|
             el.find('.project-feature-toggle').click
             expect(el.find('.project-repo-select')).not_to be_disabled
@@ -190,7 +217,8 @@ describe 'New project' do
         end
 
         it 'switching to private' do
-          choose("Private")
+          select_project_visibility('Private', Gitlab::VisibilityLevel::PRIVATE)
+
           page.all('.project-feature-controls').each do |el|
             expect(el.find('.project-repo-select')).to be_disabled
             expect(el.find('.project-repo-select', visible: false).value.to_i).to eq(Gitlab::VisibilityLevel::INTERNAL)
@@ -199,7 +227,8 @@ describe 'New project' do
         end
 
         it 'switching to public' do
-          choose("Public")
+          select_project_visibility('Public', Gitlab::VisibilityLevel::PUBLIC)
+
           page.all('.project-feature-controls').each do |el|
             expect(el.find('.project-repo-select')).not_to be_disabled
             expect(el.find('.project-repo-select', visible: false).value.to_i).to eq(Gitlab::VisibilityLevel::PUBLIC)
@@ -213,8 +242,7 @@ describe 'New project' do
       before do
         visit new_project_path
 
-        choose('Public')
-        expect(find_field("project[visibility_level]", checked: true).value.to_i).to eq(Gitlab::VisibilityLevel::PUBLIC)
+        select_project_visibility('Public', Gitlab::VisibilityLevel::PUBLIC)
       end
 
       it 'enables feature select boxes when the feature is also enabled' do
@@ -236,7 +264,8 @@ describe 'New project' do
         before do
           visit new_project_path
 
-          choose('Public')
+          select_project_visibility('Public', Gitlab::VisibilityLevel::PUBLIC)
+
           page.all('.project-feature-controls').each do |el|
             el.find('.project-feature-toggle').click
             expect(el.find('.project-repo-select')).not_to be_disabled
@@ -246,7 +275,8 @@ describe 'New project' do
         end
 
         it 'switching to internal' do
-          choose("Internal")
+          select_project_visibility('Internal', Gitlab::VisibilityLevel::INTERNAL)
+
           page.all('.project-feature-controls').each do |el|
             expect(el.find('.project-repo-select')).not_to be_disabled
             expect(el.find('.project-repo-select', visible: false).value.to_i).to eq(Gitlab::VisibilityLevel::INTERNAL)
@@ -255,7 +285,8 @@ describe 'New project' do
         end
 
         it 'switching to private' do
-          choose("Private")
+          select_project_visibility('Private', Gitlab::VisibilityLevel::PRIVATE)
+
           page.all('.project-feature-controls').each do |el|
             expect(el.find('.project-repo-select')).to be_disabled
             expect(el.find('.project-repo-select', visible: false).value.to_i).to eq(Gitlab::VisibilityLevel::INTERNAL)

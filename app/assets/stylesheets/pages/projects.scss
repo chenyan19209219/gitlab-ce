@@ -98,13 +98,13 @@
 .new_project {
   .project-feature-settings {
     background: transparent;
-    border:none;
-    padding:0;
+    border: 0;
+    padding: 0;
   }
 
   .dropdown-menu-toggle {
-    max-width:$dropdown-width;
-    width:100%;
+    max-width: $dropdown-width;
+    width: 100%;
   }
 }
 

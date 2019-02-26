@@ -67,4 +67,4 @@
     = form_for @project, html: { class: 'new_project' } do |f|
       %hr
       = render "shared/import_form", f: f
-      = render 'new_project_fields', f: f, project_name_id: "import-url-name", hide_init_with_readme: true, track_label: track_label
+      = render 'new_project_fields', f: f, project_name_id: "import-url-name", hide_init_with_readme: true, hide_additional_settings: true, track_label: track_label
