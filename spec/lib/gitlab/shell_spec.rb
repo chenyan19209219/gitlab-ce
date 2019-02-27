@@ -11,7 +11,6 @@ describe Gitlab::Shell do
   let(:gitlab_keys) { double }
 
   before do
-    $logger = double('logger').as_null_object
     allow(Project).to receive(:find).and_return(project)
   end
 

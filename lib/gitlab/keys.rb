@@ -1,14 +1,15 @@
 module Gitlab
   class Keys
-    attr_accessor :auth_file
+    attr_accessor :auth_file, :logger
 
-    def initialize(auth_file = nil)
+    def initialize(auth_file = nil, logger = Gitlab::AppLogger)
       @auth_file = auth_file || File.join(ENV['HOME'], '.ssh/authorized_keys')
+      @logger = logger
     end
 
     def add_key(id, key)
       lock do
-        $logger.info('Adding key', id: id, key: key)
+        logger.info("Adding key (#{id}): #{key}")
         auth_line = key_line(id, key)
         open_auth_file('a') { |file| file.puts(auth_line) }
       end
@@ -21,7 +22,7 @@ module Gitlab
         open_auth_file('a') do |file|
           keys.each do |key|
             public_key = strip(key[:key])
-            $logger.info('Adding key', id: key[:id], key: public_key)
+            logger.info("Adding key (#{key[:id]}): #{public_key}")
             file.puts(key_line(key[:id], public_key))
           end
         end
@@ -32,7 +33,7 @@ module Gitlab
 
     def rm_key(id)
       lock do
-        $logger.info('Removing key', id: id)
+        logger.info("Removing key (#{id})")
         open_auth_file('r+') do |f|
           while line = f.gets # rubocop:disable Lint/AssignmentInCondition
             next unless line.start_with?("command=\"#{command(id)}\"")
@@ -43,18 +44,20 @@ module Gitlab
           end
         end
       end
+
       true
     end
 
     def clear
       open_auth_file('w') { |file| file.puts '# Managed by gitlab-rails' }
+
       true
     end
 
     private
 
     def lock(timeout = 10)
-      File.open(lock_file, "w+") do |f|
+      File.open("#{auth_file}.lock", "w+") do |f|
         begin
           f.flock File::LOCK_EX
           Timeout.timeout(timeout) { yield }
@@ -62,10 +65,6 @@ module Gitlab
           f.flock File::LOCK_UN
         end
       end
-    end
-
-    def lock_file
-      @lock_file ||= auth_file + '.lock'
     end
 
     def open_auth_file(mode)

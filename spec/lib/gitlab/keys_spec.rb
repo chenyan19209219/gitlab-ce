@@ -1,11 +1,9 @@
 require 'spec_helper'
 
 describe Gitlab::Keys do
-  before do
-    $logger = double('logger').as_null_object
-  end
+  let(:logger) { double('logger').as_null_object }
 
-  subject { described_class.new(tmp_authorized_keys_path) }
+  subject { described_class.new(tmp_authorized_keys_path, logger) }
 
   describe '#add_key' do
     it "adds a line at the end of the file and strips trailing garbage" do
@@ -20,7 +18,7 @@ describe Gitlab::Keys do
       before { create_authorized_keys_fixture }
 
       it "should log an add-key event" do
-        expect($logger).to receive(:info).with("Adding key", {id: "key-741", key: "ssh-rsa AAAAB3NzaDAxx2E"})
+        expect(logger).to receive(:info).with('Adding key (key-741): ssh-rsa AAAAB3NzaDAxx2E')
         subject.add_key('key-741', 'ssh-rsa AAAAB3NzaDAxx2E')
       end
 
@@ -55,8 +53,8 @@ describe Gitlab::Keys do
       end
 
       it "should log an add-key event" do
-        expect($logger).to receive(:info).with("Adding key", id: 'key-12', key: "ssh-dsa ASDFASGADG")
-        expect($logger).to receive(:info).with("Adding key", id: 'key-123', key: "ssh-rsa GFDGDFSGSDFG")
+        expect(logger).to receive(:info).with('Adding key (key-12): ssh-dsa ASDFASGADG')
+        expect(logger).to receive(:info).with('Adding key (key-123): ssh-rsa GFDGDFSGSDFG')
 
         subject.batch_add_keys(keys)
       end
@@ -87,7 +85,7 @@ describe Gitlab::Keys do
       end
 
       it "should log an rm-key event" do
-        expect($logger).to receive(:info).with("Removing key", id: "key-741")
+        expect(logger).to receive(:info).with('Removing key (key-741)')
 
         subject.rm_key('key-741')
       end
