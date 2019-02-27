@@ -615,9 +615,6 @@ msgstr ""
 msgid "All changes are committed"
 msgstr ""
 
-msgid "All features are enabled for blank projects, from templates, or when importing, but you can disable them afterward in the project settings."
-msgstr ""
-
 msgid "All issues for this milestone are closed. You may close this milestone now."
 msgstr ""
 
@@ -4146,6 +4143,9 @@ msgstr ""
 msgid "Here is the public SSH key that needs to be added to the remote server. For more information, please refer to the documentation."
 msgstr ""
 
+msgid "Hide avatar, license and features settings"
+msgstr ""
+
 msgid "Hide file browser"
 msgstr ""
 
@@ -4781,6 +4781,9 @@ msgid "Leave project"
 msgstr ""
 
 msgid "Leave the \"File type\" and \"Delivery method\" options on their default values."
+msgstr ""
+
+msgid "License"
 msgstr ""
 
 msgid "Limited to showing %d event at most"
@@ -7266,6 +7269,9 @@ msgid "Sherlock Transactions"
 msgstr ""
 
 msgid "Show all activity"
+msgstr ""
+
+msgid "Show avatar, license and features settings"
 msgstr ""
 
 msgid "Show command"
