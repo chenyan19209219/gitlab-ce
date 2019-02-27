@@ -5,18 +5,12 @@ describe Gitlab::Keys do
     $logger = double('logger').as_null_object
   end
 
-  subject do
-    described_class.new(
-      key_id: 'key-741',
-      key: 'ssh-rsa AAAAB3NzaDAxx2E',
-      auth_file: tmp_authorized_keys_path
-    )
-  end
+  subject { described_class.new(tmp_authorized_keys_path) }
 
   describe '#add_key' do
     it "adds a line at the end of the file" do
       create_authorized_keys_fixture
-      subject.add_key
+      subject.add_key('key-741', 'ssh-rsa AAAAB3NzaDAxx2E')
       auth_line = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-741\",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaDAxx2E"
       expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n#{auth_line}\n")
     end
@@ -26,12 +20,12 @@ describe Gitlab::Keys do
       before { create_authorized_keys_fixture }
 
       it "should log an add-key event" do
-        expect($logger).to receive(:info).with("Adding key", {key_id: "key-741", public_key: "ssh-rsa AAAAB3NzaDAxx2E"})
-        subject.add_key
+        expect($logger).to receive(:info).with("Adding key", {id: "key-741", key: "ssh-rsa AAAAB3NzaDAxx2E"})
+        subject.add_key('key-741', 'ssh-rsa AAAAB3NzaDAxx2E')
       end
 
       it "should return true" do
-        expect(subject.add_key).to be_truthy
+        expect(subject.add_key('key-741', 'ssh-rsa AAAAB3NzaDAxx2E')).to be_truthy
       end
     end
   end
@@ -39,7 +33,7 @@ describe Gitlab::Keys do
   describe '#list_keys' do
     it 'adds a key and lists it' do
       create_authorized_keys_fixture
-      subject.add_key
+      subject.add_key('key-741', 'ssh-rsa AAAAB3NzaDAxx2E')
       auth_line1 = 'key-741 AAAAB3NzaDAxx2E'
       expect(subject.list_keys).to eq("#{auth_line1}\n")
     end
@@ -61,8 +55,8 @@ describe Gitlab::Keys do
   describe '#batch_add_keys' do
     let(:keys) do
       [
-        {id: 'key-12', public_key: 'ssh-dsa ASDFASGADG'},
-        {id: 'key-123', public_key: 'ssh-rsa GFDGDFSGSDFG'},
+        {id: 'key-12', key: 'ssh-dsa ASDFASGADG'},
+        {id: 'key-123', key: 'ssh-rsa GFDGDFSGSDFG'},
       ]
     end
 
@@ -83,8 +77,8 @@ describe Gitlab::Keys do
       end
 
       it "should log an add-key event" do
-        expect($logger).to receive(:info).with("Adding key", key_id: 'key-12', public_key: "ssh-dsa ASDFASGADG")
-        expect($logger).to receive(:info).with("Adding key", key_id: 'key-123', public_key: "ssh-rsa GFDGDFSGSDFG")
+        expect($logger).to receive(:info).with("Adding key", id: 'key-12', key: "ssh-dsa ASDFASGADG")
+        expect($logger).to receive(:info).with("Adding key", id: 'key-123', key: "ssh-rsa GFDGDFSGSDFG")
 
         subject.batch_add_keys(keys)
       end
@@ -104,7 +98,7 @@ describe Gitlab::Keys do
         auth_file.puts delete_line
         auth_file.puts other_line
       end
-      subject.rm_key
+      subject.rm_key('key-741')
       erased_line = delete_line.gsub(/./, '#')
       expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n#{erased_line}\n#{other_line}\n")
     end
@@ -115,30 +109,13 @@ describe Gitlab::Keys do
       end
 
       it "should log an rm-key event" do
-        expect($logger).to receive(:info).with("Removing key", key_id: "key-741")
+        expect($logger).to receive(:info).with("Removing key", id: "key-741")
 
-        subject.rm_key
+        subject.rm_key('key-741')
       end
 
       it "should return true" do
-        expect(subject.rm_key).to be_truthy
-      end
-    end
-
-    context 'without key content' do
-      subject { described_class.new(key_id: 'key-741', auth_file: tmp_authorized_keys_path) }
-
-      it "removes the right line by key ID" do
-        create_authorized_keys_fixture
-        other_line = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-742\",options ssh-rsa AAAAB3NzaDAxx2E"
-        delete_line = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-741\",options ssh-rsa AAAAB3NzaDAxx2E"
-        open(tmp_authorized_keys_path, 'a') do |auth_file|
-          auth_file.puts delete_line
-          auth_file.puts other_line
-        end
-        subject.rm_key
-        erased_line = delete_line.gsub(/./, '#')
-        expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n#{erased_line}\n#{other_line}\n")
+        expect(subject.rm_key('key-741')).to be_truthy
       end
     end
   end

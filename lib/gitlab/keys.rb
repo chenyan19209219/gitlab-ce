@@ -1,17 +1,15 @@
 module Gitlab
   class Keys
-    attr_accessor :key_id, :key, :auth_file
+    attr_accessor :auth_file
 
-    def initialize(key_id: nil, key: nil, auth_file: nil)
-      @key_id = key_id
-      @key = key
+    def initialize(auth_file = nil)
       @auth_file = auth_file || File.join(ENV['HOME'], '.ssh/authorized_keys')
     end
 
-    def add_key
+    def add_key(id, key)
       lock do
-        $logger.info('Adding key', key_id: key_id, public_key: key)
-        auth_line = key_line(key_id, key)
+        $logger.info('Adding key', id: id, key: key)
+        auth_line = key_line(id, key)
         open_auth_file('a') { |file| file.puts(auth_line) }
       end
 
@@ -22,7 +20,7 @@ module Gitlab
       $logger.info 'Listing all keys'
       keys = ''
       File.readlines(auth_file).each do |line|
-        # key_id & public_key
+        # id & key
         # command=".../bin/gitlab-shell key-741" ... ssh-rsa AAAAB3NzaDAxx2E\n
         #                               ^^^^^^^              ^^^^^^^^^^^^^^^
         matches = /^command=\".+?\s+(.+?)\".+?(?:ssh|ecdsa)-.*?\s(.+)\s*.*\n*$/.match(line)
@@ -46,8 +44,8 @@ module Gitlab
       lock(300) do # Allow 300 seconds (5 minutes) for batch_add_keys
         open_auth_file('a') do |file|
           keys.each do |key|
-            $logger.info('Adding key', key_id: key[:id], public_key: key[:public_key])
-            file.puts(key_line(key[:id], key[:public_key]))
+            $logger.info('Adding key', id: key[:id], key: key[:key])
+            file.puts(key_line(key[:id], key[:key]))
           end
         end
       end
@@ -55,12 +53,12 @@ module Gitlab
       true
     end
 
-    def rm_key
+    def rm_key(id)
       lock do
-        $logger.info('Removing key', key_id: key_id)
+        $logger.info('Removing key', id: id)
         open_auth_file('r+') do |f|
           while line = f.gets # rubocop:disable Lint/AssignmentInCondition
-            next unless line.start_with?("command=\"#{command(key_id)}\"")
+            next unless line.start_with?("command=\"#{command(id)}\"")
             f.seek(-line.length, IO::SEEK_CUR)
             # Overwrite the line with #'s. Because the 'line' variable contains
             # a terminating '\n', we write line.length - 1 '#' characters.
@@ -100,22 +98,22 @@ module Gitlab
       end
     end
 
-    def key_line(key_id, public_key)
-      public_key.chomp!
+    def key_line(id, key)
+      key.chomp!
 
-      if public_key.include?("\n")
-        raise KeyError, "Invalid public_key: #{public_key.inspect}"
+      if key.include?("\n")
+        raise KeyError, "Invalid public_key: #{key.inspect}"
       end
 
-      %Q(command="#{command(key_id)}",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty #{public_key})
+      %Q(command="#{command(id)}",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty #{key})
     end
 
-    def command(key_id)
-      unless /\A[a-z0-9-]+\z/ =~ key_id
-        raise KeyError, "Invalid key_id: #{key_id.inspect}"
+    def command(id)
+      unless /\A[a-z0-9-]+\z/ =~ id
+        raise KeyError, "Invalid ID: #{id.inspect}"
       end
 
-      "#{File.join(Gitlab.config.gitlab_shell.path)}/bin/gitlab-shell #{key_id}"
+      "#{File.join(Gitlab.config.gitlab_shell.path)}/bin/gitlab-shell #{id}"
     end
   end
 end
