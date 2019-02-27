@@ -1,43 +1,17 @@
 module Gitlab
   class Keys
-    attr_accessor :auth_file, :key
+    attr_accessor :key_id, :key, :auth_file
 
-    def self.command(whatever)
-      "#{File.join(Gitlab.config.gitlab_shell.path)}/bin/gitlab-shell #{whatever}"
-    end
-
-    def self.command_key(key_id)
-      unless /\A[a-z0-9-]+\z/ =~ key_id
-        raise KeyError, "Invalid key_id: #{key_id.inspect}"
-      end
-
-      command(key_id)
-    end
-
-    def self.whatever_line(command, trailer)
-      "command=\"#{command}\",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty #{trailer}"
-    end
-
-    def self.key_line(key_id, public_key)
-      public_key.chomp!
-
-      if public_key.include?("\n")
-        raise KeyError, "Invalid public_key: #{public_key.inspect}"
-      end
-
-      whatever_line(command_key(key_id), public_key)
-    end
-
-    def initialize(key_id, key = nil)
+    def initialize(key_id: nil, key: nil, auth_file: nil)
       @key_id = key_id
-      @key = key.dup if key
-      @auth_file = File.join(ENV['HOME'], '.ssh/authorized_keys')
+      @key = key
+      @auth_file = auth_file || File.join(ENV['HOME'], '.ssh/authorized_keys')
     end
 
     def add_key
       lock do
-        $logger.info('Adding key', key_id: @key_id, public_key: @key)
-        auth_line = self.class.key_line(@key_id, @key)
+        $logger.info('Adding key', key_id: key_id, public_key: key)
+        auth_line = key_line(key_id, key)
         open_auth_file('a') { |file| file.puts(auth_line) }
       end
 
@@ -68,31 +42,25 @@ module Gitlab
       end
     end
 
-    def batch_add_keys
+    def batch_add_keys(keys)
       lock(300) do # Allow 300 seconds (5 minutes) for batch_add_keys
         open_auth_file('a') do |file|
-          stdin.each_line do |input|
-            tokens = input.strip.split("\t")
-            abort("#{$0}: invalid input #{input.inspect}") unless tokens.count == 2
-            key_id, public_key = tokens
-            $logger.info('Adding key', key_id: key_id, public_key: public_key)
-            file.puts(self.class.key_line(key_id, public_key))
+          keys.each do |key|
+            $logger.info('Adding key', key_id: key[:id], public_key: key[:public_key])
+            file.puts(key_line(key[:id], key[:public_key]))
           end
         end
       end
-      true
-    end
 
-    def stdin
-      $stdin
+      true
     end
 
     def rm_key
       lock do
-        $logger.info('Removing key', key_id: @key_id)
+        $logger.info('Removing key', key_id: key_id)
         open_auth_file('r+') do |f|
           while line = f.gets # rubocop:disable Lint/AssignmentInCondition
-            next unless line.start_with?("command=\"#{self.class.command_key(@key_id)}\"")
+            next unless line.start_with?("command=\"#{command(key_id)}\"")
             f.seek(-line.length, IO::SEEK_CUR)
             # Overwrite the line with #'s. Because the 'line' variable contains
             # a terminating '\n', we write line.length - 1 '#' characters.
@@ -130,6 +98,24 @@ module Gitlab
         file.chmod(0o600)
         yield file
       end
+    end
+
+    def key_line(key_id, public_key)
+      public_key.chomp!
+
+      if public_key.include?("\n")
+        raise KeyError, "Invalid public_key: #{public_key.inspect}"
+      end
+
+      %Q(command="#{command(key_id)}",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty #{public_key})
+    end
+
+    def command(key_id)
+      unless /\A[a-z0-9-]+\z/ =~ key_id
+        raise KeyError, "Invalid key_id: #{key_id.inspect}"
+      end
+
+      "#{File.join(Gitlab.config.gitlab_shell.path)}/bin/gitlab-shell #{key_id}"
     end
   end
 end

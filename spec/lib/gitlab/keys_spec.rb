@@ -5,7 +5,13 @@ describe Gitlab::Keys do
     $logger = double('logger').as_null_object
   end
 
-  subject { described_class.new('key-741', 'ssh-rsa AAAAB3NzaDAxx2E') }
+  subject do
+    described_class.new(
+      key_id: 'key-741',
+      key: 'ssh-rsa AAAAB3NzaDAxx2E',
+      auth_file: tmp_authorized_keys_path
+    )
+  end
 
   describe '#add_key' do
     it "adds a line at the end of the file" do
@@ -53,26 +59,22 @@ describe Gitlab::Keys do
   end
 
   describe '#batch_add_keys' do
-    let(:fake_stdin) { StringIO.new("key-12\tssh-dsa ASDFASGADG\nkey-123\tssh-rsa GFDGDFSGSDFG\n", 'r') }
+    let(:keys) do
+      [
+        {id: 'key-12', public_key: 'ssh-dsa ASDFASGADG'},
+        {id: 'key-123', public_key: 'ssh-rsa GFDGDFSGSDFG'},
+      ]
+    end
+
     before do
       create_authorized_keys_fixture
-      allow(subject).to receive(:stdin).and_return(fake_stdin)
     end
 
     it "adds lines at the end of the file" do
-      subject.batch_add_keys
+      subject.batch_add_keys(keys)
       auth_line1 = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-12\",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-dsa ASDFASGADG"
       auth_line2 = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-123\",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa GFDGDFSGSDFG"
       expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n#{auth_line1}\n#{auth_line2}\n")
-    end
-
-    context "with invalid input" do
-      let(:fake_stdin) { StringIO.new("key-12\tssh-dsa ASDFASGADG\nkey-123\tssh-rsa GFDGDFSGSDFG\nfoo\tbar\tbaz\n", 'r') }
-
-      it "aborts" do
-        expect(subject).to receive(:abort)
-        subject.batch_add_keys
-      end
     end
 
     context "without file writing" do
@@ -84,11 +86,11 @@ describe Gitlab::Keys do
         expect($logger).to receive(:info).with("Adding key", key_id: 'key-12', public_key: "ssh-dsa ASDFASGADG")
         expect($logger).to receive(:info).with("Adding key", key_id: 'key-123', public_key: "ssh-rsa GFDGDFSGSDFG")
 
-        subject.batch_add_keys
+        subject.batch_add_keys(keys)
       end
 
       it "should return true" do
-        expect(subject.batch_add_keys).to be_truthy
+        expect(subject.batch_add_keys(keys)).to be_truthy
       end
     end
   end
@@ -110,7 +112,6 @@ describe Gitlab::Keys do
     context "without file writing" do
       before do
         allow(subject).to receive(:open)
-        allow(subject).to receive(:lock).and_yield
       end
 
       it "should log an rm-key event" do
@@ -125,7 +126,7 @@ describe Gitlab::Keys do
     end
 
     context 'without key content' do
-      subject { described_class.new('key-741') }
+      subject { described_class.new(key_id: 'key-741', auth_file: tmp_authorized_keys_path) }
 
       it "removes the right line by key ID" do
         create_authorized_keys_fixture
@@ -152,23 +153,9 @@ describe Gitlab::Keys do
   def create_authorized_keys_fixture(existing_content: 'existing content')
     FileUtils.mkdir_p(File.dirname(tmp_authorized_keys_path))
     open(tmp_authorized_keys_path, 'w') { |file| file.puts(existing_content) }
-    allow(subject).to receive(:auth_file).and_return(tmp_authorized_keys_path)
   end
 
   def tmp_authorized_keys_path
     File.join('tmp', 'authorized_keys')
-  end
-
-  def tmp_lock_file_path
-    tmp_authorized_keys_path + '.lock'
-  end
-
-  def capture_stdout(&blk)
-    old = $stdout
-    $stdout = fake = StringIO.new
-    blk.call
-    fake.string
-  ensure
-    $stdout = old
   end
 end
