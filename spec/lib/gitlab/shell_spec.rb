@@ -8,8 +8,10 @@ describe Gitlab::Shell do
   let(:gitlab_shell) { described_class.new }
   let(:popen_vars) { { 'GIT_TERMINAL_PROMPT' => ENV['GIT_TERMINAL_PROMPT'] } }
   let(:timeout) { Gitlab.config.gitlab_shell.git_timeout }
+  let(:gitlab_keys) { double }
 
   before do
+    $logger = double('logger').as_null_object
     allow(Project).to receive(:find).and_return(project)
   end
 
@@ -49,13 +51,14 @@ describe Gitlab::Shell do
 
   describe '#add_key' do
     context 'when authorized_keys_enabled is true' do
-      it 'removes trailing garbage' do
-        allow(gitlab_shell).to receive(:gitlab_shell_keys_path).and_return(:gitlab_shell_keys_path)
-        expect(gitlab_shell).to receive(:gitlab_shell_fast_execute).with(
-          [:gitlab_shell_keys_path, 'add-key', 'key-123', 'ssh-rsa foobar']
-        )
+      it 'calls Gitlab::Keys#add_key with id and key' do
+        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
 
-        gitlab_shell.add_key('key-123', 'ssh-rsa foobar trailing garbage')
+        expect(gitlab_keys)
+          .to receive(:add_key)
+          .with('key-123', 'ssh-rsa foobar')
+
+        gitlab_shell.add_key('key-123', 'ssh-rsa foobar')
       end
     end
 
@@ -65,7 +68,7 @@ describe Gitlab::Shell do
       end
 
       it 'does nothing' do
-        expect(gitlab_shell).not_to receive(:gitlab_shell_fast_execute)
+        expect(Gitlab::Keys).not_to receive(:new)
 
         gitlab_shell.add_key('key-123', 'ssh-rsa foobar trailing garbage')
       end
@@ -76,25 +79,32 @@ describe Gitlab::Shell do
         stub_application_setting(authorized_keys_enabled: nil)
       end
 
-      it 'removes trailing garbage' do
-        allow(gitlab_shell).to receive(:gitlab_shell_keys_path).and_return(:gitlab_shell_keys_path)
-        expect(gitlab_shell).to receive(:gitlab_shell_fast_execute).with(
-          [:gitlab_shell_keys_path, 'add-key', 'key-123', 'ssh-rsa foobar']
-        )
+      it 'calls Gitlab::Keys#add_key with id and key' do
+        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
 
-        gitlab_shell.add_key('key-123', 'ssh-rsa foobar trailing garbage')
+        expect(gitlab_keys)
+          .to receive(:add_key)
+          .with('key-123', 'ssh-rsa foobar')
+
+        gitlab_shell.add_key('key-123', 'ssh-rsa foobar')
       end
     end
   end
 
   describe '#batch_add_keys' do
     context 'when authorized_keys_enabled is true' do
-      it 'instantiates KeyAdder' do
-        expect_any_instance_of(Gitlab::Shell::KeyAdder).to receive(:add_key).with('key-123', 'ssh-rsa foobar')
+      it 'calls Gitlab::Keys#batch_add_keys with keys to be added' do
+        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
 
-        gitlab_shell.batch_add_keys do |adder|
-          adder.add_key('key-123', 'ssh-rsa foobar')
-        end
+        expect(gitlab_keys)
+          .to receive(:batch_add_keys)
+          .with([
+            {id: 'key-123', key: 'ssh-rsa foobar'}
+          ])
+
+        gitlab_shell.batch_add_keys([
+          {id: 'key-123', key: 'ssh-rsa foobar'}
+        ])
       end
     end
 
@@ -104,11 +114,11 @@ describe Gitlab::Shell do
       end
 
       it 'does nothing' do
-        expect_any_instance_of(Gitlab::Shell::KeyAdder).not_to receive(:add_key)
+        expect(Gitlab::Keys).not_to receive(:new)
 
-        gitlab_shell.batch_add_keys do |adder|
-          adder.add_key('key-123', 'ssh-rsa foobar')
-        end
+        gitlab_shell.batch_add_keys([
+          {id: 'key-123', key: 'ssh-rsa foobar'}
+        ])
       end
     end
 
@@ -117,25 +127,29 @@ describe Gitlab::Shell do
         stub_application_setting(authorized_keys_enabled: nil)
       end
 
-      it 'instantiates KeyAdder' do
-        expect_any_instance_of(Gitlab::Shell::KeyAdder).to receive(:add_key).with('key-123', 'ssh-rsa foobar')
+      it 'calls Gitlab::Keys#batch_add_keys with keys to be added' do
+        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
 
-        gitlab_shell.batch_add_keys do |adder|
-          adder.add_key('key-123', 'ssh-rsa foobar')
-        end
+        expect(gitlab_keys)
+          .to receive(:batch_add_keys)
+          .with([
+            {id: 'key-123', key: 'ssh-rsa foobar'}
+          ])
+
+        gitlab_shell.batch_add_keys([
+          {id: 'key-123', key: 'ssh-rsa foobar'}
+        ])
       end
     end
   end
 
   describe '#remove_key' do
     context 'when authorized_keys_enabled is true' do
-      it 'removes trailing garbage' do
-        allow(gitlab_shell).to receive(:gitlab_shell_keys_path).and_return(:gitlab_shell_keys_path)
-        expect(gitlab_shell).to receive(:gitlab_shell_fast_execute).with(
-          [:gitlab_shell_keys_path, 'rm-key', 'key-123', 'ssh-rsa foobar']
-        )
+      it 'calls Gitlab::Keys#rm_key with the key to be removed' do
+        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
+        expect(gitlab_keys).to receive(:rm_key).with('key-123')
 
-        gitlab_shell.remove_key('key-123', 'ssh-rsa foobar')
+        gitlab_shell.remove_key('key-123')
       end
     end
 
@@ -145,9 +159,9 @@ describe Gitlab::Shell do
       end
 
       it 'does nothing' do
-        expect(gitlab_shell).not_to receive(:gitlab_shell_fast_execute)
+        expect(Gitlab::Keys).not_to receive(:new)
 
-        gitlab_shell.remove_key('key-123', 'ssh-rsa foobar')
+        gitlab_shell.remove_key('key-123')
       end
     end
 
@@ -156,22 +170,9 @@ describe Gitlab::Shell do
         stub_application_setting(authorized_keys_enabled: nil)
       end
 
-      it 'removes trailing garbage' do
-        allow(gitlab_shell).to receive(:gitlab_shell_keys_path).and_return(:gitlab_shell_keys_path)
-        expect(gitlab_shell).to receive(:gitlab_shell_fast_execute).with(
-          [:gitlab_shell_keys_path, 'rm-key', 'key-123', 'ssh-rsa foobar']
-        )
-
-        gitlab_shell.remove_key('key-123', 'ssh-rsa foobar')
-      end
-    end
-
-    context 'when key content is not given' do
-      it 'calls rm-key with only one argument' do
-        allow(gitlab_shell).to receive(:gitlab_shell_keys_path).and_return(:gitlab_shell_keys_path)
-        expect(gitlab_shell).to receive(:gitlab_shell_fast_execute).with(
-          [:gitlab_shell_keys_path, 'rm-key', 'key-123']
-        )
+      it 'calls Gitlab::Keys#rm_key with the key to be removed' do
+        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
+        expect(gitlab_keys).to receive(:rm_key).with('key-123')
 
         gitlab_shell.remove_key('key-123')
       end
@@ -180,9 +181,9 @@ describe Gitlab::Shell do
 
   describe '#remove_all_keys' do
     context 'when authorized_keys_enabled is true' do
-      it 'removes trailing garbage' do
-        allow(gitlab_shell).to receive(:gitlab_shell_keys_path).and_return(:gitlab_shell_keys_path)
-        expect(gitlab_shell).to receive(:gitlab_shell_fast_execute).with([:gitlab_shell_keys_path, 'clear'])
+      it 'calls Gitlab::Keys#clear' do
+        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
+        expect(gitlab_keys).to receive(:clear)
 
         gitlab_shell.remove_all_keys
       end
@@ -194,7 +195,7 @@ describe Gitlab::Shell do
       end
 
       it 'does nothing' do
-        expect(gitlab_shell).not_to receive(:gitlab_shell_fast_execute)
+        expect(Gitlab::Keys).not_to receive(:new)
 
         gitlab_shell.remove_all_keys
       end
@@ -205,183 +206,11 @@ describe Gitlab::Shell do
         stub_application_setting(authorized_keys_enabled: nil)
       end
 
-      it 'removes trailing garbage' do
-        allow(gitlab_shell).to receive(:gitlab_shell_keys_path).and_return(:gitlab_shell_keys_path)
-        expect(gitlab_shell).to receive(:gitlab_shell_fast_execute).with(
-          [:gitlab_shell_keys_path, 'clear']
-        )
+      it 'calls Gitlab::Keys#clear' do
+        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
+        expect(gitlab_keys).to receive(:clear)
 
         gitlab_shell.remove_all_keys
-      end
-    end
-  end
-
-  describe '#remove_keys_not_found_in_db' do
-    context 'when keys are in the file that are not in the DB' do
-      before do
-        gitlab_shell.remove_all_keys
-        gitlab_shell.add_key('key-1234', 'ssh-rsa ASDFASDF')
-        gitlab_shell.add_key('key-9876', 'ssh-rsa ASDFASDF')
-        @another_key = create(:key) # this one IS in the DB
-      end
-
-      it 'removes the keys' do
-        expect(find_in_authorized_keys_file(1234)).to be_truthy
-        expect(find_in_authorized_keys_file(9876)).to be_truthy
-        expect(find_in_authorized_keys_file(@another_key.id)).to be_truthy
-        gitlab_shell.remove_keys_not_found_in_db
-        expect(find_in_authorized_keys_file(1234)).to be_falsey
-        expect(find_in_authorized_keys_file(9876)).to be_falsey
-        expect(find_in_authorized_keys_file(@another_key.id)).to be_truthy
-      end
-    end
-
-    context 'when keys there are duplicate keys in the file that are not in the DB' do
-      before do
-        gitlab_shell.remove_all_keys
-        gitlab_shell.add_key('key-1234', 'ssh-rsa ASDFASDF')
-        gitlab_shell.add_key('key-1234', 'ssh-rsa ASDFASDF')
-      end
-
-      it 'removes the keys' do
-        expect(find_in_authorized_keys_file(1234)).to be_truthy
-        gitlab_shell.remove_keys_not_found_in_db
-        expect(find_in_authorized_keys_file(1234)).to be_falsey
-      end
-
-      it 'does not run remove more than once per key (in a batch)' do
-        expect(gitlab_shell).to receive(:remove_key).with('key-1234').once
-        gitlab_shell.remove_keys_not_found_in_db
-      end
-    end
-
-    context 'when keys there are duplicate keys in the file that ARE in the DB' do
-      before do
-        gitlab_shell.remove_all_keys
-        @key = create(:key)
-        gitlab_shell.add_key(@key.shell_id, @key.key)
-      end
-
-      it 'does not remove the key' do
-        gitlab_shell.remove_keys_not_found_in_db
-        expect(find_in_authorized_keys_file(@key.id)).to be_truthy
-      end
-
-      it 'does not need to run a SELECT query for that batch, on account of that key' do
-        expect_any_instance_of(ActiveRecord::Relation).not_to receive(:pluck)
-        gitlab_shell.remove_keys_not_found_in_db
-      end
-    end
-
-    unless ENV['CI'] # Skip in CI, it takes 1 minute
-      context 'when the first batch can be skipped, but the next batch has keys that are not in the DB' do
-        before do
-          gitlab_shell.remove_all_keys
-          100.times { |i| create(:key) } # first batch is all in the DB
-          gitlab_shell.add_key('key-1234', 'ssh-rsa ASDFASDF')
-        end
-
-        it 'removes the keys not in the DB' do
-          expect(find_in_authorized_keys_file(1234)).to be_truthy
-          gitlab_shell.remove_keys_not_found_in_db
-          expect(find_in_authorized_keys_file(1234)).to be_falsey
-        end
-      end
-    end
-  end
-
-  describe '#batch_read_key_ids' do
-    context 'when there are keys in the authorized_keys file' do
-      before do
-        gitlab_shell.remove_all_keys
-        (1..4).each do |i|
-          gitlab_shell.add_key("key-#{i}", "ssh-rsa ASDFASDF#{i}")
-        end
-      end
-
-      it 'iterates over the key IDs in the file, in batches' do
-        loop_count = 0
-        first_batch = [1, 2]
-        second_batch = [3, 4]
-
-        gitlab_shell.batch_read_key_ids(batch_size: 2) do |batch|
-          expected = (loop_count == 0 ? first_batch : second_batch)
-          expect(batch).to eq(expected)
-          loop_count += 1
-        end
-      end
-    end
-  end
-
-  describe '#list_key_ids' do
-    context 'when there are keys in the authorized_keys file' do
-      before do
-        gitlab_shell.remove_all_keys
-        (1..4).each do |i|
-          gitlab_shell.add_key("key-#{i}", "ssh-rsa ASDFASDF#{i}")
-        end
-      end
-
-      it 'outputs the key IDs in the file, separated by newlines' do
-        ids = []
-        gitlab_shell.list_key_ids do |io|
-          io.each do |line|
-            ids << line
-          end
-        end
-
-        expect(ids).to eq(%W{1\n 2\n 3\n 4\n})
-      end
-    end
-
-    context 'when there are no keys in the authorized_keys file' do
-      before do
-        gitlab_shell.remove_all_keys
-      end
-
-      it 'outputs nothing, not even an empty string' do
-        ids = []
-        gitlab_shell.list_key_ids do |io|
-          io.each do |line|
-            ids << line
-          end
-        end
-
-        expect(ids).to eq([])
-      end
-    end
-  end
-
-  describe Gitlab::Shell::KeyAdder do
-    describe '#add_key' do
-      it 'removes trailing garbage' do
-        io = spy(:io)
-        adder = described_class.new(io)
-
-        adder.add_key('key-42', "ssh-rsa foo bar\tbaz")
-
-        expect(io).to have_received(:puts).with("key-42\tssh-rsa foo")
-      end
-
-      it 'handles multiple spaces in the key' do
-        io = spy(:io)
-        adder = described_class.new(io)
-
-        adder.add_key('key-42', "ssh-rsa  foo")
-
-        expect(io).to have_received(:puts).with("key-42\tssh-rsa foo")
-      end
-
-      it 'raises an exception if the key contains a tab' do
-        expect do
-          described_class.new(StringIO.new).add_key('key-42', "ssh-rsa\tfoobar")
-        end.to raise_error(Gitlab::Shell::Error)
-      end
-
-      it 'raises an exception if the key contains a newline' do
-        expect do
-          described_class.new(StringIO.new).add_key('key-42', "ssh-rsa foobar\nssh-rsa pawned")
-        end.to raise_error(Gitlab::Shell::Error)
       end
     end
   end

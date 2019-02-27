@@ -8,9 +8,9 @@ describe Gitlab::Keys do
   subject { described_class.new(tmp_authorized_keys_path) }
 
   describe '#add_key' do
-    it "adds a line at the end of the file" do
+    it "adds a line at the end of the file and strips trailing garbage" do
       create_authorized_keys_fixture
-      subject.add_key('key-741', 'ssh-rsa AAAAB3NzaDAxx2E')
+      subject.add_key('key-741', 'ssh-rsa AAAAB3NzaDAxx2E trailing garbage')
       auth_line = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-741\",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaDAxx2E"
       expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n#{auth_line}\n")
     end
@@ -30,32 +30,10 @@ describe Gitlab::Keys do
     end
   end
 
-  describe '#list_keys' do
-    it 'adds a key and lists it' do
-      create_authorized_keys_fixture
-      subject.add_key('key-741', 'ssh-rsa AAAAB3NzaDAxx2E')
-      auth_line1 = 'key-741 AAAAB3NzaDAxx2E'
-      expect(subject.list_keys).to eq("#{auth_line1}\n")
-    end
-  end
-
-  describe '#list_key_ids' do
-    before do
-      create_authorized_keys_fixture(
-        existing_content:
-          "key-1\tssh-dsa AAA\nkey-2\tssh-rsa BBB\nkey-3\tssh-rsa CCC\nkey-9000\tssh-rsa DDD\n"
-      )
-    end
-
-    it 'outputs the key IDs, separated by newlines' do
-      expect { subject.list_key_ids }.to output("1\n2\n3\n9000\n").to_stdout
-    end
-  end
-
   describe '#batch_add_keys' do
     let(:keys) do
       [
-        {id: 'key-12', key: 'ssh-dsa ASDFASGADG'},
+        {id: 'key-12', key: 'ssh-dsa ASDFASGADG trailing garbage'},
         {id: 'key-123', key: 'ssh-rsa GFDGDFSGSDFG'},
       ]
     end

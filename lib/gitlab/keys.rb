@@ -16,36 +16,13 @@ module Gitlab
       true
     end
 
-    def list_keys
-      $logger.info 'Listing all keys'
-      keys = ''
-      File.readlines(auth_file).each do |line|
-        # id & key
-        # command=".../bin/gitlab-shell key-741" ... ssh-rsa AAAAB3NzaDAxx2E\n
-        #                               ^^^^^^^              ^^^^^^^^^^^^^^^
-        matches = /^command=\".+?\s+(.+?)\".+?(?:ssh|ecdsa)-.*?\s(.+)\s*.*\n*$/.match(line)
-        keys << "#{matches[1]} #{matches[2]}\n" unless matches.nil?
-      end
-      keys
-    end
-
-    def list_key_ids
-      $logger.info 'Listing all key IDs'
-      open_auth_file('r') do |f|
-        f.each_line do |line|
-          matchd = line.match(/key-(\d+)/)
-          next unless matchd
-          puts matchd[1]
-        end
-      end
-    end
-
     def batch_add_keys(keys)
       lock(300) do # Allow 300 seconds (5 minutes) for batch_add_keys
         open_auth_file('a') do |file|
           keys.each do |key|
-            $logger.info('Adding key', id: key[:id], key: key[:key])
-            file.puts(key_line(key[:id], key[:key]))
+            public_key = strip(key[:key])
+            $logger.info('Adding key', id: key[:id], key: public_key)
+            file.puts(key_line(key[:id], public_key))
           end
         end
       end
@@ -105,7 +82,7 @@ module Gitlab
         raise KeyError, "Invalid public_key: #{key.inspect}"
       end
 
-      %Q(command="#{command(id)}",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty #{key})
+      %Q(command="#{command(id)}",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty #{strip(key)})
     end
 
     def command(id)
@@ -114,6 +91,10 @@ module Gitlab
       end
 
       "#{File.join(Gitlab.config.gitlab_shell.path)}/bin/gitlab-shell #{id}"
+    end
+
+    def strip(key)
+      key.split(/[ ]+/)[0, 2].join(' ')
     end
   end
 end
