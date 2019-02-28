@@ -86,53 +86,26 @@ export default {
     ingressInstalled() {
       return this.applications.ingress.status === APPLICATION_STATUS.INSTALLED;
     },
-    ingressExternalIp() {
-      return this.applications.ingress.externalIp;
+    ingressExternalEndpoint() {
+      return this.applications.ingress.externalIp || this.applications.ingress.externalHostname;
     },
     certManagerInstalled() {
       return this.applications.cert_manager.status === APPLICATION_STATUS.INSTALLED;
     },
     ingressDescription() {
-      const extraCostParagraph = sprintf(
+      return sprintf(
         _.escape(
           s__(
-            `ClusterIntegration|%{boldNotice} This will add some extra resources
-            like a load balancer, which may incur additional costs depending on
-            the hosting provider your Kubernetes cluster is installed on. If you are using
-            Google Kubernetes Engine, you can %{pricingLink}.`,
+            `ClusterIntegration|Installing Ingress may incur additional costs. Learn more about %{pricingLink}.`,
           ),
         ),
         {
-          boldNotice: `<strong>${_.escape(s__('ClusterIntegration|Note:'))}</strong>`,
-          pricingLink: `<a href="https://cloud.google.com/compute/pricing#lb" target="_blank" rel="noopener noreferrer">
-              ${_.escape(s__('ClusterIntegration|check the pricing here'))}</a>`,
+          pricingLink: `<a href="https://cloud.google.com/compute/pricing#lb"
+              target="_blank" rel="noopener noreferrer">
+              ${_.escape(s__('ClusterIntegration|pricing'))}</a>`,
         },
         false,
       );
-
-      const externalIpParagraph = sprintf(
-        _.escape(
-          s__(
-            `ClusterIntegration|After installing Ingress, you will need to point your wildcard DNS
-            at the generated external IP address in order to view your app after it is deployed. %{ingressHelpLink}`,
-          ),
-        ),
-        {
-          ingressHelpLink: `<a href="${this.ingressHelpPath}">
-              ${_.escape(s__('ClusterIntegration|More information'))}
-            </a>`,
-        },
-        false,
-      );
-
-      return `
-          <p>
-            ${extraCostParagraph}
-          </p>
-          <p class="settings-message append-bottom-0">
-            ${externalIpParagraph}
-          </p>
-        `;
     },
     certManagerDescription() {
       return sprintf(
@@ -176,8 +149,23 @@ export default {
     knativeInstalled() {
       return this.applications.knative.status === APPLICATION_STATUS.INSTALLED;
     },
-    knativeExternalIp() {
-      return this.applications.knative.externalIp;
+    knativeExternalEndpoint() {
+      return this.applications.knative.externalIp || this.applications.knative.externalHostname;
+    },
+    knativeDescription() {
+      return sprintf(
+        _.escape(
+          s__(
+            `ClusterIntegration|Installing Knative may incur additional costs. Learn more about %{pricingLink}.`,
+          ),
+        ),
+        {
+          pricingLink: `<a href="https://cloud.google.com/compute/pricing#lb"
+              target="_blank" rel="noopener noreferrer">
+              ${_.escape(s__('ClusterIntegration|pricing'))}</a>`,
+        },
+        false,
+      );
     },
   },
   created() {
@@ -247,30 +235,30 @@ export default {
 
           <template v-if="ingressInstalled">
             <div class="form-group">
-              <label for="ingress-ip-address">
-                {{ s__('ClusterIntegration|Ingress IP Address') }}
+              <label for="ingress-endpoint">
+                {{ s__('ClusterIntegration|Ingress Endpoint') }}
               </label>
-              <div v-if="ingressExternalIp" class="input-group">
+              <div v-if="ingressExternalEndpoint" class="input-group">
                 <input
-                  id="ingress-ip-address"
-                  :value="ingressExternalIp"
+                  id="ingress-endpoint"
+                  :value="ingressExternalEndpoint"
                   type="text"
-                  class="form-control js-ip-address"
+                  class="form-control js-endpoint"
                   readonly
                 />
                 <span class="input-group-append">
                   <clipboard-button
-                    :text="ingressExternalIp"
-                    :title="s__('ClusterIntegration|Copy Ingress IP Address to clipboard')"
+                    :text="ingressExternalEndpoint"
+                    :title="s__('ClusterIntegration|Copy Ingress Endpoint to clipboard')"
                     class="input-group-text js-clipboard-btn"
                   />
                 </span>
               </div>
-              <input v-else type="text" class="form-control js-ip-address" readonly value="?" />
+              <input v-else type="text" class="form-control js-endpoint" readonly value="?" />
               <p class="form-text text-muted">
                 {{
                   s__(`ClusterIntegration|Point a wildcard DNS to this
-                generated IP address in order to access
+                generated endpoint in order to access
                 your application after it has been deployed.`)
                 }}
                 <a :href="ingressDnsHelpPath" target="_blank" rel="noopener noreferrer">
@@ -279,19 +267,21 @@ export default {
               </p>
             </div>
 
-            <p v-if="!ingressExternalIp" class="settings-message js-no-ip-message">
+            <p v-if="!ingressExternalEndpoint" class="settings-message js-no-ip-message">
               {{
-                s__(`ClusterIntegration|The IP address is in
+                s__(`ClusterIntegration|The endpoint is in
               the process of being assigned. Please check your Kubernetes
               cluster or Quotas on Google Kubernetes Engine if it takes a long time.`)
               }}
 
-              <a :href="ingressHelpPath" target="_blank" rel="noopener noreferrer">
+              <a :href="ingressDnsHelpPath" target="_blank" rel="noopener noreferrer">
                 {{ __('More information') }}
               </a>
             </p>
           </template>
-          <div v-html="ingressDescription"></div>
+          <template v-if="!ingressInstalled">
+            <div class="bs-callout bs-callout-info" v-html="ingressDescription"></div>
+          </template>
         </div>
       </application-row>
       <application-row
@@ -401,7 +391,7 @@ export default {
             }}
           </p>
 
-          <template v-if="ingressExternalIp">
+          <template v-if="ingressExternalEndpoint">
             <div class="form-group">
               <label for="jupyter-hostname">
                 {{ s__('ClusterIntegration|Jupyter Hostname') }}
@@ -450,18 +440,6 @@ export default {
         title-link="https://github.com/knative/docs"
       >
         <div slot="description">
-          <span v-if="!rbac">
-            <p v-if="!rbac" class="bs-callout bs-callout-info append-bottom-0">
-              {{
-                s__(`ClusterIntegration|You must have an RBAC-enabled cluster
-              to install Knative.`)
-              }}
-              <a :href="helpPath" target="_blank" rel="noopener noreferrer">
-                {{ __('More information') }}
-              </a>
-            </p>
-            <br />
-          </span>
           <p>
             {{
               s__(`ClusterIntegration|Knative extends Kubernetes to provide
@@ -500,46 +478,59 @@ export default {
           </template>
           <template v-if="knativeInstalled">
             <div class="form-group">
-              <label for="knative-ip-address">
-                {{ s__('ClusterIntegration|Knative IP Address:') }}
+              <label for="knative-endpoint">
+                {{ s__('ClusterIntegration|Knative Endpoint:') }}
               </label>
-              <div v-if="knativeExternalIp" class="input-group">
+              <div v-if="knativeExternalEndpoint" class="input-group">
                 <input
-                  id="knative-ip-address"
-                  :value="knativeExternalIp"
+                  id="knative-endpoint"
+                  :value="knativeExternalEndpoint"
                   type="text"
-                  class="form-control js-ip-address"
+                  class="form-control js-endpoint"
                   readonly
                 />
                 <span class="input-group-append">
                   <clipboard-button
-                    :text="knativeExternalIp"
-                    :title="s__('ClusterIntegration|Copy Knative IP Address to clipboard')"
+                    :text="knativeExternalEndpoint"
+                    :title="s__('ClusterIntegration|Copy Knative Endpoint to clipboard')"
                     class="input-group-text js-clipboard-btn"
                   />
                 </span>
               </div>
-              <input v-else type="text" class="form-control js-ip-address" readonly value="?" />
+              <input v-else type="text" class="form-control js-endpoint" readonly value="?" />
+              <p class="form-text text-muted">
+                {{
+                  s__(`ClusterIntegration|Point a wildcard DNS to this
+                generated endpoint in order to access
+                your application after it has been deployed.`)
+                }}
+                <a :href="ingressDnsHelpPath" target="_blank" rel="noopener noreferrer">
+                  {{ __('More information') }}
+                </a>
+              </p>
             </div>
 
-            <p v-if="!knativeExternalIp" class="settings-message js-no-ip-message">
+            <p v-if="!knativeExternalEndpoint" class="settings-message js-no-ip-message">
               {{
-                s__(`ClusterIntegration|The IP address is in
+                s__(`ClusterIntegration|The endpoint is in
               the process of being assigned. Please check your Kubernetes
               cluster or Quotas on Google Kubernetes Engine if it takes a long time.`)
               }}
             </p>
-
-            <p>
+          </template>
+          <template v-if="!knativeInstalled && rbac">
+            <div class="bs-callout bs-callout-info" v-html="knativeDescription"></div>
+          </template>
+          <template v-if="!rbac">
+            <div class="bs-callout bs-callout-info rbac-notice">
               {{
-                s__(`ClusterIntegration|Point a wildcard DNS to this
-              generated IP address in order to access
-              your application after it has been deployed.`)
+                s__(`ClusterIntegration|You must have an RBAC-enabled cluster
+              to install Knative.`)
               }}
-              <a :href="ingressDnsHelpPath" target="_blank" rel="noopener noreferrer">
+              <a :href="helpPath" target="_blank" rel="noopener noreferrer">
                 {{ __('More information') }}
               </a>
-            </p>
+            </div>
           </template>
         </div>
       </application-row>
