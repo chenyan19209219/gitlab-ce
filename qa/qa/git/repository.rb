@@ -150,10 +150,12 @@ module QA
       end
 
       def fetch_supported_git_protocol
-        # ls-remote is one command known to respond to Git protocol v2 so we use
-        # it to get output including the version reported via Git tracing
-        output = run("git ls-remote #{uri}", "GIT_TRACE_PACKET=1")
-        output[/git< version (\d+)/, 1] || 'unknown'
+        # The git protocol must advertise it's version in the headers
+        # exchanged during the initial handshake. GIT_TRACE_CURL provides
+        # the header data and then GIT_TRACE_CURL_NOT_DATA ignores the
+        # extraneous data to keep return size down.
+        result = run("git ls-remote #{uri}", "GIT_TRACE_CURL=1 GIT_TRACE_CURL_NO_DATA=1")
+        result.response[/Git-Protocol: version=(\d+)/, 1] || 'unknown'
       end
 
       def try_add_credentials_to_netrc
