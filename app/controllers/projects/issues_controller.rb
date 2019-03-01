@@ -42,6 +42,8 @@ class Projects::IssuesController < Projects::ApplicationController
 
   before_action :set_suggested_issues_feature_flags, only: [:new]
 
+  before_action :set_issues_vue_component_feature_flags, only: [:index]
+
   respond_to :html
 
   def index
@@ -280,5 +282,9 @@ class Projects::IssuesController < Projects::ApplicationController
 
   def set_suggested_issues_feature_flags
     push_frontend_feature_flag(:graphql, default_enabled: true)
+  end
+
+  def set_issues_vue_component_feature_flags
+    push_frontend_feature_flag(:issues_vue_component)
   end
 end

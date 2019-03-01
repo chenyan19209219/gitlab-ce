@@ -7,6 +7,7 @@ import initFilteredSearch from '~/pages/search/init_filtered_search';
 import IssuableFilteredSearchTokenKeys from '~/filtered_search/issuable_filtered_search_token_keys';
 import { FILTERED_SEARCH } from '~/pages/constants';
 import { ISSUABLE_INDEX } from '~/pages/projects/constants';
+import initIssuesList from '~/issues';
 
 document.addEventListener('DOMContentLoaded', () => {
   IssuableFilteredSearchTokenKeys.addExtraTokensForIssues();
@@ -19,4 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   new ShortcutsNavigation();
   new UsersSelect();
+
+  initIssuesList();
 });
