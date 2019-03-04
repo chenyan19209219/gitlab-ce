@@ -25,12 +25,15 @@ Gitlab::Seeder.quiet do
       developer = project.team.developers.sample
       break unless developer
 
-      Sidekiq::Worker.skipping_transaction_check do
-        MergeRequests::CreateService.new(project, developer, params).execute
+      begin
+        Sidekiq::Worker.skipping_transaction_check do
+          MergeRequests::CreateService.new(project, developer, params).execute
+        end
       rescue Repository::AmbiguousRefError
         # Ignore pipelines creation errors for now, we can doing that after
         # https://gitlab.com/gitlab-org/gitlab-ce/issues/55966. will be resolved.
       end
+
       print '.'
     end
   end
