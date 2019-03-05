@@ -9,6 +9,11 @@ describe 'New project' do
     sign_in(user)
   end
 
+  def select_project_visibility(visibility_level, value)
+    choose(visibility_level)
+    expect(find_field("project[visibility_level]", checked: true).value.to_i).to eq(value)
+  end
+
   def select_license(template)
     page.within('.js-license-selector-wrap') do
       click_button 'Apply a license template'
@@ -17,14 +22,19 @@ describe 'New project' do
     end
   end
 
-  def select_project_visibility(visibility_level, value)
-    choose(visibility_level)
-    expect(find_field("project[visibility_level]", checked: true).value.to_i).to eq(value)
+  def has_hidden_additional_fields
+    expect(page).not_to have_content('Project description')
+    expect(page).not_to have_content('Project avatar')
+    expect(page).not_to have_content('License')
+    expect(page).not_to have_content('Features')
+    expect(page).not_to have_content('Lightweight issue tracking system for this project')
+    expect(page).not_to have_content('View and edit files in this project')
+    expect(page).not_to have_content('Pages for project documentation')
+    expect(page).not_to have_content('Share code pastes with others out of Git repository')
+    expect(page).not_to have_css('.settings.expanded')
   end
 
-  it 'shows "New project" page', :js do
-    visit new_project_path
-
+  def has_visible_additional_fields
     expect(page).to have_content('Project name')
     expect(page).to have_content('Project URL')
     expect(page).to have_content('Project slug')
@@ -36,6 +46,10 @@ describe 'New project' do
     expect(page).to have_content('View and edit files in this project')
     expect(page).to have_content('Pages for project documentation')
     expect(page).to have_content('Share code pastes with others out of Git repository')
+  end
+
+  it 'shows "New project" page', :js do
+    visit new_project_path
 
     find('#import-project-tab').click
 
@@ -63,24 +77,12 @@ describe 'New project' do
     end
   end
 
-  context 'Additional settings', :js do
-    before do
-      visit new_project_path
-      find('.js-settings-toggle')
-    end
-
-    it 'will hide the extra settings when i click the show / hide toggle' do
-      find_button('Hide avatar, license and features settings').click
-      expect(page).not_to have_content('Project description')
-      expect(page).not_to have_content('Project avatar')
-      expect(page).not_to have_content('License')
-      expect(page).not_to have_content('Features')
-      expect(page).not_to have_content('Lightweight issue tracking system for this project')
-      expect(page).not_to have_content('View and edit files in this project')
-      expect(page).not_to have_content('Pages for project documentation')
-      expect(page).not_to have_content('Share code pastes with others out of Git repository')
-      expect(page).not_to have_css('.settings.expanded')
-    end
+  it 'Additional settings can be toggled', :js do
+    visit new_project_path
+    find('.js-settings-toggle')
+    has_visible_additional_fields
+    find_button('Hide avatar, license and features settings').click
+    has_hidden_additional_fields
   end
 
   context 'Visibility level selector', :js do
@@ -106,18 +108,11 @@ describe 'New project' do
     end
   end
 
-  context 'License', :js do
+  it 'will set the license field when we select a license from the list', :js do
     license = 'MIT License'
-
-    before do
-      visit new_project_path
-      select_license(license)
-    end
-
-    it 'will set the license field when we select a license from the list' do
-      expect(find('.dropdown-toggle-text').text).to eq(license)
-      expect(find('[name="project[license]"]', visible: false).value).to eq("mit")
-    end
+    visit new_project_path
+    select_license(license)
+    expect(find('[name="project_license"]', visible: false).value).to eq("mit")
   end
 
   context 'Feature settings', :js do
