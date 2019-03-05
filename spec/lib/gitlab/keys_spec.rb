@@ -5,14 +5,14 @@ require 'spec_helper'
 describe Gitlab::Keys do
   let(:logger) { double('logger').as_null_object }
 
-  subject { described_class.new(tmp_authorized_keys_path, logger) }
+  subject { described_class.new(logger) }
 
   describe '#add_key' do
     it "adds a line at the end of the file and strips trailing garbage" do
       create_authorized_keys_fixture
       subject.add_key('key-741', 'ssh-rsa AAAAB3NzaDAxx2E trailing garbage')
       auth_line = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-741\",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaDAxx2E"
-      expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n#{auth_line}\n")
+      expect(File.read(authorized_keys_file)).to eq("existing content\n#{auth_line}\n")
     end
 
     context "without file writing" do
@@ -46,7 +46,7 @@ describe Gitlab::Keys do
       subject.batch_add_keys(keys)
       auth_line1 = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-12\",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-dsa ASDFASGADG"
       auth_line2 = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-123\",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa GFDGDFSGSDFG"
-      expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n#{auth_line1}\n#{auth_line2}\n")
+      expect(File.read(authorized_keys_file)).to eq("existing content\n#{auth_line1}\n#{auth_line2}\n")
     end
 
     context "without file writing" do
@@ -72,13 +72,13 @@ describe Gitlab::Keys do
       create_authorized_keys_fixture
       other_line = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-742\",options ssh-rsa AAAAB3NzaDAxx2E"
       delete_line = "command=\"#{Gitlab.config.gitlab_shell.path}/bin/gitlab-shell key-741\",options ssh-rsa AAAAB3NzaDAxx2E"
-      open(tmp_authorized_keys_path, 'a') do |auth_file|
+      open(authorized_keys_file, 'a') do |auth_file|
         auth_file.puts delete_line
         auth_file.puts other_line
       end
       subject.rm_key('key-741')
       erased_line = delete_line.gsub(/./, '#')
-      expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n#{erased_line}\n#{other_line}\n")
+      expect(File.read(authorized_keys_file)).to eq("existing content\n#{erased_line}\n#{other_line}\n")
     end
 
     context "without file writing" do
@@ -106,11 +106,11 @@ describe Gitlab::Keys do
   end
 
   def create_authorized_keys_fixture(existing_content: 'existing content')
-    FileUtils.mkdir_p(File.dirname(tmp_authorized_keys_path))
-    open(tmp_authorized_keys_path, 'w') { |file| file.puts(existing_content) }
+    FileUtils.mkdir_p(File.dirname(authorized_keys_file))
+    open(authorized_keys_file, 'w') { |file| file.puts(existing_content) }
   end
 
-  def tmp_authorized_keys_path
-    File.join('tmp', 'authorized_keys')
+  def authorized_keys_file
+    Gitlab::CurrentSettings.current_application_settings.authorized_keys_file
   end
 end

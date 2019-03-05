@@ -238,6 +238,7 @@ class ApplicationSetting < ActiveRecord::Base
       akismet_enabled: false,
       allow_local_requests_from_hooks_and_services: false,
       authorized_keys_enabled: true, # TODO default to false if the instance is configured to use AuthorizedKeysCommand
+      authorized_keys_file: File.join(ENV['HOME'], '.ssh/authorized_keys'),
       container_registry_token_expire_delay: 5,
       default_artifacts_expire_in: '30 days',
       default_branch_protection: Settings.gitlab['default_branch_protection'],

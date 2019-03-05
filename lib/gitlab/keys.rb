@@ -4,8 +4,8 @@ module Gitlab
   class Keys
     attr_accessor :auth_file, :logger
 
-    def initialize(auth_file = nil, logger = Gitlab::AppLogger)
-      @auth_file = auth_file || File.join(ENV['HOME'], '.ssh/authorized_keys')
+    def initialize(logger = Gitlab::AppLogger)
+      @auth_file = Gitlab::CurrentSettings.current_application_settings.authorized_keys_file
       @logger = logger
     end
 
@@ -77,7 +77,7 @@ module Gitlab
     end
 
     def key_line(id, key)
-      key.chomp!
+      key = key.chomp
 
       if key.include?("\n")
         raise KeyError, "Invalid public_key: #{key.inspect}"
