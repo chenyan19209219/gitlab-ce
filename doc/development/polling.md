@@ -1,5 +1,9 @@
 # Polling with ETag caching
 
+TODO: we should probably document the side-effect that sharing etags per path, not on the full URL means that invalidating the path will intentionally invalidate all query strings for that path.
+TODO: Yes, and we should also note that the content itself will still be different - we only use the path for computing the ETag, not for the body (when there is a cache miss).
+TODO: See https://gitlab.com/gitlab-org/gitlab-ce/issues/58500
+
 Polling for changes (repeatedly asking server if there are any new changes)
 introduces high load on a GitLab instance, because it usually requires
 executing at least a few SQL queries. This makes scaling large GitLab
