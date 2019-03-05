@@ -9,6 +9,11 @@ export default {
       type: Function,
       required: true,
     },
+    // helpPath: {
+    //   type: String,
+    //   required: false,
+    //   default: '/help/ci/variables/README#masked-variables',
+    // },
   },
   computed: {
     key: {
@@ -59,12 +64,22 @@ export default {
         });
       },
     },
+    warnAboutMaskability: {
+      get() {
+        // Eight or more alphanumeric characters plus underscores
+        const regex = /^\w{8,}$/;
+        const maskedChecked = this.variable.masked;
+        const variableValue = this.variable.value;
+        if (maskedChecked && !regex.test(variableValue)) return true;
+        return false;
+      },
+    },
   },
 };
 </script>
 
 <template>
-  <div>
+  <div class="gl-show-field-errors">
     <div class="row">
       <div class="form-group col-md-6">
         <label for="variable-key" class="label-bold">{{ s__('Variables|Key') }}</label>
@@ -72,7 +87,22 @@ export default {
       </div>
       <div class="form-group col-md-6">
         <label for="variable-value" class="label-bold">{{ s__('Variables|Value') }}</label>
-        <input id="variable-value" v-model="value" type="text" class="form-control" required />
+        <input
+          id="variable-value"
+          v-model="value"
+          type="text"
+          :class="{
+            'form-control': true,
+            'gl-field-error-outline': warnAboutMaskability,
+          }"
+          required
+        />
+        <span v-if="warnAboutMaskability" class="gl-field-error">
+          Cannot use Masked Variable with current value
+          <a v-if="helpPath" :href="helpPath" target="_blank">
+            <i aria-hidden="true" data-hidden="true" class="fa fa-question-circle"> </i>
+          </a>
+        </span>
       </div>
     </div>
     <div class="form-group">
