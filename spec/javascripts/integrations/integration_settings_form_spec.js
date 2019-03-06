@@ -163,7 +163,7 @@ describe('IntegrationSettingsForm', () => {
               .find('.flash-text')
               .text()
               .trim(),
-          ).toContainText('Test failed. some error');
+          ).toContain('Test failed. some error');
 
           expect($flashContainer.find('.flash-action')).toBeDefined();
           expect(
