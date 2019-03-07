@@ -1,7 +1,8 @@
 import Vue from 'vue';
-import environmentsComponent from './components/environments_app.vue';
+import EnvironmentsComponent from './components/environments_app.vue';
 import { parseBoolean } from '../lib/utils/common_utils';
 import Translate from '../vue_shared/translate';
+import CanaryCalloutMixin from 'ee_else_ce/environments/mixins/canary_callout_mixin';
 
 Vue.use(Translate);
 
@@ -9,8 +10,9 @@ export default () =>
   new Vue({
     el: '#environments-list-view',
     components: {
-      environmentsComponent,
+      EnvironmentsComponent,
     },
+    mixins: [CanaryCalloutMixin],
     data() {
       const environmentsData = document.querySelector(this.$options.el).dataset;
 
@@ -32,6 +34,7 @@ export default () =>
           cssContainerClass: this.cssContainerClass,
           canCreateEnvironment: this.canCreateEnvironment,
           canReadEnvironment: this.canReadEnvironment,
+          ...calloutProps,
         },
       });
     },

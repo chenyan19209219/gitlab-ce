@@ -2,18 +2,19 @@
 import Timeago from 'timeago.js';
 import _ from 'underscore';
 import { GlTooltipDirective } from '@gitlab/ui';
+import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import { CLUSTER_TYPE } from '~/clusters/constants';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import Icon from '~/vue_shared/components/icon.vue';
+import CommitComponent from '~/vue_shared/components/commit.vue';
 import ActionsComponent from './environment_actions.vue';
 import ExternalUrlComponent from './environment_external_url.vue';
 import StopComponent from './environment_stop.vue';
 import RollbackComponent from './environment_rollback.vue';
 import TerminalButtonComponent from './environment_terminal_button.vue';
 import MonitoringButtonComponent from './environment_monitoring.vue';
-import CommitComponent from '../../vue_shared/components/commit.vue';
 import eventHub from '../event_hub';
-import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { CLUSTER_TYPE } from '~/clusters/constants';
+import environmentItemMixin from 'ee_else_ce/environments/mixins/environment_item_mixin';
 
 /**
  * Environment Item Component
@@ -34,25 +35,22 @@ export default {
     TerminalButtonComponent,
     MonitoringButtonComponent,
   },
-
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-
+  mixins: [environmentItemMixin],
   props: {
     model: {
       type: Object,
       required: true,
       default: () => ({}),
     },
-
     canReadEnvironment: {
       type: Boolean,
       required: false,
       default: false,
     },
   },
-
   computed: {
     /**
      * Verifies if `last_deployment` key exists in the current Environment.
@@ -67,7 +65,6 @@ export default {
       }
       return false;
     },
-
     /**
      * Checkes whether the environment is protected.
      * (`is_protected` currently only set in EE)
@@ -77,7 +74,6 @@ export default {
     isProtected() {
       return this.model && this.model.is_protected;
     },
-
     /**
      * Hide group cluster features which are not currently implemented.
      *
@@ -86,7 +82,6 @@ export default {
     disableGroupClusterFeatures() {
       return this.model && this.model.cluster_type === CLUSTER_TYPE.GROUP;
     },
-
     /**
      * Returns whether the environment can be stopped.
      *
@@ -95,7 +90,6 @@ export default {
     canStopEnvironment() {
       return this.model && this.model.can_stop;
     },
-
     /**
      * Verifies if the `deployable` key is present in `last_deployment` key.
      * Used to verify whether we should or not render the rollback partial.
@@ -111,7 +105,6 @@ export default {
         this.model.last_deployment.deployable.retry_path
       );
     },
-
     /**
      * Verifies if the date to be shown is present.
      *
@@ -125,7 +118,6 @@ export default {
         this.model.last_deployment.deployable !== undefined
       );
     },
-
     /**
      * Human readable date.
      *
@@ -142,7 +134,6 @@ export default {
       }
       return '';
     },
-
     actions() {
       if (!this.model || !this.model.last_deployment) {
         return [];
@@ -158,7 +149,6 @@ export default {
         name: action.name,
       }));
     },
-
     /**
      * Builds the string used in the user image alt attribute.
      *
@@ -175,7 +165,6 @@ export default {
       }
       return '';
     },
-
     /**
      * If provided, returns the commit tag.
      *
@@ -187,7 +176,6 @@ export default {
       }
       return undefined;
     },
-
     /**
      * If provided, returns the commit ref.
      *
@@ -199,7 +187,6 @@ export default {
       }
       return undefined;
     },
-
     /**
      * If provided, returns the commit url.
      *
@@ -216,7 +203,6 @@ export default {
       }
       return undefined;
     },
-
     /**
      * If provided, returns the commit short sha.
      *
@@ -233,7 +219,6 @@ export default {
       }
       return undefined;
     },
-
     /**
      * If provided, returns the commit title.
      *
@@ -250,7 +235,6 @@ export default {
       }
       return undefined;
     },
-
     /**
      * If provided, returns the commit tag.
      *
@@ -268,7 +252,6 @@ export default {
 
       return undefined;
     },
-
     /**
      * Verifies if the `retry_path` key is present and returns its value.
      *
@@ -285,7 +268,6 @@ export default {
       }
       return undefined;
     },
-
     /**
      * Verifies if the `last?` key is present and returns its value.
      *
@@ -294,7 +276,6 @@ export default {
     isLastDeployment() {
       return this.model && this.model.last_deployment && this.model.last_deployment['last?'];
     },
-
     /**
      * Builds the name of the builds needed to display both the name and the id.
      *
@@ -307,7 +288,6 @@ export default {
       }
       return '';
     },
-
     /**
      * Builds the needed string to show the internal id.
      *
@@ -319,7 +299,6 @@ export default {
       }
       return '';
     },
-
     /**
      * Verifies if the user object is present under last_deployment object.
      *
@@ -332,7 +311,6 @@ export default {
         !_.isEmpty(this.model.last_deployment.user)
       );
     },
-
     /**
      * Returns the user object nested with the last_deployment object.
      * Used to render the template.
@@ -349,7 +327,6 @@ export default {
       }
       return {};
     },
-
     /**
      * Verifies if the build name column should be rendered by verifing
      * if all the information needed is present
@@ -364,7 +341,6 @@ export default {
         !_.isEmpty(this.model.last_deployment.deployable)
       );
     },
-
     /**
      * Verifies the presence of all the keys needed to render the buil_path.
      *
@@ -382,7 +358,6 @@ export default {
 
       return '';
     },
-
     /**
      * Verifies the presence of all the keys needed to render the external_url.
      *
@@ -395,7 +370,6 @@ export default {
 
       return '';
     },
-
     /**
      * Verifies if deplyment internal ID should be rendered by verifing
      * if all the information needed is present
@@ -410,7 +384,6 @@ export default {
         this.model.last_deployment.iid !== undefined
       );
     },
-
     environmentPath() {
       if (this.model && this.model.environment_path) {
         return this.model.environment_path;
@@ -418,7 +391,6 @@ export default {
 
       return '';
     },
-
     monitoringUrl() {
       if (this.model && this.model.metrics_path) {
         return this.model.metrics_path;
@@ -426,7 +398,6 @@ export default {
 
       return '';
     },
-
     displayEnvironmentActions() {
       return (
         this.actions.length > 0 ||
@@ -436,12 +407,10 @@ export default {
         this.canRetry
       );
     },
-
     folderIconName() {
       return this.model.isOpen ? 'chevron-down' : 'chevron-right';
     },
   },
-
   methods: {
     onClickFolder() {
       eventHub.$emit('toggleFolder', this.model);
@@ -467,9 +436,18 @@ export default {
       <div v-if="!model.isFolder" class="table-mobile-header" role="rowheader">
         {{ s__('Environments|Environment') }}
       </div>
+
+      <span v-if="shouldRenderDeplopyBoard" class="deploy-board-icon" @click="toggleDeployBoard">
+        <icon :name="deployIconName" />
+      </span>
+
       <span v-if="!model.isFolder" class="environment-name table-mobile-content">
         <a class="qa-environment-link" :href="environmentPath"> {{ model.name }} </a>
+        <span v-if="isProtected" class="badge badge-success">
+          {{ s__('Environments|protected') }}
+        </span>
       </span>
+
       <span v-else class="folder-name" role="button" @click="onClickFolder">
         <icon :name="folderIconName" class="folder-icon" />
 
