@@ -14,6 +14,13 @@ See [Git SCM Server-Side Hooks][hooks] for more information about each hook type
 As of gitlab-shell version 2.2.0 (which requires GitLab 7.5+), GitLab
 administrators can add custom git hooks to any GitLab project.
 
+When writing custom hooks, keep in mind that hooks that require specific runtime
+environments may not work when committing files using the GitLab web UI. For
+example, you may want a hook to lint files using the puppet binary. The puppet 
+binary calls out to the puppet gem, which is not included in the GitLab gemfile,
+so this hook would fail when a commit comes through the GitLab web UI. Custom hooks
+work best when they do not rely on external libraries.
+
 ## Setup
 
 Normally, Git hooks are placed in the repository or project's `hooks` directory.
