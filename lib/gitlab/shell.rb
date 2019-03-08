@@ -342,7 +342,7 @@ module Gitlab
     end
 
     def gitlab_keys
-      Gitlab::Keys.new
+      @gitlab_keys ||= Gitlab::Keys.new
     end
 
     class GitalyGitlabProjects

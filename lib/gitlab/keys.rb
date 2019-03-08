@@ -77,9 +77,9 @@ module Gitlab
     end
 
     def key_line(id, key)
-      key.chomp!
+      key = key.chomp
 
-      if key.include?("\n")
+      if key.include?("\n") || key.include?("\t")
         raise KeyError, "Invalid public_key: #{key.inspect}"
       end
 
@@ -91,7 +91,7 @@ module Gitlab
         raise KeyError, "Invalid ID: #{id.inspect}"
       end
 
-      "#{File.join(Gitlab.config.gitlab_shell.path)}/bin/gitlab-shell #{id}"
+      "#{File.join(Gitlab.config.gitlab_shell.path, 'bin', 'gitlab-shell')} #{id}"
     end
 
     def strip(key)
