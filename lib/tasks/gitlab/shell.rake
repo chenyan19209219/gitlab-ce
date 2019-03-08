@@ -103,11 +103,8 @@ namespace :gitlab do
 
     Gitlab::Shell.new.remove_all_keys
 
-    Gitlab::Shell.new.batch_add_keys do |adder|
-      Key.find_each(batch_size: 1000) do |key|
-        adder.add_key(key.shell_id, key.key)
-        print '.'
-      end
+    Key.find_in_batches(batch_size: 1000) do |keys|
+      Gitlab::Shell.new.batch_add_keys(keys)
     end
     puts ""
 
