@@ -4,8 +4,8 @@ module Gitlab
   class Keys
     attr_accessor :auth_file, :logger
 
-    def initialize(auth_file = nil, logger = Gitlab::AppLogger)
-      @auth_file = auth_file || File.join(ENV['HOME'], '.ssh/authorized_keys')
+    def initialize(logger = Gitlab::AppLogger)
+      @auth_file = Gitlab.config.gitlab_shell.auth_file
       @logger = logger
     end
 
