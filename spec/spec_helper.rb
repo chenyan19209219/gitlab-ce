@@ -132,10 +132,6 @@ RSpec.configure do |config|
     allow(Feature).to receive(:enabled?)
       .with(:force_autodevops_on_by_default, anything)
       .and_return(false)
-
-    stub_application_setting(
-      authorized_keys_file: Rails.root.join('tmp/tests', 'authorized_keys')
-    )
   end
 
   config.before(:example, :quarantine) do
