@@ -15,27 +15,23 @@ describe 'Projects > User sees sidebar' do
     shared_examples 'has a expanded nav sidebar' do
       it 'has a expanded desktop nav-sidebar on load' do
         expect(page).to have_content('Collapse sidebar')
-        expect(page).not_to have_selector('.sidebar-collapsed-desktop')
-        expect(page).not_to have_selector('.sidebar-expanded-mobile')
+        expect(page).not_to have_selector('.sidebar-collapsed')
       end
 
       it 'can collapse the nav-sidebar' do
         page.find('.nav-sidebar .js-toggle-sidebar').click
-        expect(page).to have_selector('.sidebar-collapsed-desktop')
+        expect(page).to have_selector('.sidebar-collapsed')
         expect(page).not_to have_content('Collapse sidebar')
-        expect(page).not_to have_selector('.sidebar-expanded-mobile')
       end
     end
 
     shared_examples 'has a collapsed nav sidebar' do
       it 'has a collapsed desktop nav-sidebar on load' do
         expect(page).not_to have_content('Collapse sidebar')
-        expect(page).not_to have_selector('.sidebar-expanded-mobile')
       end
 
       it 'can expand the nav-sidebar' do
         page.find('.nav-sidebar .js-toggle-sidebar').click
-        expect(page).to have_selector('.sidebar-expanded-mobile')
         expect(page).to have_content('Collapse sidebar')
       end
     end
@@ -43,13 +39,11 @@ describe 'Projects > User sees sidebar' do
     shared_examples 'has a mobile nav-sidebar' do
       it 'has a hidden nav-sidebar on load' do
         expect(page).not_to have_content('.mobile-nav-open')
-        expect(page).not_to have_selector('.sidebar-expanded-mobile')
       end
 
       it 'can expand the nav-sidebar' do
         page.find('.toggle-mobile-nav').click
         expect(page).to have_selector('.mobile-nav-open')
-        expect(page).to have_selector('.sidebar-expanded-mobile')
       end
     end
 

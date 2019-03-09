@@ -8,6 +8,7 @@ let currentOpenMenu = null;
 let menuCornerLocs;
 let timeoutId;
 let sidebar;
+let sidebarCollpasedClass;
 
 export const mousePos = [];
 
@@ -29,7 +30,7 @@ const setHeaderHeight = () => {
 };
 
 export const isSidebarCollapsed = () =>
-  sidebar && sidebar.classList.contains('sidebar-collapsed-desktop');
+  sidebar && sidebar.classList.contains(sidebarCollpasedClass);
 
 export const canShowActiveSubItems = el => {
   if (el.classList.contains('active') && !isSidebarCollapsed()) {
@@ -171,8 +172,9 @@ export const subItemsMouseLeave = relatedTarget => {
   }
 };
 
-export default () => {
+export default (collapsedClass) => {
   sidebar = document.querySelector('.nav-sidebar');
+  sidebarCollpasedClass = collapsedClass;
 
   if (!sidebar) return;
 

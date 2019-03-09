@@ -5,7 +5,7 @@ shared_examples 'has nav sidebar' do
     render
 
     expect(rendered).to have_selector('.nav-sidebar')
-    expect(rendered).not_to have_selector('.sidebar-collapsed-desktop')
+    expect(rendered).not_to have_selector('.sidebar-collapsed')
     expect(rendered).not_to have_selector('.sidebar-expanded-mobile')
   end
 end

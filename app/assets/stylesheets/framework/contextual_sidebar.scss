@@ -121,18 +121,15 @@
   box-shadow: inset -1px 0 0 $border-color;
   transform: translate3d(0, 0, 0);
 
-  &:not(.sidebar-collapsed-desktop) {
-    @media (min-width: map-get($grid-breakpoints, sm)) and (max-width: map-get($grid-breakpoints, sm)) {
+
+  &:not(.sidebar-collapsed) {
+    @media (max-width: map-get($grid-breakpoints, sm)) {
       box-shadow: inset -1px 0 0 $border-color, 2px 1px 3px $dropdown-shadow-color;
     }
   }
 
   @mixin collapse-contextual-sidebar {
     width: $contextual-sidebar-collapsed-width;
-
-    .nav-sidebar-inner-scroll {
-      overflow-x: hidden;
-    }
 
     .badge.badge-pill:not(.fly-out-badge),
     .sidebar-context-title,
@@ -153,12 +150,8 @@
     }
   }
 
-  &.sidebar-collapsed-desktop {
+  &.sidebar-collapsed {
     @include collapse-contextual-sidebar;
-  }
-
-  &.sidebar-expanded-mobile {
-    left: 0;
   }
 
   a {
@@ -193,7 +186,9 @@
   }
 
   @include media-breakpoint-down(sm) {
-    left: (-$contextual-sidebar-width);
+    &.sidebar-collapsed {
+      left: (-$contextual-sidebar-width);
+    }
   }
 
   .nav-icon-container {
@@ -211,7 +206,7 @@
   }
 
   @media (min-width: map-get($grid-breakpoints, md)) and (max-width: map-get($grid-breakpoints, xl) - 1px) {
-    &:not(.sidebar-expanded-mobile) {
+    .sidebar-collapsed {
       @include collapse-contextual-sidebar;
       @include collapse-contextual-sidebar-content;
     }
@@ -396,7 +391,7 @@
   overflow: hidden;
 }
 
-.sidebar-collapsed-desktop {
+.sidebar-collapsed {
   @include collapse-contextual-sidebar-content;
 }
 

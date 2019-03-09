@@ -17,9 +17,9 @@ function initDeferred() {
 
 export default function initLayoutNav() {
   const contextualSidebar = new ContextualSidebar();
-  contextualSidebar.bindEvents();
+  contextualSidebar.render();
 
-  initFlyOutNav();
+  initFlyOutNav(contextualSidebar.behaviourClass);
 
   // We need to init it on DomContentLoaded as others could also call it
   $(document).on('init.scrolling-tabs', () => {
