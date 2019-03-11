@@ -295,8 +295,8 @@ const bindEvents = () => {
   $projectVisibilityLevel.on('change', () => onProjectVisitbilityChange($projectFeatures));
 
   initSettingsPanels({
-    expandedText: 'Hide avatar, license and features settings',
-    collapsedText: 'Show avatar, license and features settings',
+    expandedPanelText: 'Hide avatar, license and features settings',
+    collapsedPanelText: 'Show avatar, license and features settings',
   });
 
   const $toggleContainer = document.querySelector('.project-feature-settings');
