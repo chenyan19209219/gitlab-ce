@@ -41,7 +41,7 @@ describe 'New project' do
     end
 
     if visible
-      expect(page).to have_css('.settings.expanded') 
+      expect(page).to have_css('.settings.expanded')
     else
       expect(page).not_to have_css('.settings.expanded')
     end

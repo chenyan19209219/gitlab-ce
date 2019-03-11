@@ -849,6 +849,12 @@ msgstr ""
 msgid "Applied"
 msgstr ""
 
+msgid "Apply a license"
+msgstr ""
+
+msgid "Apply a license template"
+msgstr ""
+
 msgid "Apply suggestion"
 msgstr ""
 

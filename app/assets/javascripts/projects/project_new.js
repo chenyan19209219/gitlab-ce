@@ -77,13 +77,13 @@ function updateFeatureVisibilityOptions(
 
   const accessLevelOptions = getAccessLevelOptionsForFeature(featureEnabled);
   const computedSelectedIndex = accessLevelOptions.findIndex(
-    opt => Number(opt[0]) === Number(projectVisibilityLevel),
+    ([accessLevel]) => accessLevel === parseInt(projectVisibilityLevel, 10),
   );
   const selectedIndex = computedSelectedIndex > -1 ? computedSelectedIndex : 0;
 
-  const options = accessLevelOptions.map((alo, index) => {
+  const options = accessLevelOptions.map(([value, label], index) => {
     const selected = selectedIndex === index ? 'selected="selected"' : '';
-    return `<option ${selected} value="${alo[0]}">${alo[1]}</option>`;
+    return `<option ${selected} value="${value}">${label}</option>`;
   });
 
   $(visibilitySelector).html(options);

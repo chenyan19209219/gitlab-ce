@@ -82,7 +82,7 @@
         = f.label :license, class: 'label-bold' do
           %span= _("License")
         .license-selector.js-license-selector-wrap.js-template-selector-wrap
-          = dropdown_tag("Apply a license template", options: { toggle_class: 'js-license-selector qa-license-dropdown', title: "Apply a license", filter: true, placeholder: "Filter", data: { data: licenses_for_select(@project), track_label: "#{track_label}", track_event: "click_form_input", track_property: "select_project_license" } } )
+          = dropdown_tag(_("Apply a license template"), options: { toggle_class: 'js-license-selector qa-license-dropdown', title: _("Apply a license"), filter: true, placeholder: "Filter", data: { data: licenses_for_select(@project), track_label: "#{track_label}", track_event: "click_form_input", track_property: "select_project_license" } } )
           %input.js-project-license{ :name => "project_license", :type => "hidden", :value => "" }
       = render 'new_project_feature_settings', f: f, track_label: track_label
 
