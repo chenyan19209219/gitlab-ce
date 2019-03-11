@@ -39,7 +39,7 @@ describe 'New project' do
     ].each do |field|
       expect(page).to have_css(field[:sel], visible: visible, text: field[:text])
     end
-    
+
     if visible
       expect(page).to have_css('.settings.expanded') 
     else

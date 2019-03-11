@@ -66,8 +66,7 @@
     .settings-content
       .form-group
         = f.label :description, class: 'label-bold' do
-          Project description
-          %span (optional)
+          %span= _("Project description (optional)")
         = f.text_area :description, placeholder: 'Description format', class: "form-control", rows: 3, maxlength: 250, data: { track_label: "#{track_label}", track_event: "activate_form_input", track_property: "project_description", track_value: "" }
 
       .form-group
@@ -92,12 +91,10 @@
         .project-feature-settings
           .project-feature-row
             %label.label-bold
-              Issues
-              /
-            %span.form-text.text-muted Lightweight issue tracking system for this project
+              %span= _("Issues")
+            %span.form-text.text-muted= ("Lightweight issue tracking system for this project")
             .project-feature-controls{ "data-for" => "project_feature_attributes[issues_access_level]" }
               %label.toggle-wrapper
-                /
                 %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button", track_label: "#{track_label}", track_event: "click_feature_toggle", track_property: "issues_access_level" }
                   %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                   .loading-container.text-center.loading-icon
@@ -108,16 +105,14 @@
               .select-wrapper
                 %select.form-control.project-repo-select.select-control{ :disabled => "disabled", :name => "project_feature_attributes[issues_access_level]" }
                   %option{ :value => "0" }
-                    Enable feature to choose access level
+                    %span= _("Enable feature to choose access level")
                 %i.fa.fa-chevron-down{ "aria-hidden" => "true" }
           .project-feature-row
             %label.label-bold
-              Repository
-              /
-            %span.form-text.text-muted View and edit files in this project
+              %span= _("Repository")
+            %span.form-text.text-muted= _("View and edit files in this project")
             .project-feature-controls{ "data-for" => "project_feature_attributes[repository_access_level]" }
               %label.toggle-wrapper
-                /
                 %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button", track_label: "#{track_label}", track_event: "click_feature_toggle", track_property: "repository_access_level" }
                   %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                   .loading-container.text-center.loading-icon
@@ -128,16 +123,14 @@
               .select-wrapper
                 %select.form-control.project-repo-select.select-control{ :disabled => "disabled", :name => "project_feature_attributes[repository_access_level]", }
                   %option{ :value => "0" }
-                    Enable feature to choose access level
+                    %span= _("Enable feature to choose access level")
                 %i.fa.fa-chevron-down{ "aria-hidden" => "true" }
           .project-feature-row
             %label.label-bold
-              Wiki
-              /
-            %span.form-text.text-muted Pages for project documentation
+              %span= _("Wiki")
+            %span.form-text.text-muted= _("Pages for project documentation")
             .project-feature-controls{ "data-for" => "project_feature_attributes[wiki_access_level]" }
               %label.toggle-wrapper
-                /
                 %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button", track_label: "#{track_label}", track_event: "click_feature_toggle", track_property: "wiki_access_level" }
                   %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                   .loading-container.text-center.loading-icon
@@ -148,16 +141,14 @@
               .select-wrapper
                 %select.form-control.project-repo-select.select-control{ :disabled => "disabled", :name => "project_feature_attributes[wiki_access_level]" }
                   %option{ :value => "0" }
-                    Enable feature to choose access level
+                    %span= _("Enable feature to choose access level")
                 %i.fa.fa-chevron-down{ "aria-hidden" => "true" }
           .project-feature-row
             %label.label-bold
-              Snippets
-              /
-            %span.form-text.text-muted Share code pastes with others out of Git repository
+              %span= _("Snippets")
+            %span.form-text.text-muted= _("Share code pastes with others out of Git repository")
             .project-feature-controls{ "data-for" => "project_feature_attributes[snippets_access_level]" }
               %label.toggle-wrapper
-                /
                 %button.js-project-feature-toggle.project-feature-toggle{ "aria-label" => "Toggle Status: OFF", :type => "button", track_label: "#{track_label}", track_event: "click_feature_toggle", track_property: "snippets_access_level" }
                   %input.js-project-feature-toggle-input{ :type => "hidden", :value => "0" }/
                   .loading-container.text-center.loading-icon
@@ -168,7 +159,7 @@
               .select-wrapper
                 %select.form-control.project-repo-select.select-control{ :disabled => "disabled", :name => "project_feature_attributes[snippets_access_level]" }
                   %option{ :value => "0" }
-                    Enable feature to choose access level
+                    %span= _("Enable feature to choose access level")
                 %i.fa.fa-chevron-down{ "aria-hidden" => "true" }
           /
 

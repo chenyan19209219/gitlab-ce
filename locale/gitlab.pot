@@ -3118,6 +3118,9 @@ msgstr ""
 msgid "Enable error tracking"
 msgstr ""
 
+msgid "Enable feature to choose access level"
+msgstr ""
+
 msgid "Enable for this project"
 msgstr ""
 
@@ -3479,6 +3482,9 @@ msgid "Every week (Sundays at 4:00am)"
 msgstr ""
 
 msgid "Everyone"
+msgstr ""
+
+msgid "Everyone With Access"
 msgstr ""
 
 msgid "Everyone can contribute"
@@ -5587,6 +5593,9 @@ msgstr ""
 msgid "One or more of your Google Code projects cannot be imported into GitLab directly because they use Subversion or Mercurial for version control, rather than Git."
 msgstr ""
 
+msgid "Only Project Members"
+msgstr ""
+
 msgid "Only admins"
 msgstr ""
 
@@ -5681,6 +5690,9 @@ msgid "Pages Domain"
 msgstr ""
 
 msgid "Pages Domains"
+msgstr ""
+
+msgid "Pages for project documentation"
 msgstr ""
 
 msgid "Pages getting started guide"
@@ -6341,6 +6353,9 @@ msgid "Project avatar"
 msgstr ""
 
 msgid "Project avatar in repository: %{link}"
+msgstr ""
+
+msgid "Project description (optional)"
 msgstr ""
 
 msgid "Project details"
@@ -7257,6 +7272,9 @@ msgid "Settings"
 msgstr ""
 
 msgid "Share"
+msgstr ""
+
+msgid "Share code pastes with others out of Git repository"
 msgstr ""
 
 msgid "Shared Runners"
@@ -8976,6 +8994,9 @@ msgid "Verified"
 msgstr ""
 
 msgid "Version"
+msgstr ""
+
+msgid "View and edit files in this project"
 msgstr ""
 
 msgid "View app"

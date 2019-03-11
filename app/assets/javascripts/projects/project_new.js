@@ -5,10 +5,14 @@ import initSettingsPanels from '~/settings_panels';
 import LicenseSelector from '~/blob/template_selectors/license_selector';
 import fileUpload from '~/lib/utils/file_upload';
 import setupToggleButtons from '~/toggle_buttons';
+import { __ } from '../locale';
 
 let hasUserDefinedProjectPath = false;
-const ACCESS_LEVEL_OPTIONS_PRIVATE = [[0, 'Enable feature to choose access level']];
-const ACCESS_LEVEL_OPTIONS_PUBLIC = [[10, 'Only Project Members'], [20, 'Everyone With Access']];
+const ACCESS_LEVEL_OPTIONS_PRIVATE = [[0, __('Enable feature to choose access level')]];
+const ACCESS_LEVEL_OPTIONS_PUBLIC = [
+  [10, __('Only Project Members')],
+  [20, __('Everyone With Access')],
+];
 
 const deriveProjectPathFromUrl = $projectImportUrl => {
   const $currentProjectPath = $projectImportUrl
@@ -295,8 +299,8 @@ const bindEvents = () => {
   $projectVisibilityLevel.on('change', () => onProjectVisitbilityChange($projectFeatures));
 
   initSettingsPanels({
-    expandedPanelText: 'Hide avatar, license and features settings',
-    collapsedPanelText: 'Show avatar, license and features settings',
+    expandedPanelText: __('Hide avatar, license and features settings'),
+    collapsedPanelText: __('Show avatar, license and features settings'),
   });
 
   const $toggleContainer = document.querySelector('.project-feature-settings');
