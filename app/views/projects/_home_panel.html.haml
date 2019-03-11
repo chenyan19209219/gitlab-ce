@@ -59,7 +59,7 @@
       .nav-links.quick-links
         - if @project.empty_repo?
           = render 'stat_anchor_list', anchors: @project.empty_repo_statistics_anchors
-        - else 
+        - else
           = render 'stat_anchor_list', anchors: @project.statistics_anchors(show_auto_devops_callout: show_auto_devops_callout)
 
   .home-panel-home-desc.mt-1
