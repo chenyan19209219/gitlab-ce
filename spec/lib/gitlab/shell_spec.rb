@@ -98,11 +98,11 @@ describe Gitlab::Shell do
         expect(gitlab_keys)
           .to receive(:batch_add_keys)
           .with([
-            {id: 'key-123', key: 'ssh-rsa foobar'}
+            { id: 'key-123', key: 'ssh-rsa foobar' }
           ])
 
         gitlab_shell.batch_add_keys([
-          {id: 'key-123', key: 'ssh-rsa foobar'}
+          { id: 'key-123', key: 'ssh-rsa foobar' }
         ])
       end
     end
@@ -116,7 +116,7 @@ describe Gitlab::Shell do
         expect(Gitlab::Keys).not_to receive(:new)
 
         gitlab_shell.batch_add_keys([
-          {id: 'key-123', key: 'ssh-rsa foobar'}
+          { id: 'key-123', key: 'ssh-rsa foobar' }
         ])
       end
     end
@@ -132,11 +132,11 @@ describe Gitlab::Shell do
         expect(gitlab_keys)
           .to receive(:batch_add_keys)
           .with([
-            {id: 'key-123', key: 'ssh-rsa foobar'}
+            { id: 'key-123', key: 'ssh-rsa foobar' }
           ])
 
         gitlab_shell.batch_add_keys([
-          {id: 'key-123', key: 'ssh-rsa foobar'}
+          { id: 'key-123', key: 'ssh-rsa foobar' }
         ])
       end
     end

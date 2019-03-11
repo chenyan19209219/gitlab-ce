@@ -11,9 +11,9 @@ module Gitlab
 
     def add_key(id, key)
       lock do
-        logger.info("Adding key (#{id}): #{key}")
-        auth_line = key_line(id, key)
-        open_auth_file('a') { |file| file.puts(auth_line) }
+        public_key = strip(key)
+        logger.info("Adding key (#{id}): #{public_key}")
+        open_auth_file('a') { |file| file.puts(key_line(id, public_key)) }
       end
 
       true
@@ -37,8 +37,9 @@ module Gitlab
       lock do
         logger.info("Removing key (#{id})")
         open_auth_file('r+') do |f|
-          while line = f.gets # rubocop:disable Lint/AssignmentInCondition
+          while line = f.gets
             next unless line.start_with?("command=\"#{command(id)}\"")
+
             f.seek(-line.length, IO::SEEK_CUR)
             # Overwrite the line with #'s. Because the 'line' variable contains
             # a terminating '\n', we write line.length - 1 '#' characters.
@@ -70,7 +71,7 @@ module Gitlab
     end
 
     def open_auth_file(mode)
-      open(auth_file, mode, 0o600) do |file|
+      File.open(auth_file, mode, 0o600) do |file|
         file.chmod(0o600)
         yield file
       end
