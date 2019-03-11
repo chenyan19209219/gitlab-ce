@@ -22,30 +22,29 @@ describe 'New project' do
     end
   end
 
-  def has_hidden_additional_fields
-    expect(page).not_to have_content('Project description')
-    expect(page).not_to have_content('Project avatar')
-    expect(page).not_to have_content('License')
-    expect(page).not_to have_content('Features')
-    expect(page).not_to have_content('Lightweight issue tracking system for this project')
-    expect(page).not_to have_content('View and edit files in this project')
-    expect(page).not_to have_content('Pages for project documentation')
-    expect(page).not_to have_content('Share code pastes with others out of Git repository')
-    expect(page).not_to have_css('.settings.expanded')
-  end
-
-  def has_visible_additional_fields
-    expect(page).to have_content('Project name')
-    expect(page).to have_content('Project URL')
-    expect(page).to have_content('Project slug')
-    expect(page).to have_content('Project description')
-    expect(page).to have_content('Project avatar')
-    expect(page).to have_content('License')
-    expect(page).to have_content('Features')
-    expect(page).to have_content('Lightweight issue tracking system for this project')
-    expect(page).to have_content('View and edit files in this project')
-    expect(page).to have_content('Pages for project documentation')
-    expect(page).to have_content('Share code pastes with others out of Git repository')
+  def has_additional_fields(visible = true)
+    [
+      { text: 'Project description', sel: 'label' },
+      { text: 'Project avatar', sel: 'label' },
+      { text: 'License', sel: 'label' },
+      { text: 'Features', sel: 'label' },
+      { text: 'Issues', sel: 'label' },
+      { text: 'Repository', sel: 'label' },
+      { text: 'Wiki', sel: 'label' },
+      { text: 'Snippets', sel: 'label' },
+      { text: 'Lightweight issue tracking system for this project', sel: 'span' },
+      { text: 'View and edit files in this project', sel: 'span' },
+      { text: 'Pages for project documentation', sel: 'span' },
+      { text: 'Share code pastes with others out of Git repository', sel: 'span' }
+    ].each do |field|
+      expect(page).to have_css(field[:sel], visible: visible, text: field[:text])
+    end
+    
+    if visible
+      expect(page).to have_css('.settings.expanded') 
+    else
+      expect(page).not_to have_css('.settings.expanded')
+    end
   end
 
   it 'shows "New project" page', :js do
@@ -80,9 +79,9 @@ describe 'New project' do
   it 'Additional settings can be toggled', :js do
     visit new_project_path
     find('.js-settings-toggle')
-    has_visible_additional_fields
+    has_additional_fields
     find_button('Hide avatar, license and features settings').click
-    has_hidden_additional_fields
+    has_additional_fields(false)
   end
 
   context 'Visibility level selector', :js do
