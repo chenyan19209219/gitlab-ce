@@ -132,10 +132,6 @@ RSpec.configure do |config|
     allow(Feature).to receive(:enabled?)
       .with(:force_autodevops_on_by_default, anything)
       .and_return(false)
-
-    stub_gitlab_shell_setting(
-      auth_file: File.join('tmp', 'tests', '.ssh', 'authorized_keys')
-    )
   end
 
   config.before(:example, :quarantine) do

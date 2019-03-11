@@ -855,6 +855,7 @@ test:
     path: tmp/tests/backups
   gitlab_shell:
     path: tmp/tests/gitlab-shell/
+    auth_file: tmp/tests/.ssh/authorized_keys
   issues_tracker:
     redmine:
       title: "Redmine"
