@@ -214,6 +214,69 @@ describe Gitlab::Shell do
     end
   end
 
+  describe '#remove_keys_not_found_in_db' do
+    context 'when keys are in the file that are not in the DB' do
+      before do
+        gitlab_shell.remove_all_keys
+        gitlab_shell.add_key('key-1234', 'ssh-rsa ASDFASDF')
+        gitlab_shell.add_key('key-9876', 'ssh-rsa ASDFASDF')
+        @another_key = create(:key) # this one IS in the DB
+      end
+
+      it 'removes the keys' do
+        expect(gitlab_shell).to receive(:remove_key).with('key-1234')
+        expect(gitlab_shell).to receive(:remove_key).with('key-9876')
+        expect(gitlab_shell).not_to receive(:remove_key).with("key-#{@another_key.id}")
+
+        gitlab_shell.remove_keys_not_found_in_db
+      end
+    end
+
+    context 'when keys there are duplicate keys in the file that are not in the DB' do
+      before do
+        gitlab_shell.remove_all_keys
+        gitlab_shell.add_key('key-1234', 'ssh-rsa ASDFASDF')
+        gitlab_shell.add_key('key-1234', 'ssh-rsa ASDFASDF')
+      end
+
+      it 'removes the keys' do
+        expect(gitlab_shell).to receive(:remove_key).with('key-1234')
+
+        gitlab_shell.remove_keys_not_found_in_db
+      end
+    end
+
+    context 'when keys there are duplicate keys in the file that ARE in the DB' do
+      before do
+        gitlab_shell.remove_all_keys
+        @key = create(:key)
+        gitlab_shell.add_key(@key.shell_id, @key.key)
+      end
+
+      it 'does not remove the key' do
+        expect(gitlab_shell).not_to receive(:remove_key).with("key-#{@key.id}")
+
+        gitlab_shell.remove_keys_not_found_in_db
+      end
+    end
+
+    unless ENV['CI'] # Skip in CI, it takes 1 minute
+      context 'when the first batch can be skipped, but the next batch has keys that are not in the DB' do
+        before do
+          gitlab_shell.remove_all_keys
+          100.times { |i| create(:key) } # first batch is all in the DB
+          gitlab_shell.add_key('key-1234', 'ssh-rsa ASDFASDF')
+        end
+
+        it 'removes the keys not in the DB' do
+          expect(gitlab_shell).to receive(:remove_key).with('key-1234')
+
+          gitlab_shell.remove_keys_not_found_in_db
+        end
+      end
+    end
+  end
+
   describe 'projects commands' do
     let(:gitlab_shell_path) { File.expand_path('tmp/tests/gitlab-shell') }
     let(:projects_path) { File.join(gitlab_shell_path, 'bin/gitlab-projects') }
@@ -393,13 +456,5 @@ describe Gitlab::Shell do
         expect(subject.exists?(storage, "2mep")).to be(true)
       end
     end
-  end
-
-  def find_in_authorized_keys_file(key_id)
-    gitlab_shell.batch_read_key_ids do |ids|
-      return true if ids.include?(key_id) # rubocop:disable Cop/AvoidReturnFromBlocks
-    end
-
-    false
   end
 end

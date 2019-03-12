@@ -65,6 +65,19 @@ describe Gitlab::Keys do
     end
   end
 
+  describe '#list_key_ids' do
+    before do
+      create_authorized_keys_fixture(
+        existing_content:
+          "key-1\tssh-dsa AAA\nkey-2\tssh-rsa BBB\nkey-3\tssh-rsa CCC\nkey-9000\tssh-rsa DDD\n"
+      )
+    end
+
+    it 'returns array of key IDs' do
+      expect(subject.list_key_ids).to eq([1, 2, 3, 9000])
+    end
+  end
+
   def create_authorized_keys_fixture(existing_content: 'existing content')
     FileUtils.mkdir_p(File.dirname(tmp_authorized_keys_path))
     File.open(tmp_authorized_keys_path, 'w') { |file| file.puts(existing_content) }

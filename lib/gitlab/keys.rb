@@ -57,6 +57,22 @@ module Gitlab
       true
     end
 
+    def list_key_ids
+      logger.info('Listing all key IDs')
+
+      [].tap do |a|
+        open_auth_file('r') do |f|
+          f.each_line do |line|
+            key_id = line.match(/key-(\d+)/)
+
+            next unless key_id
+
+            a << key_id[1].chomp.to_i
+          end
+        end
+      end
+    end
+
     private
 
     def lock(timeout = 10)

@@ -200,6 +200,32 @@ module Gitlab
       gitlab_keys.clear
     end
 
+    # Remove ssh keys from gitlab shell that are not in the DB
+    #
+    # Ex.
+    #   remove_keys_not_found_in_db
+    #
+    # rubocop: disable CodeReuse/ActiveRecord
+    def remove_keys_not_found_in_db
+      return unless self.authorized_keys_enabled?
+
+      Rails.logger.info("Removing keys not found in DB")
+
+      batch_read_key_ids do |ids_in_file|
+        ids_in_file.uniq!
+        keys_in_db = Key.where(id: ids_in_file)
+
+        next unless ids_in_file.size > keys_in_db.count # optimization
+
+        ids_to_remove = ids_in_file - keys_in_db.pluck(:id)
+        ids_to_remove.each do |id|
+          Rails.logger.info("Removing key-#{id} not found in DB")
+          remove_key("key-#{id}")
+        end
+      end
+    end
+    # rubocop: enable CodeReuse/ActiveRecord
+
     # Add empty directory for storing repositories
     #
     # Ex.
@@ -343,6 +369,14 @@ module Gitlab
 
     def gitlab_keys
       @gitlab_keys ||= Gitlab::Keys.new
+    end
+
+    def batch_read_key_ids(batch_size: 100, &block)
+      return unless self.authorized_keys_enabled?
+
+      gitlab_keys.list_key_ids.lazy.each_slice(batch_size) do |key_ids|
+        yield(key_ids)
+      end
     end
 
     class GitalyGitlabProjects
