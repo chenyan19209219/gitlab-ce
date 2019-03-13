@@ -6,6 +6,10 @@ import Identicon from '~/vue_shared/components/identicon.vue';
  * Renders a project list item
  */
 export default {
+  components: {
+    ProjectAvatarImage,
+    Identicon,
+  },
   props: {
     size: {
       type: Number,
@@ -39,12 +43,8 @@ export default {
       },
     },
   },
-  components: {
-    ProjectAvatarImage,
-    Identicon,
-  },
   computed: {
-    project_path: function() {
+    project_path() {
       // TODO: should this be web_url?
       return `/${this.project.path_with_namespace}`;
     },

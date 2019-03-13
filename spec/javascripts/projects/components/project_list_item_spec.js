@@ -50,11 +50,9 @@ describe('ProjectListItem', () => {
         'path_with_namespace',
         'created_at',
         'tag_list',
-        'ssh_url_to_repo',
-        'http_url_to_repo',
-        'web_url',
         'star_count',
         'forks_count',
+        'open_issues_count',
         'last_activity_at',
       ];
       projectFields.forEach(field => {
@@ -80,6 +78,7 @@ describe('ProjectListItem', () => {
 
       it('renders the correct project description', () => {
         expect(vm.$el.querySelector('.description').innerText).toBe(selectedProject.description);
+        expect(vm.$el.querySelector('.description').classList).not.toContain('no-description');
       });
 
       it('does not render the description if it is missing', () => {
@@ -87,6 +86,7 @@ describe('ProjectListItem', () => {
           const noDescVm = createComponent({ ...selectedProject, description });
 
           expect(noDescVm.$el.querySelector('.description')).toBeNull();
+          expect(noDescVm.$el.classList).toContain('no-description');
         });
       });
 
@@ -97,13 +97,22 @@ describe('ProjectListItem', () => {
       });
     });
 
-    describe('Icons', () => {
+    describe('Icon container', () => {
       const path = selectedProject.path_with_namespace;
       const urls = {
         forks: `/${path}/forks`,
         issues: `/${path}/issues`,
         'merge-requests': `/${path}/merge_requests`,
       };
+
+      it('renders a warning if the project is archived', () => {
+        const archivedVm = createComponent({ ...selectedProject, archived: true });
+
+        expect(archivedVm.$el.querySelector('.icon-container .badge').textContent).toBe('archived');
+        expect(archivedVm.$el.querySelector('.icon-container .badge').classList).toContain(
+          'badge-warning',
+        );
+      });
 
       it('renders the correct urls for forks, issues and merge requests', () => {
         Object.entries(urls).forEach(([key, url]) => {

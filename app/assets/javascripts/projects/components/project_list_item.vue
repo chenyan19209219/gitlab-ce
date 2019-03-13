@@ -2,6 +2,7 @@
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import Icon from '~/vue_shared/components/icon.vue';
 import ProjectAvatar from './project_avatar.vue';
+import ProjectCounts from './project_counts.vue';
 import ProjectMetadataInfo from './project_metadata_info.vue';
 import ProjectTitle from './project_title.vue';
 
@@ -9,6 +10,14 @@ import ProjectTitle from './project_title.vue';
  * Renders a project list item
  */
 export default {
+  components: {
+    Icon,
+    TimeAgoTooltip,
+    ProjectAvatar,
+    ProjectCounts,
+    ProjectMetadataInfo,
+    ProjectTitle,
+  },
   props: {
     project: {
       id: {
@@ -109,15 +118,8 @@ export default {
       },
     },
   },
-  components: {
-    Icon,
-    TimeAgoTooltip,
-    ProjectAvatar,
-    ProjectMetadataInfo,
-    ProjectTitle,
-  },
   computed: {
-    project_path: function() {
+    project_path() {
       return `/${this.project.path_with_namespace}`;
     },
     avatarSizeClass() {
@@ -125,15 +127,27 @@ export default {
     },
     merge_requests_count: () => 0,
     issues_count: () => 0,
-    hasDescription: function() {
+    hasDescription() {
       return this.project && this.project.description;
+    },
+    classes() {
+      const base = 'd-flex project-row';
+      return this.hasDescription ? base : `${base} no-description`;
+    },
+    totals() {
+      return {
+        forksCount: this.project.forks_count || 0,
+        issuesCount: this.project.open_issues_count || 0,
+        starCount: this.project.star_count || 0,
+        mergeRequestsCount: this.project.merge_requests_count || 0,
+      };
     },
   },
 };
 </script>
 <template v-if="project">
   <!-- TODO: replace placeholder content -->
-  <li class="d-flex project-row">
+  <li :class="classes">
     <project-avatar :project="project"/>
     <div class="project-details d-sm-flex flex-sm-fill align-items-center">
       <div class="flex-wrapper">
@@ -153,48 +167,14 @@ export default {
         class="align-items-center align-items-sm-end controls d-flex flex-lg-row flex-shrink-0 flex-sm-column flex-wrap justify-content-lg-between"
       >
         <!-- TODO: re-usable -->
-        <div class="icon-container d-flex align-items-center">
-          <span
-            class="d-flex align-items-center icon-wrapper stars has-tooltip"
-            data-container="body"
-            data-placement="top"
-            title="Stars"
-          >
-            <icon name="star" :size="14" css-classes="append-right-4"/>
-            {{project.star_count}}
-          </span>
-          <!-- TODO: re-usable -->
-          <a
-            class="align-items-center icon-wrapper forks has-tooltip"
-            title="Forks"
-            data-container="body"
-            data-placement="top"
-            :href="`${project_path}/forks`"
-          >
-            <icon name="fork" :size="14" css-classes="append-right-4"/>
-            {{project.forks_count}}
-          </a>
-          <a
-            class="d-none d-xl-flex align-items-center icon-wrapper merge-requests has-tooltip"
-            title="Merge Requests"
-            data-container="body"
-            data-placement="top"
-            :href="`${project_path}/merge_requests`"
-          >
-            <icon name="git-merge" :size="14" css-classes="append-right-4"/>
-            {{merge_requests_count}}
-          </a>
-          <a
-            class="d-none d-xl-flex align-items-center icon-wrapper issues has-tooltip"
-            title="Issues"
-            data-container="body"
-            data-placement="top"
-            :href="`${project_path}/issues`"
-          >
-            <icon name="issues" :size="14" css-classes="append-right-4"/>
-            {{project.open_issues_count}}
-          </a>
-        </div>
+        <project-counts
+          :archived="project.archived"
+          :project-path="project_path"
+          :star-count="totals.starCount"
+          :issues-count="totals.issuesCount"
+          :forks-count="totals.forksCount"
+          :merge-requests-count="totals.mergeRequestsCount"
+        />
         <div class="updated-note">
           <span>Updated
             <time-ago-tooltip :time="project.last_activity_at"/>
