@@ -103,10 +103,11 @@ namespace :gitlab do
 
     Gitlab::Shell.new.remove_all_keys
 
-    Key.find_in_batches(batch_size: 1000) do |keys|
+    Key.find_in_batches(batch_size: 1000) do |batch|
+      keys = batch.map { |k| { id: k.shell_id, key: k.key } }
+
       Gitlab::Shell.new.batch_add_keys(keys)
     end
-    puts ""
 
     unless $?.success?
       puts "Failed to add keys...".color(:red)
