@@ -84,6 +84,6 @@ describe Gitlab::Keys do
   end
 
   def tmp_authorized_keys_path
-    Gitlab.config.gitlab_shell.auth_file
+    Gitlab.config.gitlab_shell.authorized_keys_file
   end
 end

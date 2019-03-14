@@ -2,10 +2,9 @@
 
 module Gitlab
   class Keys
-    attr_accessor :auth_file, :logger
+    attr_reader :logger
 
     def initialize(logger = Gitlab::AppLogger)
-      @auth_file = Gitlab.config.gitlab_shell.auth_file
       @logger = logger
     end
 
@@ -13,7 +12,7 @@ module Gitlab
       lock do
         public_key = strip(key)
         logger.info("Adding key (#{id}): #{public_key}")
-        open_auth_file('a') { |file| file.puts(key_line(id, public_key)) }
+        open_authorized_keys_file('a') { |file| file.puts(key_line(id, public_key)) }
       end
 
       true
@@ -21,7 +20,7 @@ module Gitlab
 
     def batch_add_keys(keys)
       lock(300) do # Allow 300 seconds (5 minutes) for batch_add_keys
-        open_auth_file('a') do |file|
+        open_authorized_keys_file('a') do |file|
           keys.each do |key|
             public_key = strip(key[:key])
             logger.info("Adding key (#{key[:id]}): #{public_key}")
@@ -36,7 +35,7 @@ module Gitlab
     def rm_key(id)
       lock do
         logger.info("Removing key (#{id})")
-        open_auth_file('r+') do |f|
+        open_authorized_keys_file('r+') do |f|
           while line = f.gets
             next unless line.start_with?("command=\"#{command(id)}\"")
 
@@ -52,7 +51,7 @@ module Gitlab
     end
 
     def clear
-      open_auth_file('w') { |file| file.puts '# Managed by gitlab-rails' }
+      open_authorized_keys_file('w') { |file| file.puts '# Managed by gitlab-rails' }
 
       true
     end
@@ -61,7 +60,7 @@ module Gitlab
       logger.info('Listing all key IDs')
 
       [].tap do |a|
-        open_auth_file('r') do |f|
+        open_authorized_keys_file('r') do |f|
           f.each_line do |line|
             key_id = line.match(/key-(\d+)/)
 
@@ -76,7 +75,7 @@ module Gitlab
     private
 
     def lock(timeout = 10)
-      File.open("#{auth_file}.lock", "w+") do |f|
+      File.open("#{authorized_keys_file}.lock", "w+") do |f|
         begin
           f.flock File::LOCK_EX
           Timeout.timeout(timeout) { yield }
@@ -86,8 +85,8 @@ module Gitlab
       end
     end
 
-    def open_auth_file(mode)
-      File.open(auth_file, mode, 0o600) do |file|
+    def open_authorized_keys_file(mode)
+      File.open(authorized_keys_file, mode, 0o600) do |file|
         file.chmod(0o600)
         yield file
       end
@@ -113,6 +112,10 @@ module Gitlab
 
     def strip(key)
       key.split(/[ ]+/)[0, 2].join(' ')
+    end
+
+    def authorized_keys_file
+      Gitlab.config.gitlab_shell.authorized_keys_file
     end
   end
 end
