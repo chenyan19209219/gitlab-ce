@@ -1,13 +1,21 @@
 # frozen_string_literal: true
 
 module Gitlab
-  class Keys
+  class AuthorizedKeys
     attr_reader :logger
 
+    # Initializes the class
+    #
+    # @param [Gitlab::Logger] logger
     def initialize(logger = Gitlab::AppLogger)
       @logger = logger
     end
 
+    # Add id and its key to the authorized_keys file
+    #
+    # @param [String] id identifier of key prefixed by `key-`
+    # @param [String] key public key to be added
+    # @return [Boolean]
     def add_key(id, key)
       lock do
         public_key = strip(key)
@@ -18,13 +26,17 @@ module Gitlab
       true
     end
 
+    # Atomically add all the keys to the authorized_keys file
+    #
+    # @param [Array<::Key>] keys list of Key objects to be added
+    # @return [Boolean]
     def batch_add_keys(keys)
       lock(300) do # Allow 300 seconds (5 minutes) for batch_add_keys
         open_authorized_keys_file('a') do |file|
           keys.each do |key|
-            public_key = strip(key[:key])
-            logger.info("Adding key (#{key[:id]}): #{public_key}")
-            file.puts(key_line(key[:id], public_key))
+            public_key = strip(key.key)
+            logger.info("Adding key (#{key.shell_id}): #{public_key}")
+            file.puts(key_line(key.shell_id, public_key))
           end
         end
       end
@@ -32,6 +44,10 @@ module Gitlab
       true
     end
 
+    # Remove key by ID from the authorized_keys file
+    #
+    # @param [String] id identifier of the key to be removed prefixed by `key-`
+    # @return [Boolean]
     def rm_key(id)
       lock do
         logger.info("Removing key (#{id})")
@@ -50,12 +66,18 @@ module Gitlab
       true
     end
 
+    # Clear the authorized_keys file
+    #
+    # @return [Boolean]
     def clear
       open_authorized_keys_file('w') { |file| file.puts '# Managed by gitlab-rails' }
 
       true
     end
 
+    # Read the authorized_keys file and return IDs of each key
+    #
+    # @return [Array<Integer>]
     def list_key_ids
       logger.info('Listing all key IDs')
 

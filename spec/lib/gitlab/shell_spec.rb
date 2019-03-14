@@ -8,7 +8,7 @@ describe Gitlab::Shell do
   let(:gitlab_shell) { described_class.new }
   let(:popen_vars) { { 'GIT_TERMINAL_PROMPT' => ENV['GIT_TERMINAL_PROMPT'] } }
   let(:timeout) { Gitlab.config.gitlab_shell.git_timeout }
-  let(:gitlab_keys) { double }
+  let(:gitlab_authorized_keys) { double }
 
   before do
     allow(Project).to receive(:find).and_return(project)
@@ -50,10 +50,10 @@ describe Gitlab::Shell do
 
   describe '#add_key' do
     context 'when authorized_keys_enabled is true' do
-      it 'calls Gitlab::Keys#add_key with id and key' do
-        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
+      it 'calls Gitlab::AuthorizedKeys#add_key with id and key' do
+        expect(Gitlab::AuthorizedKeys).to receive(:new).and_return(gitlab_authorized_keys)
 
-        expect(gitlab_keys)
+        expect(gitlab_authorized_keys)
           .to receive(:add_key)
           .with('key-123', 'ssh-rsa foobar')
 
@@ -67,7 +67,7 @@ describe Gitlab::Shell do
       end
 
       it 'does nothing' do
-        expect(Gitlab::Keys).not_to receive(:new)
+        expect(Gitlab::AuthorizedKeys).not_to receive(:new)
 
         gitlab_shell.add_key('key-123', 'ssh-rsa foobar trailing garbage')
       end
@@ -78,10 +78,10 @@ describe Gitlab::Shell do
         stub_application_setting(authorized_keys_enabled: nil)
       end
 
-      it 'calls Gitlab::Keys#add_key with id and key' do
-        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
+      it 'calls Gitlab::AuthorizedKeys#add_key with id and key' do
+        expect(Gitlab::AuthorizedKeys).to receive(:new).and_return(gitlab_authorized_keys)
 
-        expect(gitlab_keys)
+        expect(gitlab_authorized_keys)
           .to receive(:add_key)
           .with('key-123', 'ssh-rsa foobar')
 
@@ -91,19 +91,17 @@ describe Gitlab::Shell do
   end
 
   describe '#batch_add_keys' do
+    let(:keys) { [double(shell_id: 'key-123', key: 'ssh-rsa foobar')] }
+
     context 'when authorized_keys_enabled is true' do
-      it 'calls Gitlab::Keys#batch_add_keys with keys to be added' do
-        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
+      it 'calls Gitlab::AuthorizedKeys#batch_add_keys with keys to be added' do
+        expect(Gitlab::AuthorizedKeys).to receive(:new).and_return(gitlab_authorized_keys)
 
-        expect(gitlab_keys)
+        expect(gitlab_authorized_keys)
           .to receive(:batch_add_keys)
-          .with([
-            { id: 'key-123', key: 'ssh-rsa foobar' }
-          ])
+          .with(keys)
 
-        gitlab_shell.batch_add_keys([
-          { id: 'key-123', key: 'ssh-rsa foobar' }
-        ])
+        gitlab_shell.batch_add_keys(keys)
       end
     end
 
@@ -113,11 +111,9 @@ describe Gitlab::Shell do
       end
 
       it 'does nothing' do
-        expect(Gitlab::Keys).not_to receive(:new)
+        expect(Gitlab::AuthorizedKeys).not_to receive(:new)
 
-        gitlab_shell.batch_add_keys([
-          { id: 'key-123', key: 'ssh-rsa foobar' }
-        ])
+        gitlab_shell.batch_add_keys(keys)
       end
     end
 
@@ -126,27 +122,23 @@ describe Gitlab::Shell do
         stub_application_setting(authorized_keys_enabled: nil)
       end
 
-      it 'calls Gitlab::Keys#batch_add_keys with keys to be added' do
-        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
+      it 'calls Gitlab::AuthorizedKeys#batch_add_keys with keys to be added' do
+        expect(Gitlab::AuthorizedKeys).to receive(:new).and_return(gitlab_authorized_keys)
 
-        expect(gitlab_keys)
+        expect(gitlab_authorized_keys)
           .to receive(:batch_add_keys)
-          .with([
-            { id: 'key-123', key: 'ssh-rsa foobar' }
-          ])
+          .with(keys)
 
-        gitlab_shell.batch_add_keys([
-          { id: 'key-123', key: 'ssh-rsa foobar' }
-        ])
+        gitlab_shell.batch_add_keys(keys)
       end
     end
   end
 
   describe '#remove_key' do
     context 'when authorized_keys_enabled is true' do
-      it 'calls Gitlab::Keys#rm_key with the key to be removed' do
-        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
-        expect(gitlab_keys).to receive(:rm_key).with('key-123')
+      it 'calls Gitlab::AuthorizedKeys#rm_key with the key to be removed' do
+        expect(Gitlab::AuthorizedKeys).to receive(:new).and_return(gitlab_authorized_keys)
+        expect(gitlab_authorized_keys).to receive(:rm_key).with('key-123')
 
         gitlab_shell.remove_key('key-123')
       end
@@ -158,7 +150,7 @@ describe Gitlab::Shell do
       end
 
       it 'does nothing' do
-        expect(Gitlab::Keys).not_to receive(:new)
+        expect(Gitlab::AuthorizedKeys).not_to receive(:new)
 
         gitlab_shell.remove_key('key-123')
       end
@@ -169,9 +161,9 @@ describe Gitlab::Shell do
         stub_application_setting(authorized_keys_enabled: nil)
       end
 
-      it 'calls Gitlab::Keys#rm_key with the key to be removed' do
-        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
-        expect(gitlab_keys).to receive(:rm_key).with('key-123')
+      it 'calls Gitlab::AuthorizedKeys#rm_key with the key to be removed' do
+        expect(Gitlab::AuthorizedKeys).to receive(:new).and_return(gitlab_authorized_keys)
+        expect(gitlab_authorized_keys).to receive(:rm_key).with('key-123')
 
         gitlab_shell.remove_key('key-123')
       end
@@ -180,9 +172,9 @@ describe Gitlab::Shell do
 
   describe '#remove_all_keys' do
     context 'when authorized_keys_enabled is true' do
-      it 'calls Gitlab::Keys#clear' do
-        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
-        expect(gitlab_keys).to receive(:clear)
+      it 'calls Gitlab::AuthorizedKeys#clear' do
+        expect(Gitlab::AuthorizedKeys).to receive(:new).and_return(gitlab_authorized_keys)
+        expect(gitlab_authorized_keys).to receive(:clear)
 
         gitlab_shell.remove_all_keys
       end
@@ -194,7 +186,7 @@ describe Gitlab::Shell do
       end
 
       it 'does nothing' do
-        expect(Gitlab::Keys).not_to receive(:new)
+        expect(Gitlab::AuthorizedKeys).not_to receive(:new)
 
         gitlab_shell.remove_all_keys
       end
@@ -205,9 +197,9 @@ describe Gitlab::Shell do
         stub_application_setting(authorized_keys_enabled: nil)
       end
 
-      it 'calls Gitlab::Keys#clear' do
-        expect(Gitlab::Keys).to receive(:new).and_return(gitlab_keys)
-        expect(gitlab_keys).to receive(:clear)
+      it 'calls Gitlab::AuthorizedKeys#clear' do
+        expect(Gitlab::AuthorizedKeys).to receive(:new).and_return(gitlab_authorized_keys)
+        expect(gitlab_authorized_keys).to receive(:clear)
 
         gitlab_shell.remove_all_keys
       end

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe Gitlab::Keys do
+describe Gitlab::AuthorizedKeys do
   let(:logger) { double('logger').as_null_object }
 
   subject { described_class.new(logger) }
@@ -22,8 +22,8 @@ describe Gitlab::Keys do
   describe '#batch_add_keys' do
     let(:keys) do
       [
-        { id: 'key-12', key: 'ssh-dsa ASDFASGADG trailing garbage' },
-        { id: 'key-123', key: 'ssh-rsa GFDGDFSGSDFG' }
+        double(shell_id: 'key-12', key: 'ssh-dsa ASDFASGADG trailing garbage'),
+        double(shell_id: 'key-123', key: 'ssh-rsa GFDGDFSGSDFG')
       ]
     end
 

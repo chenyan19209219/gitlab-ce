@@ -165,7 +165,7 @@ module Gitlab
     def add_key(key_id, key_content)
       return unless self.authorized_keys_enabled?
 
-      gitlab_keys.add_key(key_id, key_content)
+      gitlab_authorized_keys.add_key(key_id, key_content)
     end
 
     # Batch-add keys to authorized_keys
@@ -175,7 +175,7 @@ module Gitlab
     def batch_add_keys(keys)
       return unless self.authorized_keys_enabled?
 
-      gitlab_keys.batch_add_keys(keys)
+      gitlab_authorized_keys.batch_add_keys(keys)
     end
 
     # Remove ssh key from authorized_keys
@@ -186,7 +186,7 @@ module Gitlab
     def remove_key(id, _ = nil)
       return unless self.authorized_keys_enabled?
 
-      gitlab_keys.rm_key(id)
+      gitlab_authorized_keys.rm_key(id)
     end
 
     # Remove all ssh keys from gitlab shell
@@ -197,7 +197,7 @@ module Gitlab
     def remove_all_keys
       return unless self.authorized_keys_enabled?
 
-      gitlab_keys.clear
+      gitlab_authorized_keys.clear
     end
 
     # Remove ssh keys from gitlab shell that are not in the DB
@@ -367,14 +367,14 @@ module Gitlab
       raise Error, e
     end
 
-    def gitlab_keys
-      @gitlab_keys ||= Gitlab::Keys.new
+    def gitlab_authorized_keys
+      @gitlab_authorized_keys ||= Gitlab::AuthorizedKeys.new
     end
 
     def batch_read_key_ids(batch_size: 100, &block)
       return unless self.authorized_keys_enabled?
 
-      gitlab_keys.list_key_ids.lazy.each_slice(batch_size) do |key_ids|
+      gitlab_authorized_keys.list_key_ids.lazy.each_slice(batch_size) do |key_ids|
         yield(key_ids)
       end
     end
