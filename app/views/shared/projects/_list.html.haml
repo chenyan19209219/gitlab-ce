@@ -45,7 +45,7 @@
     -#       = icon('lock fw', base: 'circle', class: 'fa-lg private-fork-icon')
     -#       %strong= pluralize(@private_forks_count, 'private fork')
     -#       %span &nbsp;you have no access to.
-    = paginate_collection(projects, remote: remote) unless skip_pagination
+    -# = paginate_collection(projects, remote: remote) unless skip_pagination
   - else
     -# what dis?
     - if @contributed_projects

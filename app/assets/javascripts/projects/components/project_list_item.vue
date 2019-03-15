@@ -19,6 +19,10 @@ export default {
     ProjectTitle,
   },
   props: {
+    isExplore: {
+      type: Boolean,
+      default: false,
+    },
     project: {
       id: {
         type: Number,
@@ -80,10 +84,6 @@ export default {
         type: Number,
         required: true,
       },
-      open_issues_count: {
-        type: Number,
-        required: true,
-      },
 
       // TODO: Currently returned from the API, but not the same value as last_activity_date
       last_activity_at: {
@@ -116,11 +116,44 @@ export default {
           required: true,
         },
       },
+      open_issues_count: {
+        type: Number,
+        required: true,
+      },
+      owner: {
+        avatar_url: {
+          type: String,
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        state: {
+          type: String,
+          required: true,
+        },
+        username: {
+          type: String,
+          required: true,
+        },
+        webroot: {
+          type: String,
+          required: true,
+        },
+      },
     },
   },
   computed: {
     project_path() {
       return `/${this.project.path_with_namespace}`;
+    },
+    accessLevel() {
+      if (!this.permissions) return 0;
+      const {
+        project_access: { access_level = 0 },
+      } = this.permissions;
+      return access_level;
     },
     avatarSizeClass() {
       return `s${this.size}`;
@@ -129,6 +162,13 @@ export default {
     issues_count: () => 0,
     hasDescription() {
       return this.project && this.project.description;
+    },
+    projectNamespace() {
+      const {
+        namespace: { name = '' },
+        owner,
+      } = this.project;
+      return name.length && name.toLowerCase() !== 'root' ? name : owner.name;
     },
     classes() {
       const base = 'd-flex project-row';
@@ -155,9 +195,9 @@ export default {
           <project-title
             :project-name="project.name"
             :project-path="project_path"
-            :project-namespace="project.namespace.name"
+            :project-namespace="projectNamespace"
           />
-          <project-metadata-info/>
+          <project-metadata-info :is-explore="isExplore" :access-level="accessLevel"/>
         </div>
         <div v-if="hasDescription" class="description d-none d-sm-block append-right-default">
           <p data-sourcepos="1:1-1:57" dir="auto">{{project.description}}</p>

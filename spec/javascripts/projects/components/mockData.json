@@ -360,5 +360,153 @@
         }
       }
     }
+  ],
+  "ownedProjects": [
+    {
+      "id": 30,
+      "description": "",
+      "name": "ablerhabeelher",
+      "name_with_namespace": "A'dministr\u0026tor / ablerhabeelher",
+      "path": "ablerhabeelher",
+      "path_with_namespace": "root/ablerhabeelher",
+      "created_at": "2019-03-06T05:10:24.242Z",
+      "default_branch": "master",
+      "tag_list": [],
+      "ssh_url_to_repo": "ssh://gotenks@localhost:2222/root/ablerhabeelher.git",
+      "http_url_to_repo": "http://localhost:3000/root/ablerhabeelher.git",
+      "web_url": "http://localhost:3000/root/ablerhabeelher",
+      "readme_url": "http://localhost:3000/root/ablerhabeelher/blob/master/README.md",
+      "avatar_url": null,
+      "star_count": 0,
+      "forks_count": 0,
+      "last_activity_at": "2019-03-06T05:10:24.242Z",
+      "namespace": {
+        "id": 1,
+        "name": "root",
+        "path": "root",
+        "kind": "user",
+        "full_path": "root",
+        "parent_id": null
+      },
+      "_links": {
+        "self": "http://localhost:3000/api/v4/projects/30",
+        "issues": "http://localhost:3000/api/v4/projects/30/issues",
+        "merge_requests": "http://localhost:3000/api/v4/projects/30/merge_requests",
+        "repo_branches": "http://localhost:3000/api/v4/projects/30/repository/branches",
+        "labels": "http://localhost:3000/api/v4/projects/30/labels",
+        "events": "http://localhost:3000/api/v4/projects/30/events",
+        "members": "http://localhost:3000/api/v4/projects/30/members"
+      },
+      "archived": false,
+      "visibility": "internal",
+      "owner": {
+        "id": 1,
+        "name": "A'dministr\u0026tor",
+        "username": "root",
+        "state": "active",
+        "avatar_url": "https://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon",
+        "web_url": "http://localhost:3000/root"
+      },
+      "resolve_outdated_diff_discussions": false,
+      "container_registry_enabled": true,
+      "issues_enabled": true,
+      "merge_requests_enabled": true,
+      "wiki_enabled": true,
+      "jobs_enabled": true,
+      "snippets_enabled": true,
+      "shared_runners_enabled": true,
+      "lfs_enabled": true,
+      "creator_id": 1,
+      "import_status": "none",
+      "open_issues_count": 0,
+      "public_jobs": true,
+      "ci_config_path": null,
+      "shared_with_groups": [],
+      "only_allow_merge_if_pipeline_succeeds": false,
+      "request_access_enabled": false,
+      "only_allow_merge_if_all_discussions_are_resolved": false,
+      "printing_merge_request_link_enabled": true,
+      "merge_method": "merge",
+      "permissions": {
+        "project_access": {
+          "access_level": 40,
+          "notification_level": 3
+        },
+        "group_access": null
+      }
+    },
+    {
+      "id": 29,
+      "description": "",
+      "name": "asdfsf",
+      "name_with_namespace": "A'dministr\u0026tor / asdfsf",
+      "path": "asdfsf",
+      "path_with_namespace": "root/asdfsf",
+      "created_at": "2019-03-06T05:09:53.250Z",
+      "default_branch": null,
+      "tag_list": [],
+      "ssh_url_to_repo": "ssh://gotenks@localhost:2222/root/asdfsf.git",
+      "http_url_to_repo": "http://localhost:3000/root/asdfsf.git",
+      "web_url": "http://localhost:3000/root/asdfsf",
+      "readme_url": null,
+      "avatar_url": null,
+      "star_count": 0,
+      "forks_count": 0,
+      "last_activity_at": "2019-03-06T05:09:53.250Z",
+      "namespace": {
+        "id": 1,
+        "name": "root",
+        "path": "root",
+        "kind": "user",
+        "full_path": "root",
+        "parent_id": null
+      },
+      "_links": {
+        "self": "http://localhost:3000/api/v4/projects/29",
+        "issues": "http://localhost:3000/api/v4/projects/29/issues",
+        "merge_requests": "http://localhost:3000/api/v4/projects/29/merge_requests",
+        "repo_branches": "http://localhost:3000/api/v4/projects/29/repository/branches",
+        "labels": "http://localhost:3000/api/v4/projects/29/labels",
+        "events": "http://localhost:3000/api/v4/projects/29/events",
+        "members": "http://localhost:3000/api/v4/projects/29/members"
+      },
+      "archived": false,
+      "visibility": "private",
+      "owner": {
+        "id": 1,
+        "name": "A'dministr\u0026tor",
+        "username": "root",
+        "state": "active",
+        "avatar_url": "https://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon",
+        "web_url": "http://localhost:3000/root"
+      },
+      "resolve_outdated_diff_discussions": false,
+      "container_registry_enabled": true,
+      "issues_enabled": true,
+      "merge_requests_enabled": true,
+      "wiki_enabled": true,
+      "jobs_enabled": true,
+      "snippets_enabled": true,
+      "shared_runners_enabled": true,
+      "lfs_enabled": true,
+      "creator_id": 1,
+      "import_status": "none",
+      "open_issues_count": 0,
+      "public_jobs": true,
+      "ci_config_path": null,
+      "shared_with_groups": [],
+      "only_allow_merge_if_pipeline_succeeds": false,
+      "request_access_enabled": false,
+      "only_allow_merge_if_all_discussions_are_resolved": false,
+      "printing_merge_request_link_enabled": true,
+      "merge_method": "merge",
+      "permissions": {
+        "project_access": {
+          "access_level": 40,
+          "notification_level": 3
+        },
+        "group_access": null
+      }
+    }
   ]
 }

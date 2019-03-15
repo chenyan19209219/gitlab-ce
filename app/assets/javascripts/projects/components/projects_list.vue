@@ -7,6 +7,26 @@ const fetchProjects = (q = '') => Api.projects(q, { simple: false, order_by: 'la
 /**
  * Renders a list of projects
  */
+export const PROJECT_TABS = {
+  default: '',
+  explore: 'EXPLORE',
+  starred: 'STARRED',
+};
+
+const basename = url =>
+  url
+    .split('/')
+    .filter(i => i.length)
+    .reverse()[0];
+
+const currentTab = () => {
+  const tab = basename(window.location.pathname);
+  return PROJECT_TABS[tab] || PROJECT_TABS.default;
+};
+
+const isExplore = () => {
+  return currentTab() === PROJECT_TABS.EXPLORE;
+};
 
 export default {
   components: {
@@ -20,15 +40,14 @@ export default {
       size: 48,
     };
   },
-  computed: {},
+  computed: {
+    isExplore,
+  },
   created() {
     fetchProjects().then(res => {
-      console.log('projects_list::created::fetchProjects::res', res);
-      console.log(res[0]);
       this.projects = res;
     });
   },
-  methods: {},
 };
 </script>
 <template>
@@ -37,7 +56,7 @@ export default {
     <!-- TODO: empty project state -->
     <ul class="projects-list">
       <template v-for="project in projects">
-        <project-list-item :key="project.id" :project="project"/>
+        <project-list-item :key="project.id" :project="project" :is-explore="isExplore"/>
       </template>
     </ul>
   </div>
