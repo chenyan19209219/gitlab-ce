@@ -180,13 +180,19 @@ module Gitlab
     # Batch-add keys to authorized_keys
     #
     # Ex.
-    #   batch_add_keys([{id: "key-42", key: "sha-rsa ..."}])
+    #   batch_add_keys(Key.all)
     def batch_add_keys(keys)
       return unless self.authorized_keys_enabled?
 
       if shell_out_for_gitlab_keys?
-        IO.popen("#{gitlab_shell_keys_path} batch-add-keys", 'w') do |io|
-          add_keys_to_io(keys, io)
+        begin
+          IO.popen("#{gitlab_shell_keys_path} batch-add-keys", 'w') do |io|
+            add_keys_to_io(keys, io)
+          end
+
+          $?.success?
+        rescue Error
+          false
         end
       else
         gitlab_authorized_keys.batch_add_keys(keys)

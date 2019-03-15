@@ -104,14 +104,11 @@ namespace :gitlab do
     Gitlab::Shell.new.remove_all_keys
 
     Key.find_in_batches(batch_size: 1000) do |keys|
-      Gitlab::Shell.new.batch_add_keys(keys)
+      unless Gitlab::Shell.new.batch_add_keys(keys)
+        puts "Failed to add keys...".color(:red)
+        exit 1
+      end
     end
-
-    unless $?.success?
-      puts "Failed to add keys...".color(:red)
-      exit 1
-    end
-
   rescue Gitlab::TaskAbortedByUserError
     puts "Quitting...".color(:red)
     exit 1

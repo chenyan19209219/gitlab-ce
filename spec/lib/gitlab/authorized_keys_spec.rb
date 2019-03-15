@@ -40,6 +40,15 @@ describe Gitlab::AuthorizedKeys do
       expect(subject.batch_add_keys(keys)).to be_truthy
       expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n#{auth_line1}\n#{auth_line2}\n")
     end
+
+    context "invalid key" do
+      let(:keys) { [double(shell_id: 'key-123', key: "ssh-rsa A\tSDFA\nSGADG")] }
+
+      it "doesn't add keys" do
+        expect(subject.batch_add_keys(keys)).to be_falsey
+        expect(File.read(tmp_authorized_keys_path)).to eq("existing content\n")
+      end
+    end
   end
 
   describe '#rm_key' do

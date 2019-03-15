@@ -2,6 +2,8 @@
 
 module Gitlab
   class AuthorizedKeys
+    KeyError = Class.new(StandardError)
+
     attr_reader :logger
 
     # Initializes the class
@@ -42,6 +44,8 @@ module Gitlab
       end
 
       true
+    rescue Gitlab::AuthorizedKeys::KeyError
+      false
     end
 
     # Remove key by ID from the authorized_keys file

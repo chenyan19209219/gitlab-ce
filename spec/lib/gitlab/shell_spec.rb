@@ -161,20 +161,32 @@ describe Gitlab::Shell do
 
         before do
           stub_gitlab_shell_setting(authorized_keys_file: nil)
-          allow(gitlab_shell)
-            .to receive(:gitlab_shell_keys_path)
-            .and_return(:gitlab_shell_keys_path)
         end
 
-        it 'calls gitlab-keys with batch-add-keys command' do
-          expect(IO)
-            .to receive(:popen)
-            .with("gitlab_shell_keys_path batch-add-keys", 'w')
-            .and_yield(io)
+        context 'valid keys' do
+          before do
+            allow(gitlab_shell)
+              .to receive(:gitlab_shell_keys_path)
+              .and_return(:gitlab_shell_keys_path)
+          end
 
-          expect(io).to receive(:puts).with("key-123\tssh-rsa foobar")
+          it 'calls gitlab-keys with batch-add-keys command' do
+            expect(IO)
+              .to receive(:popen)
+              .with("gitlab_shell_keys_path batch-add-keys", 'w')
+              .and_yield(io)
 
-          gitlab_shell.batch_add_keys(keys)
+            expect(io).to receive(:puts).with("key-123\tssh-rsa foobar")
+            expect(gitlab_shell.batch_add_keys(keys)).to be_truthy
+          end
+        end
+
+        context 'invalid keys' do
+          let(:keys) { [double(shell_id: 'key-123', key: "ssh-rsa A\tSDFA\nSGADG")] }
+
+          it 'catches failure and returns false' do
+            expect(gitlab_shell.batch_add_keys(keys)).to be_falsey
+          end
         end
       end
 
