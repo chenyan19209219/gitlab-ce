@@ -516,6 +516,8 @@ module API
     end
 
     class IssueBasic < ProjectEntity
+      include Rails.application.routes.url_helpers
+
       expose :closed_at
       expose :closed_by, using: Entities::UserBasic
       expose :labels do |issue, options|
@@ -552,6 +554,14 @@ module API
 
       expose :web_url do |issue, options|
         Gitlab::UrlBuilder.build(issue)
+      end
+
+      expose :reference_path do |issue, options|
+        options[:include_full_project_path] ? issue.to_reference(full: true) : issue.to_reference
+      end
+
+      expose :real_path do |issue|
+        project_issue_path(issue.project, issue)
       end
 
       expose :time_stats, using: 'API::Entities::IssuableTimeStats' do |issue|
