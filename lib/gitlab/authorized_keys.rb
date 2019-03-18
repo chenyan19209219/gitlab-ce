@@ -102,12 +102,10 @@ module Gitlab
 
     def lock(timeout = 10)
       File.open("#{authorized_keys_file}.lock", "w+") do |f|
-        begin
-          f.flock File::LOCK_EX
-          Timeout.timeout(timeout) { yield }
-        ensure
-          f.flock File::LOCK_UN
-        end
+        f.flock File::LOCK_EX
+        Timeout.timeout(timeout) { yield }
+      ensure
+        f.flock File::LOCK_UN
       end
     end
 
