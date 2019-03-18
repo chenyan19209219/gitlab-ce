@@ -93,4 +93,99 @@ describe Gitlab::VisibilityLevel do
       expect(described_class.valid_level?(described_class::PUBLIC)).to be_truthy
     end
   end
+
+  describe '.values_for' do
+    context 'PersonalSnippet' do
+      it 'returns PRIVATE, SECERT, INTERNAL and PUBLIC' do
+        expect(described_class.values_for(PersonalSnippet.new))
+          .to eq([
+            Gitlab::VisibilityLevel::PRIVATE,
+            Gitlab::VisibilityLevel::SECRET,
+            Gitlab::VisibilityLevel::INTERNAL,
+            Gitlab::VisibilityLevel::PUBLIC
+          ])
+      end
+    end
+
+    context 'any other model' do
+      it 'returns PRIVATE, INTERNAL and PUBLIC' do
+        expect(described_class.values_for(Project.new))
+          .to eq([
+            Gitlab::VisibilityLevel::PRIVATE,
+            Gitlab::VisibilityLevel::INTERNAL,
+            Gitlab::VisibilityLevel::PUBLIC
+          ])
+      end
+    end
+  end
+
+  describe '.options' do
+    it 'returns a Hash of localized level name to const value mapping (excluding Secret)' do
+      expect(described_class.options)
+        .to eq(
+          'VisibilityLevel|Private'  => Gitlab::VisibilityLevel::PRIVATE,
+          'VisibilityLevel|Internal' => Gitlab::VisibilityLevel::INTERNAL,
+          'VisibilityLevel|Public'   => Gitlab::VisibilityLevel::PUBLIC
+        )
+    end
+  end
+
+  describe '.values' do
+    it 'returns an Array of const values (excluding Secret)' do
+      expect(described_class.values)
+        .to eq([
+          Gitlab::VisibilityLevel::PRIVATE,
+          Gitlab::VisibilityLevel::INTERNAL,
+          Gitlab::VisibilityLevel::PUBLIC
+        ])
+    end
+  end
+
+  describe '.all_options' do
+    it 'returns a Hash of localized level name to const value mapping (including Secret)' do
+      expect(described_class.all_options)
+        .to eq(
+          'VisibilityLevel|Private'  => Gitlab::VisibilityLevel::PRIVATE,
+          'VisibilityLevel|Secret'   => Gitlab::VisibilityLevel::SECRET,
+          'VisibilityLevel|Internal' => Gitlab::VisibilityLevel::INTERNAL,
+          'VisibilityLevel|Public'   => Gitlab::VisibilityLevel::PUBLIC
+        )
+    end
+  end
+
+  describe '.all_values' do
+    it 'returns an Array of const values (including Secret)' do
+      expect(described_class.all_values)
+        .to eq([
+          Gitlab::VisibilityLevel::PRIVATE,
+          Gitlab::VisibilityLevel::SECRET,
+          Gitlab::VisibilityLevel::INTERNAL,
+          Gitlab::VisibilityLevel::PUBLIC
+        ])
+    end
+  end
+
+  describe '.string_options' do
+    it 'returns a Hash of level name to const value mapping' do
+      expect(described_class.string_options)
+        .to eq(
+          'private'  => Gitlab::VisibilityLevel::PRIVATE,
+          'secret'   => Gitlab::VisibilityLevel::SECRET,
+          'internal' => Gitlab::VisibilityLevel::INTERNAL,
+          'public'   => Gitlab::VisibilityLevel::PUBLIC
+        )
+    end
+  end
+
+  describe '.string_values' do
+    it 'returns an Array of const values (including Secret)' do
+      expect(described_class.string_values)
+        .to eq([
+          'private',
+          'secret',
+          'internal',
+          'public'
+        ])
+    end
+  end
 end
