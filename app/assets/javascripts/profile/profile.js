@@ -11,6 +11,7 @@ export default class Profile {
     this.setRepoRadio();
     this.bindEvents();
     this.initAvatarGlCrop();
+
     gl.timezoneDropdown = new TimezoneDropdown();
   }
 
