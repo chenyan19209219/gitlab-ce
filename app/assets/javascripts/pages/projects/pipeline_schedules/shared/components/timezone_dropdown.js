@@ -4,14 +4,38 @@ import $ from 'jquery';
 
 const defaultTimezone = 'UTC';
 
+export function formatUtcOffset(offset) {
+  let prefix = '';
+
+  if (offset > 0) {
+    prefix = '+';
+  } else if (offset < 0) {
+    prefix = '-';
+  }
+  return `${prefix} ${Math.abs(offset / 3600)}`;
+}
+
+export function formatTimezone(item) {
+  return `[UTC ${formatUtcOffset(item.offset)}] ${item.name}`;
+}
+
+const DEFAULT_OPTIONS = {
+  $inputEl: null,
+  onSelectTimezone: null,
+};
+
 export default class TimezoneDropdown {
-  constructor() {
+  constructor({ $inputEl, onSelectTimezone } = DEFAULT_OPTIONS) {
     this.$dropdown = $('.js-timezone-dropdown');
     this.$dropdownToggle = this.$dropdown.find('.dropdown-toggle-text');
-    this.$input = $('#schedule_cron_timezone');
+    this.$input = $inputEl || $('#schedule_cron_timezone');
     this.timezoneData = this.$dropdown.data('data');
     this.initDefaultTimezone();
     this.initDropdown();
+
+    if (onSelectTimezone) {
+      this.updateInputValue = (...args) => onSelectTimezone(this, ...args);
+    }
   }
 
   initDropdown() {
@@ -24,26 +48,10 @@ export default class TimezoneDropdown {
         fields: ['name'],
       },
       clicked: cfg => this.updateInputValue(cfg),
-      text: item => this.formatTimezone(item),
+      text: item => formatTimezone(item),
     });
 
     this.setDropdownToggle();
-  }
-
-  formatUtcOffset(offset) {
-    let prefix = '';
-
-    if (offset > 0) {
-      prefix = '+';
-    } else if (offset < 0) {
-      prefix = '-';
-    }
-
-    return `${prefix} ${Math.abs(offset / 3600)}`;
-  }
-
-  formatTimezone(item) {
-    return `[UTC ${this.formatUtcOffset(item.offset)}] ${item.name}`;
   }
 
   initDefaultTimezone() {
