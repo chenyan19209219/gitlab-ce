@@ -71,4 +71,13 @@
           = link_to _('More information'), help_page_path('user/project/clusters/index.md', anchor: 'role-based-access-control-rbac-core-only'), target: '_blank'
 
     .form-group
+      .form-check
+        // TODO - replace `:legacy_abac`
+        = provider_gcp_field.check_box :legacy_abac, { class: 'form-check-input' }, false, true
+        = provider_gcp_field.label :legacy_abac, s_('ClusterIntegration|GitLab-managed cluster'), class: 'form-check-label label-bold'
+        .form-text.text-muted
+          = s_('ClusterIntegration|Allow GitLab to manage namespace and service accounts for this cluster.')
+          = link_to _('More information'), help_page_path('user/project/clusters/index.md', anchor: 'gitlab-managed-cluster'), target: '_blank'
+
+    .form-group
       = field.submit s_('ClusterIntegration|Create Kubernetes cluster'), class: 'js-gke-cluster-creation-submit btn btn-success', disabled: true

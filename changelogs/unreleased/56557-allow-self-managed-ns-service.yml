@@ -1,0 +1,5 @@
+---
+title: Add the option to choose if a cluster is managed by GitLab
+merge_request: 26096
+author:
+type: added

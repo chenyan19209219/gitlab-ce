@@ -54,5 +54,14 @@
           = s_('ClusterIntegration|Enable this setting if using role-based access control (RBAC).')
           = s_('ClusterIntegration|This option will allow you to install applications on RBAC clusters.')
 
+    .form-group
+      .form-check
+        // TODO - replace ':authorization_type'
+        = platform_field.check_box :authorization_type, { class: 'form-check-input', disabled: true }, 'managed', 'non-managed'
+        = platform_field.label :authorization_type, s_('ClusterIntegration|GitLab-managed cluster'), class: 'form-check-label label-bold'
+        .form-text.text-muted
+          = s_('ClusterIntegration|Allow GitLab to manage namespace and service accounts for this cluster.')
+          = link_to _('More information'), help_page_path('user/project/clusters/index.md', anchor: 'gitlab-managed-cluster'), target: '_blank'
+
   .form-group
     = field.submit s_('ClusterIntegration|Save changes'), class: 'btn btn-success'
