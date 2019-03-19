@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import FilterableList from './filterable_list';
-import vProjectsList from './projects/components/projects_list.vue';
+import VueProjectsList from './projects/components/projects_list.vue';
 
 /**
  * Makes search request for projects when user types a value in the search input.
@@ -9,13 +9,10 @@ import vProjectsList from './projects/components/projects_list.vue';
 
 export function initProjectsList() {
   const mountPoint = document.querySelector('.vjs-projects-list');
-  // TODO: should we bootstrap the data in rails?
-  // const componentPropsEl = document.querySelector('.vjs-project-list-form-data');
-  // const componentProps = JSON.parse(componentPropsEl.innerHTML);
 
   return new Vue({
     el: mountPoint,
-    render: createElement => createElement(vProjectsList, { props: {} }),
+    render: createElement => createElement(VueProjectsList, { props: {} }),
   });
 }
 export default class ProjectsList {
@@ -29,6 +26,6 @@ export default class ProjectsList {
       list.initSearch();
     }
 
-    initProjectsList();
+    if (window.gon.features.vueProjectsList) initProjectsList();
   }
 }

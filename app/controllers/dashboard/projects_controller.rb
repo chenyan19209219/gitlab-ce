@@ -9,6 +9,10 @@ class Dashboard::ProjectsController < Dashboard::ApplicationController
   before_action :default_sorting
   skip_cross_project_access_check :index, :starred
 
+  before_action do
+    push_frontend_feature_flag(:vue_projects_list)
+  end
+
   def index
     @projects = load_projects(params.merge(non_public: true))
 
