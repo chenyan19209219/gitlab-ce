@@ -346,3 +346,35 @@ Git clone speed for a specific repository on the server.
 
 For an up to date list of sub-commands see [the gitaly-debug
 README](https://gitlab.com/gitlab-org/gitaly/blob/master/cmd/gitaly-debug/README.md).
+
+### Commits results in 401 errors
+
+When you attempt to perform commits and receive a 401 error, like this:
+
+![401 Error](../img/gitaly/401_error.png)
+
+This means your Gitaly service is having issues commnicating with the
+gitlab-shell. To confirm this, you should run 
+`sudo /opt/gitlab/embedded/service/gitlab-shell/bin/check` on your
+Gitaly server. If it returns a 401 error when checking API access, you
+will need to check your gitlab-shell setup. A quick way to do this is
+to check the `/opt/gitlab/embedded/service/gitlab-rails/.gitlab_shell_secret`
+file on your application servers and your Gitaly server. They should
+match perfectly. If not, you would want to ensure the `secret_token`
+value for the `gitlab_shell` section of the `gitlab-secrets.json`
+file matches on all servers. 
+
+You might also want to check the `gitlab.rb` file on your servers
+for the `gitlab_shell['secret_token']` settings. This allows for
+customizing the `secret_token` used by the gitlab-shell. If present,
+you would want to ensure both the application servers and the Gitaly
+server is using this setting as well in their corresponding 
+`gitlab.rb` files.
+
+After changing this, make sure to reconfigure and restart GitLab on
+the server it was changed on:
+
+```sh
+sudo gitlab-ctl reconfigure
+sudo gitlab-ctl restart
+```
