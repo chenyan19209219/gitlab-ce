@@ -7,7 +7,7 @@ describe Gitlab::JsonCache do
   let(:namespace) { 'geo' }
   let(:key) { 'foo' }
   let(:expanded_key) { "#{namespace}:#{key}:#{Rails.version}" }
-  let(:broadcast_message) { create(:broadcast_message) }
+  set(:broadcast_message) { create(:broadcast_message) }
 
   subject(:cache) { described_class.new(namespace: namespace, backend: backend) }
 
@@ -192,17 +192,80 @@ describe Gitlab::JsonCache do
   end
 
   describe '#write' do
-    it 'writes value to the cache with the given key' do
-      cache.write(key, true)
+    context 'for a String' do
+      it 'writes value to the cache with the given key' do
+        cache.write(key, 'true')
 
-      expect(backend).to have_received(:write).with(expanded_key, "true", nil)
+        expect(backend).to have_received(:write).with(expanded_key, 'true'.to_json, nil)
+      end
     end
 
-    it 'writes a string containing a JSON representation of the value to the cache' do
-      cache.write(key, broadcast_message)
+    context 'for a Boolean' do
+      it 'writes value to the cache with the given key' do
+        cache.write(key, true)
 
-      expect(backend).to have_received(:write)
-        .with(expanded_key, broadcast_message.to_json, nil)
+        expect(backend).to have_received(:write).with(expanded_key, 'true', nil)
+      end
+    end
+
+    context 'for an Array' do
+      it 'writes a string containing a JSON representation of the value to the cache' do
+        array = %w{a b c}
+        cache.write(key, array)
+
+        expect(backend).to have_received(:write)
+          .with(expanded_key, array.to_json, nil)
+      end
+    end
+
+    context 'for a Hash' do
+      it 'writes a string containing a JSON representation of the value to the cache' do
+        array = %w{a b c}
+        cache.write(key, array)
+
+        expect(backend).to have_received(:write)
+          .with(expanded_key, array.to_json, nil)
+      end
+    end
+
+    context 'for an instance of Project' do
+      it 'writes a string containing a JSON representation of the value to the cache' do
+        project = create(:project)
+        cache.write(key, project)
+
+        expect(backend).to have_received(:write)
+          .with(expanded_key, project.to_json, nil)
+      end
+    end
+
+    context 'for an Array of Projects' do
+      it 'writes a string containing a JSON representation of the value to the cache' do
+        projects = [create(:project)]
+        cache.write(key, projects)
+
+        expect(backend).to have_received(:write)
+          .with(expanded_key, projects.to_json, nil)
+      end
+    end
+
+    context 'for an instance of BroadcaseMessage' do
+      it 'writes a string containing a JSON representation of the value to the cache' do
+        cache.write(key, broadcast_message)
+
+        expect(backend).to have_received(:write)
+          .with(expanded_key, broadcast_message.to_json_for_cache, nil)
+      end
+    end
+
+    context 'for an Array of BroadcaseMessages' do
+      it 'writes a string containing a JSON representation of the value to the cache' do
+        current_broadcast_messages = BroadcastMessage.current
+
+        cache.write(key, current_broadcast_messages)
+
+        expect(backend).to have_received(:write)
+          .with(expanded_key, current_broadcast_messages.map(&:as_json_for_cache).to_json, nil)
+      end
     end
 
     it 'passes options the underlying cache implementation' do

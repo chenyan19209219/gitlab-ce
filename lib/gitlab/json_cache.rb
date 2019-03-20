@@ -39,7 +39,7 @@ module Gitlab
     end
 
     def write(key, value, options = nil)
-      backend.write(cache_key(key), value.to_json, options)
+      backend.write(cache_key(key), serialized(value), options)
     end
 
     def fetch(key, options = {}, &block)
@@ -56,6 +56,14 @@ module Gitlab
     end
 
     private
+
+    def serialized(value)
+      if value.respond_to?(:map)
+        value.map { |v| v.respond_to?(:as_json_for_cache) ? v.as_json_for_cache : v.as_json }.to_json
+      else
+        value.respond_to?(:to_json_for_cache) ? value.to_json_for_cache : value.to_json
+      end
+    end
 
     def parse_value(raw, klass)
       value = ActiveSupport::JSON.decode(raw)
