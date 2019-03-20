@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService, '#execute' do
-  include KubernetesHelpers
+  include ClustersHelpers
 
   let(:cluster) { create(:cluster, :project, :provided_by_gcp) }
   let(:platform) { cluster.platform }
@@ -20,28 +20,11 @@ describe Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService, '#execute' d
   end
 
   before do
-    stub_kubeclient_discover(api_url)
-    stub_kubeclient_get_namespace(api_url)
-    stub_kubeclient_get_service_account_error(api_url, 'gitlab')
-    stub_kubeclient_create_service_account(api_url)
-    stub_kubeclient_get_secret_error(api_url, 'gitlab-token')
-    stub_kubeclient_create_secret(api_url)
-
-    stub_kubeclient_get_role_binding(api_url, "gitlab-#{namespace}", namespace: namespace)
-    stub_kubeclient_put_role_binding(api_url, "gitlab-#{namespace}", namespace: namespace)
-    stub_kubeclient_get_namespace(api_url, namespace: namespace)
-    stub_kubeclient_get_service_account_error(api_url, "#{namespace}-service-account", namespace: namespace)
-    stub_kubeclient_create_service_account(api_url, namespace: namespace)
-    stub_kubeclient_create_secret(api_url, namespace: namespace)
-    stub_kubeclient_put_secret(api_url, "#{namespace}-token", namespace: namespace)
-
-    stub_kubeclient_get_secret(
-      api_url,
-      {
-        metadata_name: "#{namespace}-token",
-        token: Base64.encode64('sample-token'),
-        namespace: namespace
-      }
+    stub_clusterable_kubernetes_calls(
+      api_url: api_url,
+      namespace: namespace,
+      service_account: "#{namespace}-service-account",
+      secret_name: "#{namespace}-token"
     )
   end
 

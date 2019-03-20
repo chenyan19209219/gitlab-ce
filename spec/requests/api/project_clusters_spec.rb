@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 describe API::ProjectClusters do
+  include ClustersHelpers
   include KubernetesHelpers
 
   let(:current_user) { create(:user) }
@@ -148,23 +149,12 @@ describe API::ProjectClusters do
 
   shared_context 'kubernetes calls stubbed' do
     before do
-      stub_kubeclient_discover(api_url)
-      stub_kubeclient_get_namespace(api_url, namespace: namespace)
-      stub_kubeclient_get_service_account(api_url, "#{namespace}-service-account", namespace: namespace)
-      stub_kubeclient_put_service_account(api_url, "#{namespace}-service-account", namespace: namespace)
-
-      stub_kubeclient_get_secret(
-        api_url,
-        {
-          metadata_name: "#{namespace}-token",
-          token: Base64.encode64('sample-token'),
-          namespace: namespace
-        }
+      stub_clusterable_kubernetes_calls(
+        api_url: api_url,
+        namespace: namespace,
+        service_account: "#{namespace}-service-account",
+        secret_name: "#{namespace}-token"
       )
-
-      stub_kubeclient_put_secret(api_url, "#{namespace}-token", namespace: namespace)
-      stub_kubeclient_get_role_binding(api_url, "gitlab-#{namespace}", namespace: namespace)
-      stub_kubeclient_put_role_binding(api_url, "gitlab-#{namespace}", namespace: namespace)
     end
   end
 

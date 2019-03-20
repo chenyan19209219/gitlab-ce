@@ -4,7 +4,7 @@ require 'spec_helper'
 
 describe Clusters::Gcp::FinalizeCreationService, '#execute' do
   include GoogleApi::CloudPlatformHelpers
-  include KubernetesHelpers
+  include ClustersHelpers
 
   let(:cluster) { create(:cluster, :project, :providing_by_gcp) }
   let(:provider) { cluster.provider }
@@ -43,7 +43,7 @@ describe Clusters::Gcp::FinalizeCreationService, '#execute' do
       expect(platform.token).to eq(token)
     end
 
-    it 'calls ClusterConfigureWorker in a ascync fashion' do
+    it 'calls ClusterConfigureWorker in a async fashion' do
       expect(ClusterConfigureWorker).to receive(:perform_async).with(cluster.id)
 
       subject
@@ -61,7 +61,8 @@ describe Clusters::Gcp::FinalizeCreationService, '#execute' do
   shared_examples 'kubernetes information not successfully fetched' do
     context 'when failed to fetch gke cluster info' do
       before do
-        stub_cloud_platform_get_zone_cluster_error(provider.gcp_project_id, provider.zone, cluster.name)
+        stub_cloud_platform_get_zone_cluster_error(
+          provider.gcp_project_id, provider.zone, cluster.name)
       end
 
       it_behaves_like 'error'
@@ -101,22 +102,7 @@ describe Clusters::Gcp::FinalizeCreationService, '#execute' do
         }
       )
 
-      stub_kubeclient_discover(api_url)
-      stub_kubeclient_get_namespace(api_url)
-      stub_kubeclient_create_namespace(api_url)
-      stub_kubeclient_get_service_account_error(api_url, 'gitlab')
-      stub_kubeclient_create_service_account(api_url)
-      stub_kubeclient_create_secret(api_url)
-      stub_kubeclient_put_secret(api_url, 'gitlab-token')
-
-      stub_kubeclient_get_secret(
-        api_url,
-        {
-          metadata_name: secret_name,
-          token: Base64.encode64(token),
-          namespace: 'default'
-        }
-      )
+      stub_gitlab_kubernetes_calls(api_url: api_url, platform_token: token)
     end
   end
 
@@ -143,9 +129,6 @@ describe Clusters::Gcp::FinalizeCreationService, '#execute' do
   context 'With an RBAC cluster' do
     before do
       provider.legacy_abac = false
-
-      stub_kubeclient_get_cluster_role_binding_error(api_url, 'gitlab-admin')
-      stub_kubeclient_create_cluster_role_binding(api_url)
     end
 
     include_context 'kubernetes information successfully fetched'
