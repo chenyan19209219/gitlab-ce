@@ -161,4 +161,28 @@ describe BroadcastMessage do
       message.flush_redis_cache
     end
   end
+
+  describe '#as_json_for_cache' do
+    it 'calls #as_json but also includes message_html' do
+      message = create(:broadcast_message)
+      expected_hash = message.as_json.merge(
+        'message_html' => message.message_html,
+        'cached_markdown_version' => message.cached_markdown_version
+      )
+
+      expect(message.as_json_for_cache).to eq(expected_hash)
+    end
+  end
+
+  describe '#to_json_for_cache' do
+    it 'calls #as_json but also includes message_html' do
+      message = create(:broadcast_message)
+      expected_json = message.as_json.merge(
+        'message_html' => message.message_html,
+        'cached_markdown_version' => message.cached_markdown_version
+      ).to_json
+
+      expect(message.to_json_for_cache).to eq(expected_json)
+    end
+  end
 end

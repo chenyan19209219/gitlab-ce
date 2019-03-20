@@ -58,6 +58,17 @@ class BroadcastMessage < ActiveRecord::Base
     cache.expire(LEGACY_CACHE_KEY)
   end
 
+  def as_json_for_cache
+    as_json.merge(
+      'message_html' => message_html,
+      'cached_markdown_version' => cached_markdown_version
+    )
+  end
+
+  def to_json_for_cache
+    as_json_for_cache.to_json
+  end
+
   def active?
     started? && !ended?
   end
