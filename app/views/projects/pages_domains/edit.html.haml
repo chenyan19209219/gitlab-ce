@@ -1,11 +1,15 @@
 - add_to_breadcrumbs _("Pages"), project_pages_path(@project)
 - breadcrumb_title @domain.domain
 - page_title @domain.domain
-%h3.page-title
-  = @domain.domain
-%hr.clearfix
-%div
-  = form_for [@project.namespace.becomes(Namespace), @project, @domain], html: { class: 'fieldset-form' } do |f|
-    = render 'form', { f: f }
-    .form-actions
-      = f.submit _('Save Changes'), class: "btn btn-success"
+
+- if Feature.enabled?(:pages_lets_encrypt)
+  .js-pages-domain-app{ data: { domain_name: @domain.domain, domain_endpoint: project_pages_domain_path(@project, @domain, format: :json), domain_key: @domain.key } }
+- else
+  %h3.page-title
+    = @domain.domain
+  %hr.clearfix
+  %div
+    = form_for [@project.namespace.becomes(Namespace), @project, @domain], html: { class: 'fieldset-form' } do |f|
+      = render 'form', { f: f }
+      .form-actions
+        = f.submit _('Save Changes'), class: "btn btn-success"
