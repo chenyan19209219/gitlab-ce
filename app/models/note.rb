@@ -358,7 +358,7 @@ class Note < ActiveRecord::Base
     # When commit notes are rendered on an MR's Discussion page, they are
     # displayed in one discussion instead of individually.
     # See also `#discussion_id` and `Discussion.override_discussion_id`.
-    if noteable && noteable != self.noteable
+    if noteable && noteable != self.noteable && !system?
       OutOfContextDiscussion
     else
       IndividualNoteDiscussion
