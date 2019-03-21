@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190301182457) do
+ActiveRecord::Schema.define(version: 20190321124130) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -2280,6 +2280,9 @@ ActiveRecord::Schema.define(version: 20190301182457) do
     t.boolean "private_profile"
     t.boolean "include_private_contributions"
     t.string "commit_email"
+    t.string "timezone", default: "UTC", null: false
+    t.boolean "time_display", default: false, null: false
+    t.boolean "time_format", default: false, null: false
     t.index ["accepted_term_id"], name: "index_users_on_accepted_term_id", using: :btree
     t.index ["admin"], name: "index_users_on_admin", using: :btree
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true, using: :btree
