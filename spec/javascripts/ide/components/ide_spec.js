@@ -14,6 +14,10 @@ describe('ide component', () => {
     store.state.currentProjectId = 'abcproject';
     store.state.currentBranchId = 'master';
     store.state.projects.abcproject = Object.assign({}, projectData);
+    Vue.set(store.state.trees, 'abcproject/master', {
+      tree: [],
+      loading: false,
+    });
 
     vm = createComponentWithStore(Component, store, {
       emptyStateSvgPath: 'svg',
@@ -28,17 +32,15 @@ describe('ide component', () => {
     resetStore(vm.$store);
   });
 
-  it('does not render right when no files open', () => {
-    expect(vm.$el.querySelector('.panel-right')).toBeNull();
-  });
+  it('shows error message when set', done => {
+    expect(vm.$el.querySelector('.flash-container')).toBe(null);
 
-  it('renders right panel when files are open', done => {
-    vm.$store.state.trees['abcproject/mybranch'] = {
-      tree: [file()],
+    vm.$store.state.errorMessage = {
+      text: 'error',
     };
 
-    Vue.nextTick(() => {
-      expect(vm.$el.querySelector('.panel-right')).toBeNull();
+    vm.$nextTick(() => {
+      expect(vm.$el.querySelector('.flash-container')).not.toBe(null);
 
       done();
     });
@@ -71,17 +73,25 @@ describe('ide component', () => {
     });
   });
 
-  it('shows error message when set', done => {
-    expect(vm.$el.querySelector('.flash-container')).toBe(null);
+  describe('empty/non-existent branch', () => {
+    it('renders "New file" button', done => {
+      vm.$nextTick(() => {
+        expect(vm.$el.querySelector('.ide-empty-state button[title="New file"]')).not.toBeNull();
+        done();
+      });
+    });
+  });
 
-    vm.$store.state.errorMessage = {
-      text: 'error',
-    };
+  describe('branch with files', () => {
+    beforeEach(() => {
+      store.state.trees['abcproject/master'].tree = [file()];
+    });
 
-    vm.$nextTick(() => {
-      expect(vm.$el.querySelector('.flash-container')).not.toBe(null);
-
-      done();
+    it('does not render "New file" button', done => {
+      vm.$nextTick(() => {
+        expect(vm.$el.querySelector('.ide-empty-state button[title="New file"]')).toBeNull();
+        done();
+      });
     });
   });
 });
