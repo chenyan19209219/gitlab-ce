@@ -35,10 +35,7 @@ export const getProjectData = ({ commit, state }, { namespace, projectId, force 
     }
   });
 
-export const getBranchData = (
-  { commit, dispatch, state },
-  { projectId, branchId, force = false } = {},
-) =>
+export const getBranchData = ({ commit, state }, { projectId, branchId, force = false } = {}) =>
   new Promise((resolve, reject) => {
     if (
       typeof state.projects[`${projectId}`] === 'undefined' ||
@@ -59,7 +56,7 @@ export const getBranchData = (
         })
         .catch(e => {
           if (e.response.status === 404) {
-            dispatch('showBranchNotFoundError', branchId);
+            reject(e);
           } else {
             flash(
               __('Error loading branch data. Please try again.'),
@@ -69,8 +66,8 @@ export const getBranchData = (
               false,
               true,
             );
+            reject(new Error(`Branch not loaded - ${projectId}/${branchId}`));
           }
-          reject(new Error(`Branch not loaded - ${projectId}/${branchId}`));
         });
     } else {
       resolve(state.projects[`${projectId}`].branches[branchId]);
@@ -125,40 +122,56 @@ export const showBranchNotFoundError = ({ dispatch }, branchId) => {
   });
 };
 
+export const showEmptyState = ({ commit, state }, { err, projectId, branchId }) => {
+  if (err.response && err.response.status === 404) {
+    commit(types.CREATE_TREE, { treePath: `${projectId}/${branchId}` });
+    commit(types.TOGGLE_LOADING, {
+      entry: state.trees[`${projectId}/${branchId}`],
+      forceValue: false,
+    });
+  }
+};
+
 export const openBranch = ({ dispatch, state }, { projectId, branchId, basePath }) => {
   dispatch('setCurrentBranchId', branchId);
 
-  dispatch('getBranchData', {
-    projectId,
-    branchId,
-  });
-
-  return dispatch('getFiles', {
+  return dispatch('getBranchData', {
     projectId,
     branchId,
   })
-    .then(() => {
-      if (basePath) {
-        const path = basePath.slice(-1) === '/' ? basePath.slice(0, -1) : basePath;
-        const treeEntryKey = Object.keys(state.entries).find(
-          key => key === path && !state.entries[key].pending,
-        );
-        const treeEntry = state.entries[treeEntryKey];
-
-        if (treeEntry) {
-          dispatch('handleTreeEntryAction', treeEntry);
-        } else {
-          dispatch('createTempEntry', {
-            name: path,
-            type: 'blob',
-          });
-        }
-      }
-    })
     .then(() => {
       dispatch('getMergeRequestsForBranch', {
         projectId,
         branchId,
       });
+      dispatch('getFiles', {
+        projectId,
+        branchId,
+      })
+        .then(() => {
+          if (basePath) {
+            const path = basePath.slice(-1) === '/' ? basePath.slice(0, -1) : basePath;
+            const treeEntryKey = Object.keys(state.entries).find(
+              key => key === path && !state.entries[key].pending,
+            );
+            const treeEntry = state.entries[treeEntryKey];
+
+            if (treeEntry) {
+              dispatch('handleTreeEntryAction', treeEntry);
+            } else {
+              dispatch('createTempEntry', {
+                name: path,
+                type: 'blob',
+              });
+            }
+          }
+        })
+        .catch(
+          () => new Error(`An error occurred whilst getting files for - ${projectId}/${branchId}`),
+        );
+    })
+    .catch(err => {
+      // If branch doesn't exist we show empty-state view
+      dispatch('showEmptyState', { err, projectId, branchId });
     });
 };
