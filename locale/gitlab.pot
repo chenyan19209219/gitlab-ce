@@ -1233,9 +1233,6 @@ msgstr ""
 msgid "Boards"
 msgstr ""
 
-msgid "Branch %{branchName} was not found in this project's repository."
-msgstr ""
-
 msgid "Branch <strong>%{branch_name}</strong> was created. To set up auto deploy, choose a GitLab CI Yaml template and commit your changes. %{link_to_autodeploy_doc}"
 msgstr ""
 
@@ -5598,6 +5595,9 @@ msgid "No file chosen"
 msgstr ""
 
 msgid "No file selected"
+msgstr ""
+
+msgid "No files"
 msgstr ""
 
 msgid "No files found."
