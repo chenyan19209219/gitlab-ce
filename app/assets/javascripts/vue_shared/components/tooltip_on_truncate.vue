@@ -1,10 +1,10 @@
 <script>
 import _ from 'underscore';
-import tooltip from '../directives/tooltip';
+import { GlTooltipDirective } from '@gitlab/ui';
 
 export default {
   directives: {
-    tooltip,
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     title: {
@@ -31,7 +31,11 @@ export default {
   mounted() {
     const target = this.selectTarget();
 
-    if (target && target.scrollWidth > target.offsetWidth) {
+    if (
+      target &&
+      (target.scrollWidth > target.offsetWidth ||
+        target.offsetWidth > target.parentElement.offsetWidth)
+    ) {
       this.showTooltip = true;
     }
   },
@@ -52,7 +56,7 @@ export default {
 <template>
   <span
     v-if="showTooltip"
-    v-tooltip
+    v-gl-tooltip="{ boundary: 'viewport', placement }"
     :title="title"
     :data-placement="placement"
     class="js-show-tooltip"
