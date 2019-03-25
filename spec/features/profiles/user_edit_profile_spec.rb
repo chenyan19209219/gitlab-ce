@@ -353,7 +353,7 @@ describe 'User edit profile' do
       end
 
       it 'allows the user to toggle their time format and display preferences' do
-        %w[time_format time_display].each do |field_selector|
+        %w[time_format_in_24h time_display_relative].each do |field_selector|
           field = page.find_field("user[#{field_selector}]")
           expect(field).not_to be_checked
           field.click

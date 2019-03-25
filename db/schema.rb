@@ -1873,7 +1873,6 @@ ActiveRecord::Schema.define(version: 20190408163745) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["path"], name: "index_redirect_routes_on_path", unique: true, using: :btree
-    t.index ["path"], name: "index_redirect_routes_on_path_text_pattern_ops", using: :btree, opclasses: {"path"=>"varchar_pattern_ops"}
     t.index ["source_type", "source_id"], name: "index_redirect_routes_on_source_type_and_source_id", using: :btree
   end
 

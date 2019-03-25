@@ -74,7 +74,7 @@
       -# TODO: might need an entry in user/profile.md to describe some of these settings
       %h5= ("Time zone")
       = dropdown_tag(_("Select a timezone"), options: { toggle_class: 'btn js-timezone-dropdown', title: _("Select a timezone"), filter: true, placeholder: s_("OfSearchInADropdown|Filter"), data: { data: timezone_data } } )
-      %input{ :type => 'hidden', :id => 'user_timezone', :class => 'hidden', :name => 'user[timezone]', value: ActiveSupport::TimeZone::MAPPING.key(@user.timezone) }
+      %input.hidden{ :type => 'hidden', :id => 'user_timezone', :name => 'user[timezone]', value: ActiveSupport::TimeZone::MAPPING.key(@user.timezone) }
       %h5= ("Time format")
       .checkbox-icon-inline-wrapper
         - time_format_label = capture do
