@@ -1873,6 +1873,7 @@ ActiveRecord::Schema.define(version: 20190408163745) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["path"], name: "index_redirect_routes_on_path", unique: true, using: :btree
+    t.index ["path"], name: "index_redirect_routes_on_path_text_pattern_ops", using: :btree, opclasses: {"path"=>"varchar_pattern_ops"}
     t.index ["source_type", "source_id"], name: "index_redirect_routes_on_source_type_and_source_id", using: :btree
   end
 
@@ -2224,8 +2225,8 @@ ActiveRecord::Schema.define(version: 20190408163745) do
     t.string "issues_sort"
     t.string "merge_requests_sort"
     t.string "timezone", default: "UTC", null: false
-    t.boolean "time_display", default: false, null: false
-    t.boolean "time_format", default: false, null: false
+    t.boolean "time_display_relative", default: false, null: false
+    t.boolean "time_format_in_24h", default: false, null: false
     t.index ["user_id"], name: "index_user_preferences_on_user_id", unique: true, using: :btree
   end
 

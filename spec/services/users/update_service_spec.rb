@@ -14,12 +14,12 @@ describe Users::UpdateService do
     end
 
     it 'updates time preferences' do
-      result = update_user(user, timezone: 'Europe/Warsaw', time_display: '1', time_format: '0')
+      result = update_user(user, timezone: 'Europe/Warsaw', time_display_relative: '1', time_format_in_24h: '0')
 
       expect(result).to eq(status: :success)
       expect(user.reload.timezone).to eq('Europe/Warsaw')
-      expect(user.time_display).to eq(true)
-      expect(user.time_format).to eq(false)
+      expect(user.time_display_relative).to eq(true)
+      expect(user.time_format_in_24h).to eq(false)
     end
 
     it 'returns an error result when record cannot be updated' do

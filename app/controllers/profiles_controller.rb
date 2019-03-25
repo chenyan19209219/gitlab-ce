@@ -107,8 +107,8 @@ class ProfilesController < Profiles::ApplicationController
       :private_profile,
       :include_private_contributions,
       :timezone,
-      :time_display,
-      :time_format,
+      :time_display_relative,
+      :time_format_in_24h,
       status: [:emoji, :message]
     )
   end
