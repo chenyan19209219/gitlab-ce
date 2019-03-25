@@ -115,7 +115,6 @@ module API
     mount ::API::GroupVariables
     mount ::API::ImportGithub
     mount ::API::Internal
-    mount ::API::IssuableBulkUpdate
     mount ::API::Issues
     mount ::API::JobArtifacts
     mount ::API::Jobs
@@ -142,6 +141,7 @@ module API
     mount ::API::Projects
     mount ::API::ProjectSnapshots
     mount ::API::ProjectSnippets
+    mount ::API::ProjectStatistics
     mount ::API::ProjectTemplates
     mount ::API::ProtectedBranches
     mount ::API::ProtectedTags

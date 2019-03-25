@@ -51,6 +51,8 @@ Apart from a local hard drive you can also mount a volume that supports the netw
 
 If you have enough RAM memory and a recent CPU the speed of GitLab is mainly limited by hard drive seek times. Having a fast drive (7200 RPM and up) or a solid state drive (SSD) will improve the responsiveness of GitLab.
 
+NOTE: **Note:** Since file system performance may affect GitLab's overall performance, we do not recommend using EFS for storage. See the [relevant documentation](../administration/high_availability/nfs.md#avoid-using-awss-elastic-file-system-efs) for more details.
+
 ### CPU
 
 - 1 core supports up to 100 users but the application can be a bit slower due to having all workers and background jobs running on the same core
@@ -204,6 +206,9 @@ We support the current and the previous major release of:
 - Safari
 - Microsoft Edge
 - Internet Explorer 11
+
+The browser vendors release regular minor version updates with important bug fixes and security updates.
+Support is only provided for the current minor version of the major version you are running.
 
 Each time a new browser version is released, we begin supporting that version and stop supporting the third most recent version.
 

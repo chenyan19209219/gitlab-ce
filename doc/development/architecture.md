@@ -65,14 +65,14 @@ Gitaly is a service designed by GitLab to remove our need for NFS for Git storag
 - Omnibus configuration options
 - Layer: Monitoring
 
-GitLab Monitor is a process disigned in house that allows us to export metrics about GitLab application internals to prometheus. You can read more [in the project's readme](https://gitlab.com/gitlab-org/gitlab-monitor)
+GitLab Monitor is a process designed in house that allows us to export metrics about GitLab application internals to prometheus. You can read more [in the project's readme](https://gitlab.com/gitlab-org/gitlab-monitor)
 
 ### gitlab-workhorse
 
 - Omnibus configuration options
 - Layer: Core Service (Processor)
 
-[GitLab Workhorse](https://gitlab.com/gitlab-org/gitlab-workhorse) is a program designed at GitLab to help alieviate pressure from unicorn. You can read more about the [historical reasons for developing](https://about.gitlab.com/2016/04/12/a-brief-history-of-gitlab-workhorse/). It's designed to act as a smart reverse proxy to help speed up GitLab as a whole.
+[GitLab Workhorse](https://gitlab.com/gitlab-org/gitlab-workhorse) is a program designed at GitLab to help alleviate pressure from unicorn. You can read more about the [historical reasons for developing](https://about.gitlab.com/2016/04/12/a-brief-history-of-gitlab-workhorse/). It's designed to act as a smart reverse proxy to help speed up GitLab as a whole.
 
 ### logrotate
 
@@ -157,6 +157,18 @@ TODO
 ### Mattermost
 
 TODO
+
+### Registry
+
+The registry is what users use to store their own Docker images. The bundled
+registry uses nginx as a load balancer and GitLab as an authentication manager.
+Whenever a client requests to pull or push an image from the registry, it will
+return a `401` response along with a header detailing where to get an
+authentication token, in this case the GitLab instance. The client will then
+request a pull or push auth token from GitLab and retry the original request
+to the registry. Learn more about [token authentication](https://docs.docker.com/registry/spec/auth/token/).
+
+An external registry can also be configured to use GitLab as an auth endpoint.
 
 ## GitLab by Request Type
 

@@ -4,8 +4,10 @@ import { mapActions, mapGetters } from 'vuex';
 import { GlTooltipDirective } from '@gitlab/ui';
 import { truncateSha } from '~/lib/utils/text_utility';
 import { s__, __, sprintf } from '~/locale';
+import { clearDraft, getDiscussionReplyKey } from '~/lib/utils/autosave';
 import systemNote from '~/vue_shared/components/notes/system_note.vue';
 import icon from '~/vue_shared/components/icon.vue';
+import diffLineNoteFormMixin from 'ee_else_ce/notes/mixins/diff_line_note_form';
 import TimelineEntryItem from '~/vue_shared/components/notes/timeline_entry_item.vue';
 import Flash from '../../flash';
 import { SYSTEM_NOTE } from '../constants';
@@ -20,7 +22,6 @@ import noteForm from './note_form.vue';
 import diffWithNote from './diff_with_note.vue';
 import placeholderNote from '../../vue_shared/components/notes/placeholder_note.vue';
 import placeholderSystemNote from '../../vue_shared/components/notes/placeholder_system_note.vue';
-import autosave from '../mixins/autosave';
 import noteable from '../mixins/noteable';
 import resolvable from '../mixins/resolvable';
 import discussionNavigation from '../mixins/discussion_navigation';
@@ -47,12 +48,13 @@ export default {
     placeholderSystemNote,
     ResolveWithIssueButton,
     systemNote,
+    DraftNote: () => import('ee_component/batch_comments/components/draft_note.vue'),
     TimelineEntryItem,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [autosave, noteable, resolvable, discussionNavigation],
+  mixins: [noteable, resolvable, discussionNavigation, diffLineNoteFormMixin],
   props: {
     discussion: {
       type: Object,
@@ -104,7 +106,10 @@ export default {
       'showJumpToNextDiscussion',
     ]),
     author() {
-      return this.initialDiscussion.author;
+      return this.firstNote.author;
+    },
+    autosaveKey() {
+      return getDiscussionReplyKey(this.firstNote.noteable_type, this.discussion.id);
     },
     canReply() {
       return this.getNoteableData.current_user.can_create_note;
@@ -115,7 +120,7 @@ export default {
     hasReplies() {
       return this.discussion.notes.length > 1;
     },
-    initialDiscussion() {
+    firstNote() {
       return this.discussion.notes.slice(0, 1)[0];
     },
     replies() {
@@ -240,18 +245,6 @@ export default {
       return !this.discussionResolved && this.discussion.resolve_with_issue_path;
     },
   },
-  watch: {
-    isReplying() {
-      if (this.isReplying) {
-        this.$nextTick(() => {
-          // Pass an extra key to separate reply and note edit forms
-          this.initAutoSave({ ...this.initialDiscussion, ...this.discussion }, ['Reply']);
-        });
-      } else {
-        this.disposeAutoSave();
-      }
-    },
-  },
   created() {
     eventHub.$on('startReplying', this.onStartReplying);
   },
@@ -310,7 +303,7 @@ export default {
       }
 
       this.isReplying = false;
-      this.resetAutoSave();
+      clearDraft(this.autosaveKey);
     },
     saveReply(noteText, form, callback) {
       const postData = {
@@ -336,7 +329,7 @@ export default {
       this.isReplying = false;
       this.saveNote(replyData)
         .then(() => {
-          this.resetAutoSave();
+          clearDraft(this.autosaveKey);
           callback();
         })
         .catch(err => {
@@ -388,8 +381,8 @@ Please check your network connection and try again.`;
           <div class="timeline-content">
             <note-header
               :author="author"
-              :created-at="initialDiscussion.created_at"
-              :note-id="initialDiscussion.id"
+              :created-at="firstNote.created_at"
+              :note-id="firstNote.id"
               :include-toggle="true"
               :expanded="discussion.expanded"
               @toggleHandler="toggleDiscussionHandler"
@@ -422,8 +415,8 @@ Please check your network connection and try again.`;
               <ul class="notes">
                 <template v-if="shouldGroupReplies">
                   <component
-                    :is="componentName(initialDiscussion)"
-                    :note="componentData(initialDiscussion)"
+                    :is="componentName(firstNote)"
+                    :note="componentData(firstNote)"
                     :line="line"
                     :commit="commit"
                     :help-page-path="helpPagePath"
@@ -510,6 +503,8 @@ Please check your network connection and try again.`;
                   :is-editing="false"
                   :line="diffLine"
                   save-button-title="Comment"
+                  :autosave-key="autosaveKey"
+                  @handleFormUpdateAddToReview="addReplyToReview"
                   @handleFormUpdate="saveReply"
                   @cancelForm="cancelReplyForm"
                 />

@@ -50,6 +50,7 @@ describe Project do
     it { is_expected.to have_one(:teamcity_service) }
     it { is_expected.to have_one(:jira_service) }
     it { is_expected.to have_one(:redmine_service) }
+    it { is_expected.to have_one(:youtrack_service) }
     it { is_expected.to have_one(:custom_issue_tracker_service) }
     it { is_expected.to have_one(:bugzilla_service) }
     it { is_expected.to have_one(:gitlab_issue_tracker_service) }
@@ -132,15 +133,6 @@ describe Project do
 
       it_behaves_like 'members and requesters associations' do
         let(:namespace) { project }
-      end
-    end
-
-    describe '#boards' do
-      it 'raises an error when attempting to add more than one board to the project' do
-        subject.boards.build
-
-        expect { subject.boards.build }.to raise_error(Project::BoardLimitExceeded, 'Number of permitted boards exceeded')
-        expect(subject.boards.size).to eq 1
       end
     end
 
@@ -2360,6 +2352,18 @@ describe Project do
     end
   end
 
+  describe '#daily_statistics_enabled?' do
+    it { is_expected.to be_daily_statistics_enabled }
+
+    context 'when :project_daily_statistics is disabled for the project' do
+      before do
+        stub_feature_flags(project_daily_statistics: { thing: subject, enabled: false })
+      end
+
+      it { is_expected.not_to be_daily_statistics_enabled }
+    end
+  end
+
   describe '#change_head' do
     let(:project) { create(:project, :repository) }
 
@@ -2371,6 +2375,12 @@ describe Project do
     it 'calls the before_change_head and after_change_head methods' do
       expect(project.repository).to receive(:before_change_head)
       expect(project.repository).to receive(:after_change_head)
+
+      project.change_head(project.default_branch)
+    end
+
+    it 'updates commit count' do
+      expect(ProjectCacheWorker).to receive(:perform_async).with(project.id, [], [:commit_count])
 
       project.change_head(project.default_branch)
     end
@@ -2511,6 +2521,16 @@ describe Project do
     end
   end
 
+  describe '#set_repository_writable!' do
+    it 'sets repository_read_only to false' do
+      project = create(:project, :read_only)
+
+      expect { project.set_repository_writable! }
+        .to change(project, :repository_read_only)
+        .from(true).to(false)
+    end
+  end
+
   describe '#pushes_since_gc' do
     let(:project) { create(:project) }
 
@@ -2584,7 +2604,7 @@ describe Project do
       shared_examples 'same behavior between KubernetesService and Platform::Kubernetes' do
         it 'returns variables from this service' do
           expect(project.deployment_variables).to include(
-            { key: 'KUBE_TOKEN', value: project.deployment_platform.token, public: false }
+            { key: 'KUBE_TOKEN', value: project.deployment_platform.token, public: false, masked: true }
           )
         end
       end
@@ -2609,7 +2629,7 @@ describe Project do
 
         it 'should return token from kubernetes namespace' do
           expect(project.deployment_variables).to include(
-            { key: 'KUBE_TOKEN', value: kubernetes_namespace.service_account_token, public: false }
+            { key: 'KUBE_TOKEN', value: kubernetes_namespace.service_account_token, public: false, masked: true }
           )
         end
       end
@@ -3407,26 +3427,40 @@ describe Project do
         project.migrate_to_hashed_storage!
       end
 
-      it 'schedules ProjectMigrateHashedStorageWorker with delayed start when the project repo is in use' do
+      it 'schedules HashedStorage::ProjectMigrateWorker with delayed start when the project repo is in use' do
         Gitlab::ReferenceCounter.new(project.gl_repository(is_wiki: false)).increase
 
-        expect(ProjectMigrateHashedStorageWorker).to receive(:perform_in)
+        expect(HashedStorage::ProjectMigrateWorker).to receive(:perform_in)
 
         project.migrate_to_hashed_storage!
       end
 
-      it 'schedules ProjectMigrateHashedStorageWorker with delayed start when the wiki repo is in use' do
+      it 'schedules HashedStorage::ProjectMigrateWorker with delayed start when the wiki repo is in use' do
         Gitlab::ReferenceCounter.new(project.gl_repository(is_wiki: true)).increase
 
-        expect(ProjectMigrateHashedStorageWorker).to receive(:perform_in)
+        expect(HashedStorage::ProjectMigrateWorker).to receive(:perform_in)
 
         project.migrate_to_hashed_storage!
       end
 
-      it 'schedules ProjectMigrateHashedStorageWorker' do
-        expect(ProjectMigrateHashedStorageWorker).to receive(:perform_async).with(project.id)
+      it 'schedules HashedStorage::ProjectMigrateWorker' do
+        expect(HashedStorage::ProjectMigrateWorker).to receive(:perform_async).with(project.id)
 
         project.migrate_to_hashed_storage!
+      end
+    end
+
+    describe '#rollback_to_legacy_storage!' do
+      let(:project) { create(:project, :empty_repo, :legacy_storage) }
+
+      it 'returns nil' do
+        expect(project.rollback_to_legacy_storage!).to be_nil
+      end
+
+      it 'does not run validations' do
+        expect(project).not_to receive(:valid?)
+
+        project.rollback_to_legacy_storage!
       end
     end
   end
@@ -3504,8 +3538,32 @@ describe Project do
           project = create(:project, storage_version: 1, skip_disk_validation: true)
 
           Sidekiq::Testing.fake! do
-            expect { project.migrate_to_hashed_storage! }.to change(ProjectMigrateHashedStorageWorker.jobs, :size).by(1)
+            expect { project.migrate_to_hashed_storage! }.to change(HashedStorage::ProjectMigrateWorker.jobs, :size).by(1)
           end
+        end
+      end
+    end
+
+    describe '#rollback_to_legacy_storage!' do
+      let(:project) { create(:project, :repository, skip_disk_validation: true) }
+
+      it 'returns true' do
+        expect(project.rollback_to_legacy_storage!).to be_truthy
+      end
+
+      it 'does not run validations' do
+        expect(project).not_to receive(:valid?)
+
+        project.rollback_to_legacy_storage!
+      end
+
+      it 'does not flag as read-only' do
+        expect { project.rollback_to_legacy_storage! }.not_to change { project.repository_read_only }
+      end
+
+      it 'enqueues a job' do
+        Sidekiq::Testing.fake! do
+          expect { project.rollback_to_legacy_storage! }.to change(HashedStorage::ProjectRollbackWorker.jobs, :size).by(1)
         end
       end
     end
@@ -3570,28 +3628,28 @@ describe Project do
 
     subject { project.auto_devops_enabled? }
 
+    context 'when explicitly enabled' do
+      before do
+        create(:project_auto_devops, project: project)
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when explicitly disabled' do
+      before do
+        create(:project_auto_devops, project: project, enabled: false)
+      end
+
+      it { is_expected.to be_falsey }
+    end
+
     context 'when enabled in settings' do
       before do
         stub_application_setting(auto_devops_enabled: true)
       end
 
       it { is_expected.to be_truthy }
-
-      context 'when explicitly enabled' do
-        before do
-          create(:project_auto_devops, project: project)
-        end
-
-        it { is_expected.to be_truthy }
-      end
-
-      context 'when explicitly disabled' do
-        before do
-          create(:project_auto_devops, project: project, enabled: false)
-        end
-
-        it { is_expected.to be_falsey }
-      end
     end
 
     context 'when disabled in settings' do
@@ -3609,12 +3667,93 @@ describe Project do
         it { is_expected.to be_truthy }
       end
 
-      context 'when force_autodevops_on_by_default is enabled for the project' do
+      context 'when explicitly disabled' do
         before do
-          Feature.get(:force_autodevops_on_by_default).enable_percentage_of_actors(100)
+          create(:project_auto_devops, :disabled, project: project)
         end
 
-        it { is_expected.to be_truthy }
+        it { is_expected.to be_falsey }
+      end
+    end
+
+    context 'when force_autodevops_on_by_default is enabled for the project' do
+      it { is_expected.to be_truthy }
+    end
+
+    context 'with group parents' do
+      let(:instance_enabled) { true }
+
+      before do
+        stub_application_setting(auto_devops_enabled: instance_enabled)
+        project.update!(namespace: parent_group)
+      end
+
+      context 'when enabled on parent' do
+        let(:parent_group) { create(:group, :auto_devops_enabled) }
+
+        context 'when auto devops instance enabled' do
+          it { is_expected.to be_truthy }
+        end
+
+        context 'when auto devops instance disabled' do
+          let(:instance_disabled) { false }
+
+          it { is_expected.to be_truthy }
+        end
+      end
+
+      context 'when disabled on parent' do
+        let(:parent_group) { create(:group, :auto_devops_disabled) }
+
+        context 'when auto devops instance enabled' do
+          it { is_expected.to be_falsy }
+        end
+
+        context 'when auto devops instance disabled' do
+          let(:instance_disabled) { false }
+
+          it { is_expected.to be_falsy }
+        end
+      end
+
+      context 'when enabled on root parent', :nested_groups do
+        let(:parent_group) { create(:group, parent: create(:group, :auto_devops_enabled)) }
+
+        context 'when auto devops instance enabled' do
+          it { is_expected.to be_truthy }
+        end
+
+        context 'when auto devops instance disabled' do
+          let(:instance_disabled) { false }
+
+          it { is_expected.to be_truthy }
+        end
+
+        context 'when explicitly disabled on parent' do
+          let(:parent_group) { create(:group, :auto_devops_disabled, parent: create(:group, :auto_devops_enabled)) }
+
+          it { is_expected.to be_falsy }
+        end
+      end
+
+      context 'when disabled on root parent', :nested_groups do
+        let(:parent_group) { create(:group, parent: create(:group, :auto_devops_disabled)) }
+
+        context 'when auto devops instance enabled' do
+          it { is_expected.to be_falsy }
+        end
+
+        context 'when auto devops instance disabled' do
+          let(:instance_disabled) { false }
+
+          it { is_expected.to be_falsy }
+        end
+
+        context 'when explicitly disabled on parent' do
+          let(:parent_group) { create(:group, :auto_devops_disabled, parent: create(:group, :auto_devops_enabled)) }
+
+          it { is_expected.to be_falsy }
+        end
       end
     end
   end
@@ -3661,15 +3800,52 @@ describe Project do
         end
       end
     end
+
+    context 'when enabled on group' do
+      it 'has auto devops implicitly enabled' do
+        project.update(namespace: create(:group, :auto_devops_enabled))
+
+        expect(project).to have_auto_devops_implicitly_enabled
+      end
+    end
+
+    context 'when enabled on parent group' do
+      it 'has auto devops implicitly enabled' do
+        subgroup = create(:group, parent: create(:group, :auto_devops_enabled))
+        project.update(namespace: subgroup)
+
+        expect(project).to have_auto_devops_implicitly_enabled
+      end
+    end
   end
 
   describe '#has_auto_devops_implicitly_disabled?' do
+    set(:project) { create(:project) }
+
     before do
       allow(Feature).to receive(:enabled?).and_call_original
       Feature.get(:force_autodevops_on_by_default).enable_percentage_of_actors(0)
     end
 
-    set(:project) { create(:project) }
+    context 'when explicitly disabled' do
+      before do
+        create(:project_auto_devops, project: project, enabled: false)
+      end
+
+      it 'does not have auto devops implicitly disabled' do
+        expect(project).not_to have_auto_devops_implicitly_disabled
+      end
+    end
+
+    context 'when explicitly enabled' do
+      before do
+        create(:project_auto_devops, project: project, enabled: true)
+      end
+
+      it 'does not have auto devops implicitly disabled' do
+        expect(project).not_to have_auto_devops_implicitly_disabled
+      end
+    end
 
     context 'when enabled in settings' do
       before do
@@ -3692,6 +3868,8 @@ describe Project do
 
       context 'when force_autodevops_on_by_default is enabled for the project' do
         before do
+          create(:project_auto_devops, project: project, enabled: false)
+
           Feature.get(:force_autodevops_on_by_default).enable_percentage_of_actors(100)
         end
 
@@ -3700,23 +3878,20 @@ describe Project do
         end
       end
 
-      context 'when explicitly disabled' do
-        before do
-          create(:project_auto_devops, project: project, enabled: false)
-        end
+      context 'when disabled on group' do
+        it 'has auto devops implicitly disabled' do
+          project.update!(namespace: create(:group, :auto_devops_disabled))
 
-        it 'does not have auto devops implicitly disabled' do
-          expect(project).not_to have_auto_devops_implicitly_disabled
+          expect(project).to have_auto_devops_implicitly_disabled
         end
       end
 
-      context 'when explicitly enabled' do
-        before do
-          create(:project_auto_devops, project: project, enabled: true)
-        end
+      context 'when disabled on parent group' do
+        it 'has auto devops implicitly disabled' do
+          subgroup = create(:group, parent: create(:group, :auto_devops_disabled))
+          project.update!(namespace: subgroup)
 
-        it 'does not have auto devops implicitly disabled' do
-          expect(project).not_to have_auto_devops_implicitly_disabled
+          expect(project).to have_auto_devops_implicitly_disabled
         end
       end
     end

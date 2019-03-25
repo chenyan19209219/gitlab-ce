@@ -61,6 +61,7 @@ module QA
     autoload :File, 'qa/resource/file'
     autoload :Fork, 'qa/resource/fork'
     autoload :SSHKey, 'qa/resource/ssh_key'
+    autoload :Snippet, 'qa/resource/snippet'
 
     module Events
       autoload :Base, 'qa/resource/events/base'
@@ -142,6 +143,12 @@ module QA
     module Dashboard
       autoload :Projects, 'qa/page/dashboard/projects'
       autoload :Groups, 'qa/page/dashboard/groups'
+
+      module Snippet
+        autoload :New, 'qa/page/dashboard/snippet/new'
+        autoload :Index, 'qa/page/dashboard/snippet/index'
+        autoload :Show, 'qa/page/dashboard/snippet/show'
+      end
     end
 
     module Group
@@ -342,6 +349,10 @@ module QA
   module Specs
     autoload :Config, 'qa/specs/config'
     autoload :Runner, 'qa/specs/runner'
+
+    module Helpers
+      autoload :Quarantine, 'qa/specs/helpers/quarantine'
+    end
   end
 
   ##

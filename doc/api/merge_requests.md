@@ -956,37 +956,6 @@ Must include at least one non-required attribute from above.
 }
 ```
 
-## Bulk update merge requests
-
-> [Introduced](https://gitlab.com/gitlab-org/gitlab-ce/merge_requests/21368) in GitLab 11.9.
-
-Update multiple merge requests using a single API call. Returns the number of successfully updated merge requests.
-
-```
-PUT /projects/:id/merge_requests/bulk_update
-```
-
-| Attribute      | Type    | Required | Description                                                                                          ****      |
-|----------------|---------|----------|------------------------------------------------------------------------------------------------------------|
-| `id`           | integer/string | yes      | The ID or [URL-encoded path of the project](README.md#namespaced-path-encoding) owned by the authenticated user. |
-| `issuable_ids`  | Array[integer] | yes     | The IDs of merge requests to be updated.                                                                       |
-| `assignee_ids`  | Array[integer] | no      | The ID of the user(s) to assign the issue to. Set to `0` or provide an empty value to unassign all assignees.  |
-| `milestone_id`  | integer        | no      | The global ID of a milestone to assign the issue to. Set to `0` or provide an empty value to unassign a milestone.|
-| `add_label_ids`      | Array[integer] | no | Comma-separated label IDs to be added. |
-| `remove_label_ids`   | Array[integer] | no | Comma-separated label IDs to be added. |
-| `state_event`        | string  | no  | The state event of an issue. Set `close` to close the issue and `reopen` to reopen it.                      |
-| `subscription_event` | string  | no  | The subscription_event event of an issue. Set `subscribe` to subscribe to the issue and `unsubscribe` to unsubscribe from it. |
-
-```bash
-curl --request PUT --header "PRIVATE-TOKEN: <your_access_token>" https://gitlab.example.com/api/v4/projects/4/merge_requests/bulk_update?issuable_ids[]=1&issuable_ids[]=2&state_event=close
-```
-
-Example response:
-
-```json
-{ "message": "2 merge_requests updated" }
-```
-
 ## Delete a merge request
 
 Only for admins and project owners. Soft deletes the merge request in question.
@@ -1129,6 +1098,40 @@ Parameters:
     "start_sha": "c380d3acebd181f13629a25d2e2acca46ffe1e00"
   },
   "diverged_commits_count": 2
+}
+```
+
+## Merge to default merge ref path
+
+Merge the changes between the merge request source and target branches into `refs/merge-requests/:iid/merge` 
+ref, of the target project repository. This ref will have the state the target branch would have if
+a regular merge action was taken.
+
+This is not a regular merge action given it doesn't change the merge request state in any manner.
+
+This ref (`refs/merge-requests/:iid/merge`) is **always** overwritten when submitting
+requests to this API, so none of its state is kept or used in the process.
+
+If the merge request has conflicts, is empty or already merged,
+you'll get a `400` and a descriptive error message. If you don't have permissions to do so, 
+you'll get a `403`.
+
+It returns the HEAD commit of `refs/merge-requests/:iid/merge` in the response body in
+case of `200`.
+
+```
+PUT /projects/:id/merge_requests/:merge_request_iid/merge_to_ref
+```
+
+Parameters:
+
+- `id` (required) - The ID or [URL-encoded path of the project](README.md#namespaced-path-encoding) owned by the authenticated user
+- `merge_request_iid` (required)            - Internal ID of MR
+- `merge_commit_message` (optional)         - Custom merge commit message
+
+```json
+{
+  "commit_id": "854a3a7a17acbcc0bbbea170986df1eb60435f34"
 }
 ```
 

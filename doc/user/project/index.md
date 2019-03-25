@@ -8,7 +8,7 @@ Your projects can be [available](../../public_access/public_access.md)
 publicly, internally, or privately, at your choice. GitLab does not limit
 the number of private projects you create.
 
-## Project's features
+## Project features
 
 When you create a project in GitLab, you'll have access to a large number of
 [features](https://about.gitlab.com/features/):
@@ -17,7 +17,7 @@ When you create a project in GitLab, you'll have access to a large number of
 
 - [Issue tracker](issues/index.md): Discuss implementations with your team within issues
   - [Issue Boards](issue_board.md): Organize and prioritize your workflow
-  - [Multiple Issue Boards](https://docs.gitlab.com/ee/user/project/issue_board.html#multiple-issue-boards): Allow your teams to create their own workflows (Issue Boards) for the same project **[STARTER]**
+  - [Multiple Issue Boards](issue_board.md#multiple-issue-boards-starter): Allow your teams to create their own workflows (Issue Boards) for the same project **[STARTER]**
 - [Repositories](repository/index.md): Host your code in a fully
   integrated platform
   - [Branches](repository/branches/index.md): use Git branching strategies to
@@ -82,7 +82,7 @@ When you create a project in GitLab, you'll have access to a large number of
   the source, build output, and other metadata or artifacts
   associated with a released version of your code.
 
-### Project's integrations
+### Project integrations
 
 [Integrate your project](integrations/index.md) with Jira, Mattermost,
 Kubernetes, Slack, and a lot more.
@@ -116,7 +116,7 @@ Read through the documentation on [project settings](settings/index.md).
 - [Export a project from GitLab](settings/import_export.md#exporting-a-project-and-its-data)
 - [Importing and exporting projects between GitLab instances](settings/import_export.md)
 
-## Project's members
+## Project members
 
 Learn how to [add members to your projects](members/index.md).
 
@@ -137,7 +137,7 @@ and Git push/pull redirects.
 Depending on the situation, different things apply.
 
 When [renaming a user](../profile/index.md#changing-your-username),
-[changing a group path](../group/index.md#changing-a-group-s-path) or [renaming a repository](settings/index.md#renaming-a-repository):
+[changing a group path](../group/index.md#changing-a-groups-path) or [renaming a repository](settings/index.md#renaming-a-repository):
 
 - Existing web URLs for the namespace and anything under it (e.g., projects) will
   redirect to the new URLs.
@@ -170,3 +170,23 @@ password <personal_access_token>
 
 To quickly access a project from the GitLab UI using the project ID,
 visit the `/projects/:id` URL in your browser or other tool accessing the project.
+
+## Project APIs
+
+There are numerous [APIs](../../api/README.md) to use with your projects:
+
+- [Badges](../../api/project_badges.md)
+- [Clusters](../../api/project_clusters.md)
+- [Discussions](../../api/discussions.md)
+- [General](../../api/projects.md)
+- [Import/export](../../api/project_import_export.md)
+- [Issue Board](../../api/boards.md)
+- [Labels](../../api/labels.md)
+- [Markdown](../../api/markdown.md)
+- [Merge Requests](../../api/merge_requests.md)
+- [Milestones](../../api/milestones.md)
+- [Services](../../api/services.md)
+- [Snippets](../../api/project_snippets.md)
+- [Templates](../../api/project_templates.md)
+- [Traffic](../../api/project_statistics.md)
+- [Variables](../../api/project_level_variables.md)

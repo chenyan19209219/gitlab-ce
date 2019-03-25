@@ -79,7 +79,7 @@ class Repository
   end
 
   def raw_repository
-    return nil unless full_path
+    return unless full_path
 
     @raw_repository ||= initialize_raw_repository
   end
@@ -103,7 +103,7 @@ class Repository
   end
 
   def commit(ref = nil)
-    return nil unless exists?
+    return unless exists?
     return ref if ref.is_a?(::Commit)
 
     find_commit(ref || root_ref)
@@ -265,16 +265,14 @@ class Repository
   # to avoid unnecessary syncing.
   def keep_around(*shas)
     shas.each do |sha|
-      begin
-        next unless sha.present? && commit_by(oid: sha)
+      next unless sha.present? && commit_by(oid: sha)
 
-        next if kept_around?(sha)
+      next if kept_around?(sha)
 
-        # This will still fail if the file is corrupted (e.g. 0 bytes)
-        raw_repository.write_ref(keep_around_ref_name(sha), sha)
-      rescue Gitlab::Git::CommandError => ex
-        Rails.logger.error "Unable to create keep-around reference for repository #{disk_path}: #{ex}"
-      end
+      # This will still fail if the file is corrupted (e.g. 0 bytes)
+      raw_repository.write_ref(keep_around_ref_name(sha), sha)
+    rescue Gitlab::Git::CommandError => ex
+      Rails.logger.error "Unable to create keep-around reference for repository #{disk_path}: #{ex}"
     end
   end
 
@@ -534,10 +532,9 @@ class Repository
   end
 
   def root_ref
-    # When the repo does not exist, or there is no root ref, we raise this error so no data is cached.
-    raw_repository&.root_ref or raise Gitlab::Git::Repository::NoRepository # rubocop:disable Style/AndOr
+    raw_repository&.root_ref
   end
-  cache_method :root_ref
+  cache_method_asymmetrically :root_ref
 
   # Gitaly migration: https://gitlab.com/gitlab-org/gitaly/issues/314
   def exists?
@@ -852,6 +849,12 @@ class Repository
         nil # Return value does not matter.
       end
     end
+  end
+
+  def merge_to_ref(user, source_sha, merge_request, target_ref, message)
+    branch = merge_request.target_branch
+
+    raw.merge_to_ref(user, source_sha, branch, target_ref, message)
   end
 
   def ff_merge(user, source, target_branch, merge_request: nil)

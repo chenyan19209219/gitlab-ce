@@ -230,8 +230,25 @@ can enable/disable Auto DevOps at either the project-level or instance-level.
 1. Click **Save changes** for the changes to take effect.
 
 NOTE: **Note:**
-Even when disabled at the instance level, project maintainers are still able to enable
-Auto DevOps at the project level.
+Even when disabled at the instance level, group owners and project maintainers are still able to enable
+Auto DevOps at group-level and project-level, respectively.
+
+### Enabling/disabling Auto DevOps at the group-level
+
+> [Introduced](https://gitlab.com/gitlab-org/gitlab-ce/issues/52447) in GitLab 11.10.
+
+To enable or disable Auto DevOps at the group-level:
+
+1. Go to group's **Settings > CI/CD > Auto DevOps** page.
+1. Toggle the **Default to Auto DevOps pipeline** checkbox (checked to enable, unchecked to disable).
+1. Click **Save changes** button for the changes to take effect.
+
+When enabling or disabling Auto DevOps at group-level, group configuration will be implicitly used for
+the subgroups and projects inside that group, unless Auto DevOps is specifically enabled or disabled on
+the subgroup or project.
+
+NOTE: **Note**
+Only administrators and group owners are allowed to enable or disable Auto DevOps at group-level.
 
 ### Enabling/disabling Auto DevOps at the project-level
 
@@ -291,7 +308,7 @@ Auto Build creates a build of the application using an existing `Dockerfile` or
 Heroku buildpacks.
 
 Either way, the resulting Docker image is automatically pushed to the
-[Container Registry][container-registry] and tagged with the commit SHA.
+[Container Registry][container-registry] and tagged with the commit SHA or tag.
 
 #### Auto Build using a Dockerfile
 
@@ -442,10 +459,10 @@ process. Auto Review Apps create a Review App for each branch.
 Auto Review Apps will deploy your app to your Kubernetes cluster only. When no cluster
 is available, no deployment will occur.
 
-The Review App will have a unique URL based on the project name, the branch
+The Review App will have a unique URL based on the project ID, the branch or tag
 name, and a unique number, combined with the Auto DevOps base domain. For
-example, `user-project-branch-1234.example.com`. A link to the Review App shows
-up in the merge request widget for easy discovery. When the branch is deleted,
+example, `13083-review-project-branch-123456.example.com`. A link to the Review App shows
+up in the merge request widget for easy discovery. When the branch or tag is deleted,
 for example after the merge request is merged, the Review App will automatically
 be deleted.
 
@@ -506,17 +523,22 @@ enable them.
 You can make use of [environment variables](#environment-variables) to automatically
 scale your pod replicas.
 
-It's important to note that when a project is deployed to a Kubernetes cluster,
-it relies on a Docker image that has been pushed to the
-[GitLab Container Registry](../../user/project/container_registry.md). Kubernetes
-fetches this image and uses it to run the application. If the project is public,
-the image can be accessed by Kubernetes without any authentication, allowing us
-to have deployments more usable. If the project is private/internal, the
-Registry requires credentials to pull the image. Currently, this is addressed
-by providing `CI_JOB_TOKEN` as the password that can be used, but this token will
-no longer be valid as soon as the deployment job finishes. This means that
-Kubernetes can run the application, but in case it should be restarted or
-executed somewhere else, it cannot be accessed again.
+> [Introduced][ce-19507] in GitLab 11.0.
+
+For internal and private projects a [GitLab Deploy Token](../../user/project/deploy_tokens/index.md#gitlab-deploy-token)
+will be automatically created, when Auto DevOps is enabled and the Auto DevOps settings are saved. This Deploy Token
+can be used for permanent access to the registry.
+
+If the GitLab Deploy Token cannot be found, `CI_REGISTRY_PASSWORD` is
+used. Note that `CI_REGISTRY_PASSWORD` is only valid during deployment.
+This means that Kubernetes will be able to successfully pull the
+container image during deployment but in cases where the image needs to
+be pulled again, e.g. after pod eviction, Kubernetes will fail to do so
+as it will be attempting to fetch the image using
+`CI_REGISTRY_PASSWORD`.
+
+NOTE: **Note:**
+When the GitLab Deploy Token has been manually revoked, it won't be automatically created.
 
 #### Migrations
 
@@ -550,15 +572,6 @@ NOTE: **Note:**
 The `/app` path is the directory of your project inside the docker image
 as [configured by
 Herokuish](https://github.com/gliderlabs/herokuish#paths)
-
-> [Introduced][ce-19507] in GitLab 11.0.
-
-For internal and private projects a [GitLab Deploy Token](../../user/project/deploy_tokens/index.md#gitlab-deploy-token)
-will be automatically created, when Auto DevOps is enabled and the Auto DevOps settings are saved. This Deploy Token
-can be used for permanent access to the registry.
-
-Note: **Note**
-When the GitLab Deploy Token has been manually revoked, it won't be automatically created.
 
 ### Auto Monitoring
 
@@ -697,7 +710,7 @@ also be customized, and you can easily use a [custom buildpack](#custom-buildpac
 | `POSTGRES_USER`              | The PostgreSQL user; defaults to `user`. Set it to use a custom username.                                                                                                                                                     |
 | `POSTGRES_PASSWORD`          | The PostgreSQL password; defaults to `testing-password`. Set it to use a custom password.                                                                                                                                     |
 | `POSTGRES_DB`                | The PostgreSQL database name; defaults to the value of [`$CI_ENVIRONMENT_SLUG`](../../ci/variables/README.md#predefined-environment-variables). Set it to use a custom database name.                               |
-| `POSTGRES_VERSION`           | The PostgreSQL version; defaults to `9.6.2` |
+| `POSTGRES_VERSION`           | Tag for the [`postgres` Docker image](https://hub.docker.com/_/postgres) to use. Defaults to `9.6.2`. |
 | `BUILDPACK_URL`              | The buildpack's full URL. It can point to either Git repositories or a tarball URL. For Git repositories, it is possible to point to a specific `ref`, for example `https://github.com/heroku/heroku-buildpack-ruby.git#v142` |
 | `SAST_CONFIDENCE_LEVEL`      | The minimum confidence level of security issues you want to be reported; `1` for Low, `2` for Medium, `3` for High; defaults to `3`.|
 | `DEP_SCAN_DISABLE_REMOTE_CHECKS` | Whether remote Dependency Scanning checks are disabled; defaults to `"false"`. Set to `"true"` to disable checks that send data to GitLab central servers. [Read more about remote checks](https://gitlab.com/gitlab-org/security-products/dependency-scanning#remote-checks).|
@@ -708,6 +721,7 @@ also be customized, and you can easily use a [custom buildpack](#custom-buildpac
 | `INCREMENTAL_ROLLOUT_MODE`| From GitLab 11.4, this variable, if present, can be used to enable an [incremental rollout](#incremental-rollout-to-production-premium) of your application for the production environment.<br/>Set to: <ul><li>`manual`, for manual deployment jobs.</li><li>`timed`, for automatic rollout deployments with a 5 minute delay each one.</li></ul> |
 | `TEST_DISABLED`              | From GitLab 11.0, this variable can be used to disable the `test` job. If the variable is present, the job will not be created. |
 | `CODE_QUALITY_DISABLED`       | From GitLab 11.0, this variable can be used to disable the `codequality` job. If the variable is present, the job will not be created. |
+| `LICENSE_MANAGEMENT_DISABLED` | From GitLab 11.0, this variable can be used to disable the `license_management` job. If the variable is present, the job will not be created. |
 | `SAST_DISABLED`              | From GitLab 11.0, this variable can be used to disable the `sast` job. If the variable is present, the job will not be created. |
 | `DEPENDENCY_SCANNING_DISABLED` | From GitLab 11.0, this variable can be used to disable the `dependency_scanning` job. If the variable is present, the job will not be created. |
 | `CONTAINER_SCANNING_DISABLED` | From GitLab 11.0, this variable can be used to disable the `sast:container` job. If the variable is present, the job will not be created. |
@@ -1008,6 +1022,10 @@ planned for a subsequent release.
   buildpack](#custom-buildpacks).
 - Auto Test may fail because of a mismatch between testing frameworks. In this
   case, you may need to customize your `.gitlab-ci.yml` with your test commands.
+- Auto Deploy may fail if it is unable to create a Kubernetes namespace and
+  service account for your project. See the
+  [troubleshooting failed deployments](../../user/project/clusters/index.md#troubleshooting-failed-deployment-jobs)
+  section to debug why these resources were not created.
 
 ### Disable the banner instance wide
 
