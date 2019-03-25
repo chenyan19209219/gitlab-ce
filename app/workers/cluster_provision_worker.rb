@@ -10,7 +10,13 @@ class ClusterProvisionWorker
         Clusters::Gcp::ProvisionService.new.execute(provider) if cluster.gcp?
       end
 
-      ClusterConfigureWorker.perform_async(cluster.id) if cluster.user?
+      ClusterConfigureWorker.perform_async(cluster.id) if configure_kubernetes_resources?(cluster)
     end
+  end
+
+  private
+
+  def configure_kubernetes_resources?(cluster)
+    cluster.user? && cluster.managed?
   end
 end

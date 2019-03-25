@@ -19,8 +19,8 @@ describe Gitlab::Ci::Build::Prerequisite::KubernetesNamespace do
     context 'build has a deployment' do
       let!(:deployment) { create(:deployment, deployable: build) }
 
-      context 'and a cluster to deploy to' do
-        let(:cluster) { create(:cluster, projects: [build.project]) }
+      context 'and a not-managed cluster to deploy to' do
+        let(:cluster) { create(:cluster, :not_managed, projects: [build.project]) }
 
         before do
           allow(build.deployment).to receive(:cluster).and_return(cluster)
@@ -52,7 +52,7 @@ describe Gitlab::Ci::Build::Prerequisite::KubernetesNamespace do
     subject { described_class.new(build).complete! }
 
     context 'completion is required' do
-      let(:cluster) { create(:cluster, projects: [build.project]) }
+      let(:cluster) { create(:cluster, :not_managed, projects: [build.project]) }
 
       before do
         allow(build.deployment).to receive(:cluster).and_return(cluster)
@@ -71,14 +71,26 @@ describe Gitlab::Ci::Build::Prerequisite::KubernetesNamespace do
     end
 
     context 'completion is not required' do
-      before do
-        expect(deployment.cluster).to be_nil
+      context 'when deployment does not have a cluster' do
+        it 'does not create a kubernetes namespace' do
+          expect(Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService).not_to receive(:new)
+
+          subject
+        end
       end
 
-      it 'does not create a namespace' do
-        expect(Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService).not_to receive(:new)
+      context 'when cluster is managed' do
+        let(:cluster) { create(:cluster, projects: [build.project]) }
 
-        subject
+        before do
+          allow(build.deployment).to receive(:cluster).and_return(cluster)
+        end
+
+        it 'does not create a kubernetes namespace' do
+          expect(Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService).not_to receive(:new)
+
+          subject
+        end
       end
     end
   end

@@ -153,6 +153,7 @@ class Clusters::ClustersController < Clusters::BaseController
       :enabled,
       :name,
       :environment_scope,
+      :managed,
       provider_gcp_attributes: [
         :gcp_project_id,
         :zone,
@@ -171,6 +172,7 @@ class Clusters::ClustersController < Clusters::BaseController
       :enabled,
       :name,
       :environment_scope,
+      :managed,
       platform_kubernetes_attributes: [
         :namespace,
         :api_url,
