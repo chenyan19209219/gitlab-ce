@@ -31,7 +31,7 @@
     - load_pipeline_status(projects)
     - if Feature.enabled?(:vue_projects_list)
       -# Mount vue app
-      %ul.vjs-projects-list{ class: css_classes }
+      %ul.vjs-projects-list{ class: css_classes, data: projects }
     - else
       %ul.projects-list{ class: css_classes }
         - projects.each_with_index do |project, i|
