@@ -886,7 +886,6 @@ pre.light-well {
     @include basic-list-stats;
     display: flex;
     align-items: center;
-    color: $gl-text-color-secondary;
     padding: $gl-padding 0;
 
     @include media-breakpoint-up(lg) {

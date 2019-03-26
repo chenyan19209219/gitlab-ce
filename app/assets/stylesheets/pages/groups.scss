@@ -263,7 +263,6 @@ table.pipeline-project-metrics tr td {
   color: $gl-text-color-secondary;
   font-size: 12px;
   line-height: 20px;
-  margin: -5px 3px;
   padding: 0 $label-padding;
   border: 1px solid $border-color;
   border-radius: $label-border-radius;
@@ -297,39 +296,6 @@ table.pipeline-project-metrics tr td {
 }
 
 .group-list-tree {
-  .avatar-container.content-loading {
-    position: relative;
-
-    > a,
-    > a .avatar {
-      height: 100%;
-      border-radius: 50%;
-    }
-
-    > a {
-      padding: 2px;
-
-      .avatar {
-        border: 2px solid $white-normal;
-
-        &.identicon {
-          line-height: 15px;
-        }
-      }
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      height: 100%;
-      width: 100%;
-      background-color: transparent;
-      border: 2px outset $gl-gray-200;
-      border-radius: 50%;
-      animation: spin-avatar 3s infinite linear;
-    }
-  }
-
   .folder-toggle-wrap {
     font-size: 0;
     flex-shrink: 0;
@@ -342,13 +308,14 @@ table.pipeline-project-metrics tr td {
   .folder-caret,
   .item-type-icon {
     display: inline-block;
+    color: $gl-text-color-secondary;
   }
 
   .folder-caret {
-    width: 15px;
+    width: $gl-font-size-large;
 
     svg {
-      margin-bottom: 1px;
+      margin-bottom: 2px;
     }
   }
 
@@ -420,6 +387,10 @@ table.pipeline-project-metrics tr td {
     &:first-child {
       border-top: 1px solid $white-normal;
     }
+
+    .spinner {
+      margin: $gl-padding-8 18px $gl-padding-8 $gl-padding-8;
+    }
   }
 
   .group-row-contents {
@@ -431,8 +402,13 @@ table.pipeline-project-metrics tr td {
       cursor: pointer;
     }
 
+    .group-text-container,
     .group-text {
       min-width: 0; // allows for truncated text within flex children
+    }
+
+    .group-text {
+      flex-basis: 100%;
     }
 
     .avatar-container {
@@ -441,6 +417,32 @@ table.pipeline-project-metrics tr td {
       > a {
         width: 100%;
         text-decoration: none;
+      }
+    }
+
+    .title {
+      margin-top: -$gl-padding-8; // negative margin required for flex-wrap
+      font-size: $gl-font-size-large;
+      font-weight: $gl-font-weight-bold;
+    }
+
+    @include media-breakpoint-down(md) {
+      .avatar-container {
+        @include avatar-size(40px, 10px);
+        min-height: 40px;
+        min-width: 40px;
+
+        .identicon.s64 {
+          font-size: 16px;
+        }
+      }
+
+      .title {
+        font-size: $gl-font-size;
+      }
+
+      .spinner {
+        margin: 0 14px 0 $gl-padding-4;
       }
     }
 
@@ -480,17 +482,18 @@ table.pipeline-project-metrics tr td {
     }
 
     .controls {
-      flex-shrink: 0;
+      flex-basis: 90px;
 
       > .btn {
-        margin: 0 0 0 $btn-margin-5;
+        margin: 0 $btn-side-margin 0 0;
+        color: $gl-text-color-secondary;
       }
     }
-  }
 
-  @include media-breakpoint-down(xs) {
-    .group-stats {
-      display: none;
+    .metadata {
+      @include media-breakpoint-up(md) {
+        flex-basis: 240px;
+      }
     }
   }
 
