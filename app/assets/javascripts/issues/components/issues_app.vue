@@ -5,7 +5,8 @@ import { mapActions, mapState, mapGetters } from 'vuex';
 import Icon from '~/vue_shared/components/icon.vue';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
-import { getDayDifference } from '../../lib/utils/datetime_utility';
+import { getDayDifference } from '~/lib/utils/datetime_utility';
+import { getParameterValues } from '~/lib/utils/url_utility';
 
 export default {
   components: {
@@ -35,10 +36,12 @@ export default {
   watch: {
     appliedFilters() {
       this.fetchIssues(this.endpoint);
+      this.updateIssueStateTabs();
     },
   },
   mounted() {
     this.fetchIssues(this.endpoint);
+    this.updateIssueStateTabs();
   },
   methods: {
     ...mapActions('issuesList', ['fetchIssues']),
@@ -86,6 +89,17 @@ export default {
     issueCommentsURL(issue) {
       return `${issue.web_url}#notes`;
     },
+    updateIssueStateTabs() {
+      const [ state ] = getParameterValues('state');
+      const activeTabEl = document.querySelector('.issues-state-filters .active');
+
+      if (activeTabEl && !activeTabEl.querySelector(`[data-state="${state}"]`)) {
+        const newActiveTabEl = document.querySelector(`.issues-state-filters [data-state="${state}"]`);
+
+        activeTabEl.classList.remove('active');
+        newActiveTabEl.parentElement.classList.add('active');
+      }
+    }
   },
 };
 </script>
@@ -175,7 +189,7 @@ export default {
           </div>
           <div class="issuable-meta">
             <ul class="controls">
-              <li v-if="issue.closed" class="issuable-status">CLOSED</li>
+              <li v-if="issue.state === 'closed'" class="issuable-status">CLOSED</li>
               <li v-if="issue.assignees.length">
                 <user-avatar-link
                   v-for="(assignee, index) in issue.assignees"
