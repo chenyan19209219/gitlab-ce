@@ -60,7 +60,7 @@
 
 - if !hide_additional_settings
   %section.settings.no-animate{ class: ('expanded' if expanded) }
-    %button.btn.btn-link.js-settings-toggle{ type: 'button', track_label: "#{track_label}", track_event: "click_button", track_property: "toggle_hidden_fields" }
+    %button.btn.btn-link.js-settings-toggle.qa-toggle-additional-project-settings-button{ type: 'button', track_label: "#{track_label}", track_event: "click_button", track_property: "toggle_hidden_fields" }
       = expanded ? _('Hide avatar, license and features settings') : _('Show avatar, license and features settings')
 
     .settings-content

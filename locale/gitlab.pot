@@ -3622,6 +3622,9 @@ msgstr ""
 msgid "Favicon was successfully removed."
 msgstr ""
 
+msgid "Features"
+msgstr ""
+
 msgid "Feb"
 msgstr ""
 

@@ -46,6 +46,7 @@ module QA
         Page::Project::New.perform do |page|
           page.choose_test_namespace
           page.choose_name(@name)
+          page.toggle_additional_project_settings
           page.add_description(@description)
           page.set_visibility('Public')
           page.create_new_project
