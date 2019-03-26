@@ -1,7 +1,7 @@
 <script>
 import dateFormat from 'dateformat';
 import { GlTooltipDirective } from '@gitlab/ui';
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapState, mapGetters } from 'vuex';
 import Icon from '~/vue_shared/components/icon.vue';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -30,7 +30,12 @@ export default {
   },
   computed: {
     ...mapState('issuesList', ['issues', 'loading']),
-    ...mapState('issuesList', ['issues', 'loading']),
+    ...mapGetters('issuesList', ['hasFilters', 'appliedFilters']),
+  },
+  watch: {
+    appliedFilters() {
+      this.fetchIssues(this.endpoint);
+    },
   },
   mounted() {
     this.fetchIssues(this.endpoint);
