@@ -22,6 +22,10 @@ export default {
       type: String,
       required: true,
     },
+    canBulkUpdate: {
+      type: Boolean,
+      required: true,
+    }
   },
   data() {
     return {
@@ -30,7 +34,7 @@ export default {
     };
   },
   computed: {
-    ...mapState('issuesList', ['issues', 'loading']),
+    ...mapState('issuesList', ['issues', 'loading', 'isBulkUpdating']),
     ...mapGetters('issuesList', ['hasFilters', 'appliedFilters']),
   },
   watch: {
@@ -99,7 +103,10 @@ export default {
         activeTabEl.classList.remove('active');
         newActiveTabEl.parentElement.classList.add('active');
       }
-    }
+    },
+    bulkUpdateId(id) {
+      return `selected_issue_${id}`;
+    },
   },
 };
 </script>
@@ -113,6 +120,19 @@ export default {
       :class="issueClasses(issue)"
     >
       <div class="issue-box">
+        <div 
+          v-if="canBulkUpdate"
+          class="issue-check"
+          :class="{hidden: !isBulkUpdating}"
+        >
+          <input
+            type="checkbox" 
+            class="selected-issuable"
+            :id="bulkUpdateId(issue.id)" 
+            :name="bulkUpdateId(issue.id)"
+            :data-id="issue.id"
+          />
+        </div>
         <div class="issuable-info-container">
           <div class="issuable-main-info">
             <div class="issue-title title">

@@ -12,4 +12,7 @@ export default {
   [types.SET_FILTERS](state, value) {
     state.filters = value;
   },
+  [types.SET_BULK_UPDATE_STATE](state, value) {
+    state.isBulkUpdating = value;
+  },
 };

@@ -11,6 +11,10 @@ export const setLoadingState = ({ commit }, value) => {
   commit(types.SET_LOADING_STATE, value);
 };
 
+export const setBulkUpdateState = ({ commit }, value) => {
+  commit(types.SET_BULK_UPDATE_STATE, value);
+};
+
 export const fetchIssues = ({ commit, dispatch, getters }, endpoint) => {
   dispatch('setLoadingState', true);
 

@@ -1,7 +1,7 @@
 - empty_state_path = local_assigns.fetch(:empty_state_path, 'shared/empty_states/issues')
 
 - if Feature.enabled?('issues_vue_component')
-  %div{ id: 'js-issues-list', data: { endpoint: expose_url(api_v4_projects_issues_path(id: @project.id)) } }
+  %div{ id: 'js-issues-list', data: { endpoint: expose_url(api_v4_projects_issues_path(id: @project.id)), 'can-update': @can_bulk_update.to_json } }
 - else
   %ul.content-list.issues-list.issuable-list
     = render partial: "projects/issues/issue", collection: @issues
