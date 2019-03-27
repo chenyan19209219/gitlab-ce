@@ -466,6 +466,17 @@ up in the merge request widget for easy discovery. When the branch or tag is del
 for example after the merge request is merged, the Review App will automatically
 be deleted.
 
+Review apps are deployed using the
+auto-deploy-app(https://gitlab.com/charts/auto-deploy-app) chart with
+Helm. The app will deployed into the Kubernetes
+namespace](../../user/project/clusters/index.md#deployment-variables)
+for the environment.
+
+Since GitLab 11.4, a [local
+Tiller](https://gitlab.com/gitlab-org/gitlab-ce/merge_requests/22036) is
+used. Previous versions of GitLab had a Tiller installed in the project
+namespace.
+
 ### Auto DAST **[ULTIMATE]**
 
 > Introduced in [GitLab Ultimate][ee] 10.4.
@@ -522,6 +533,17 @@ enable them.
 
 You can make use of [environment variables](#environment-variables) to automatically
 scale your pod replicas.
+
+Apps are deployed using the
+auto-deploy-app(https://gitlab.com/charts/auto-deploy-app) chart with
+Helm. The app will deployed into the Kubernetes
+namespace](../../user/project/clusters/index.md#deployment-variables)
+for the environment.
+
+Since GitLab 11.4, a [local
+Tiller](https://gitlab.com/gitlab-org/gitlab-ce/merge_requests/22036) is
+used. Previous versions of GitLab had a Tiller installed in the project
+namespace.
 
 > [Introduced][ce-19507] in GitLab 11.0.
 
