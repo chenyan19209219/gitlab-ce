@@ -7,15 +7,20 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   props: {
-    title: {
+    boundary: {
       type: String,
       required: false,
-      default: '',
+      default: 'viewport',
     },
     placement: {
       type: String,
       required: false,
       default: 'top',
+    },
+    title: {
+      type: String,
+      required: false,
+      default: '',
     },
     truncateTarget: {
       type: [String, Function],
@@ -31,6 +36,8 @@ export default {
   mounted() {
     const target = this.selectTarget();
 
+    // NOTE: The secondary test allows for strings or spans to be passed
+    // directly to this component
     if (
       target &&
       (target.scrollWidth > target.offsetWidth ||
@@ -56,9 +63,8 @@ export default {
 <template>
   <span
     v-if="showTooltip"
-    v-gl-tooltip="{ boundary: 'viewport', placement }"
+    v-gl-tooltip="{ boundary, placement }"
     :title="title"
-    :data-placement="placement"
     class="js-show-tooltip"
   >
     <slot></slot>
