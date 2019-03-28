@@ -12,7 +12,13 @@ class ReactiveCachingWorker
     end
     return unless klass
 
-    klass.find_by(klass.primary_key => id).try(:exclusively_update_reactive_cache!, *args)
+    obj = if klass.reactive_cache_finder && klass.respond_to?(klass.reactive_cache_finder)
+            klass.method(klass.reactive_cache_finder).call(*args)
+          else
+            klass.find_by(klass.primary_key => id)
+          end
+
+    obj.try(:exclusively_update_reactive_cache!, *args) if obj
   end
   # rubocop: enable CodeReuse/ActiveRecord
 end

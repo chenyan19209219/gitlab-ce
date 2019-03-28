@@ -25,9 +25,39 @@
 #      end
 #    end
 #
+#    class Bar
+#      include ReactiveCaching
+#
+#      self.reactive_cache_key = ->() { ["bar", "thing"] }
+#
+#      def find_for_reactive_cache(var1, var2)
+#        # This method will be called by the background worker with "bar1" and
+#        # "bar2" as arguments.
+#        # Return an object of Bar class.
+#      end
+#
+#      def calculate_reactive_cache
+#        # Expensive operation here. The return value of this method is cached
+#      end
+#
+#      def result
+#        with_reactive_cache("bar1", "bar2") do |data|
+#          # ...
+#        end
+#      end
+#    end
+#
 # In this example, the first time `#result` is called, it will return `nil`.
 # However, it will enqueue a background worker to call `#calculate_reactive_cache`
 # and set an initial cache lifetime of ten minutes.
+#
+# The background worker needs to find or generate the object on which
+# `with_reactive_cache` was called.
+# If the class responds to the method named in `reactive_cache_finder`, the
+# method will be called with the arguments passed to `with_reactive_cache`. The
+# method should return the object on which `with_reactive_cache` was called.
+# Otherwise the background worker will use the class name and primary key to get
+# the object using the ActiveRecord find_by method.
 #
 # Each time the background job completes, it stores the return value of
 # `#calculate_reactive_cache`. It is also re-enqueued to run again after
@@ -53,11 +83,15 @@ module ReactiveCaching
     class_attribute :reactive_cache_lifetime
     class_attribute :reactive_cache_refresh_interval
 
+    class_attribute :reactive_cache_finder
+
     # defaults
     self.reactive_cache_lease_timeout = 2.minutes
 
     self.reactive_cache_refresh_interval = 1.minute
     self.reactive_cache_lifetime = 10.minutes
+
+    self.reactive_cache_finder = :find_for_reactive_cache
 
     def calculate_reactive_cache(*args)
       raise NotImplementedError
@@ -107,7 +141,8 @@ module ReactiveCaching
     def refresh_reactive_cache!(*args)
       clear_reactive_cache!(*args)
       keep_alive_reactive_cache!(*args)
-      ReactiveCachingWorker.perform_async(self.class, id, *args)
+      self_id = respond_to?(:id) ? id : nil
+      ReactiveCachingWorker.perform_async(self.class, self_id, *args)
     end
 
     def keep_alive_reactive_cache!(*args)

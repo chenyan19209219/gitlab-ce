@@ -16,14 +16,14 @@ module Gitlab
       json_api_get('query', query: '1')
     end
 
-    def query(query, time: Time.now)
-      get_result('vector') do
+    def query(query, time: Time.now, only_result: true)
+      get_result('vector', only_result) do
         json_api_get('query', query: query, time: time.to_f)
       end
     end
 
-    def query_range(query, start: 8.hours.ago, stop: Time.now)
-      get_result('matrix') do
+    def query_range(query, start: 8.hours.ago, stop: Time.now, only_result: true)
+      get_result('matrix', only_result) do
         json_api_get('query_range',
                      query: query,
                      start: start.to_f,
@@ -88,8 +88,10 @@ module Gitlab
       end
     end
 
-    def get_result(expected_type)
+    def get_result(expected_type, only_result)
       data = yield
+      return data unless only_result
+
       data['result'] if data['resultType'] == expected_type
     end
   end
