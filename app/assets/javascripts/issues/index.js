@@ -8,7 +8,7 @@ export default () => {
 
   if (!el) return null;
 
-  const { endpoint, canUpdate } = el.dataset;
+  const { endpoint, canUpdate, createPath } = el.dataset;
   const canBulkUpdate = canUpdate === 'true';
 
   // Set default filters from URL
@@ -29,6 +29,7 @@ export default () => {
         props: {
           endpoint,
           canBulkUpdate,
+          createPath,
         },
       });
     },

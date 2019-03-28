@@ -9,6 +9,7 @@ import IssuableIndex from '~/issuable_index';
 import { ISSUABLE_INDEX } from '~/pages/projects/constants';
 import { getDayDifference } from '~/lib/utils/datetime_utility';
 import { getParameterValues } from '~/lib/utils/url_utility';
+import IssuesEmptyState from './empty_state.vue';
 
 const issuableIndex = new IssuableIndex(ISSUABLE_INDEX.ISSUE);
 
@@ -17,6 +18,7 @@ export default {
     Icon,
     UserAvatarLink,
     TimeAgoTooltip,
+    IssuesEmptyState,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -30,6 +32,11 @@ export default {
       type: Boolean,
       required: true,
     },
+    createPath: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -40,6 +47,11 @@ export default {
   computed: {
     ...mapState('issuesList', ['issues', 'loading', 'isBulkUpdating']),
     ...mapGetters('issuesList', ['hasFilters', 'appliedFilters']),
+
+    currentState() {
+      const [state] = getParameterValues('state');
+      return state || 'opened';
+    },
   },
   watch: {
     appliedFilters() {
@@ -102,14 +114,12 @@ export default {
       return `${issue.web_url}#notes`;
     },
     updateIssueStateTabs() {
-      const [state] = getParameterValues('state');
-      const currentStatus = state || 'opened';
       const activeTabEl = document.querySelector('.issues-state-filters .active');
       const newActiveTabEl = document.querySelector(
-        `.issues-state-filters [data-state="${currentStatus}"]`,
+        `.issues-state-filters [data-state="${this.currentState}"]`,
       );
 
-      if (activeTabEl && !activeTabEl.querySelector(`[data-state="${currentStatus}"]`)) {
+      if (activeTabEl && !activeTabEl.querySelector(`[data-state="${this.currentState}"]`)) {
         activeTabEl.classList.remove('active');
         newActiveTabEl.parentElement.classList.add('active');
       } else {
@@ -127,7 +137,7 @@ export default {
 };
 </script>
 <template>
-  <ul v-if="issues" class="content-list issues-list issuable-list">
+  <ul v-if="issues && issues.length > 0" class="content-list issues-list issuable-list">
     <li
       v-for="issue in issues"
       :id="`issue_${issue.id}`"
@@ -299,4 +309,10 @@ export default {
       </div>
     </li>
   </ul>
+  <issues-empty-state
+    v-else
+    :has-filters="hasFilters"
+    :state="currentState"
+    :button-path="createPath"
+  />
 </template>
