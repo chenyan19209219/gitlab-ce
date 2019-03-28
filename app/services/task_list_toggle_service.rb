@@ -8,10 +8,11 @@
 class TaskListToggleService
   attr_reader :updated_markdown, :updated_markdown_html
 
-  def initialize(markdown, markdown_html, line_source:, line_number:, toggle_as_checked:)
+  def initialize(markdown, markdown_html, line_source:, line_number:, toggle_as_checked:, index:)
     @markdown, @markdown_html  = markdown, markdown_html
     @line_source, @line_number = line_source, line_number
     @toggle_as_checked         = toggle_as_checked
+    @index                     = index
 
     @updated_markdown, @updated_markdown_html = nil
   end
@@ -26,6 +27,7 @@ class TaskListToggleService
 
   attr_reader :markdown, :markdown_html, :toggle_as_checked
   attr_reader :line_source, :line_number
+  attr_reader :index
 
   def toggle_markdown
     source_lines      = markdown.split("\n")
@@ -64,9 +66,12 @@ class TaskListToggleService
     @updated_markdown_html = html.to_html
   end
 
-  # When using CommonMark, we should be able to use the embedded `sourcepos` attribute to
-  # target the exact line in the DOM.
+  # At the moment, we can't use the CommonMark `sourcepos`
+  #   html.css(".task-list-item[data-sourcepos^='#{line_number}:'] input.task-list-item-checkbox").first
+  # because special tags that change the line numbering (like the GitLab blockquote) will
+  # cause it to break.
+  # Use the indexed checkbox instead to target the exact line in the DOM.
   def get_html_checkbox(html)
-    html.css(".task-list-item[data-sourcepos^='#{line_number}:'] input.task-list-item-checkbox").first
+    html.css('.task-list-item-checkbox')[index - 1]
   end
 end

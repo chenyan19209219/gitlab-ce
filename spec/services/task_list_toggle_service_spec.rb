@@ -52,7 +52,7 @@ describe TaskListToggleService do
   it 'checks Task 1' do
     toggler = described_class.new(markdown, markdown_html,
                                   toggle_as_checked: true,
-                                  line_source: '* [ ] Task 1', line_number: 1)
+                                  line_source: '* [ ] Task 1', line_number: 1, index: 1)
 
     expect(toggler.execute).to be_truthy
     expect(toggler.updated_markdown.lines[0]).to eq "* [x] Task 1\n"
@@ -62,7 +62,7 @@ describe TaskListToggleService do
   it 'unchecks Item 1' do
     toggler = described_class.new(markdown, markdown_html,
                                   toggle_as_checked: false,
-                                  line_source: '1. [X] Item 1', line_number: 6)
+                                  line_source: '1. [X] Item 1', line_number: 6, index: 3)
 
     expect(toggler.execute).to be_truthy
     expect(toggler.updated_markdown.lines[5]).to eq "1. [ ] Item 1\n"
@@ -72,7 +72,7 @@ describe TaskListToggleService do
   it 'checks task in loose list' do
     toggler = described_class.new(markdown, markdown_html,
                                   toggle_as_checked: true,
-                                  line_source: '- [ ] loose list', line_number: 9)
+                                  line_source: '- [ ] loose list', line_number: 9, index: 5)
 
     expect(toggler.execute).to be_truthy
     expect(toggler.updated_markdown.lines[8]).to eq "- [x] loose list\n"
@@ -82,7 +82,7 @@ describe TaskListToggleService do
   it 'returns false if line_source does not match the text' do
     toggler = described_class.new(markdown, markdown_html,
                                   toggle_as_checked: false,
-                                  line_source: '* [x] Task Added', line_number: 2)
+                                  line_source: '* [x] Task Added', line_number: 2, index: 2)
 
     expect(toggler.execute).to be_falsey
   end
@@ -91,7 +91,7 @@ describe TaskListToggleService do
     rn_markdown = markdown.gsub("\n", "\r\n")
     toggler = described_class.new(rn_markdown, markdown_html,
                                   toggle_as_checked: true,
-                                  line_source: '* [ ] Task 1', line_number: 1)
+                                  line_source: '* [ ] Task 1', line_number: 1, index: 1)
 
     expect(toggler.execute).to be_truthy
     expect(toggler.updated_markdown.lines[0]).to eq "* [x] Task 1\r\n"
@@ -101,7 +101,7 @@ describe TaskListToggleService do
   it 'returns false if markdown is nil' do
     toggler = described_class.new(nil, markdown_html,
                                   toggle_as_checked: false,
-                                  line_source: '* [x] Task Added', line_number: 2)
+                                  line_source: '* [x] Task Added', line_number: 2, index: 2)
 
     expect(toggler.execute).to be_falsey
   end
@@ -109,8 +109,29 @@ describe TaskListToggleService do
   it 'returns false if markdown_html is nil' do
     toggler = described_class.new(markdown, nil,
                                   toggle_as_checked: false,
-                                  line_source: '* [x] Task Added', line_number: 2)
+                                  line_source: '* [x] Task Added', line_number: 2, index: 2)
 
     expect(toggler.execute).to be_falsey
+  end
+
+  it 'properly handles a GitLab blockquote' do
+    markdown =
+      <<-EOT.strip_heredoc
+      >>>
+      gitlab blockquote
+      >>>
+
+      * [ ] Task 1
+      * [x] Task 2
+    EOT
+
+    markdown_html = Banzai::Pipeline::FullPipeline.call(markdown, project: nil)[:output].to_html
+    toggler = described_class.new(markdown, markdown_html,
+                                  toggle_as_checked: true,
+                                  line_source: '* [ ] Task 1', line_number: 5, index: 1)
+
+    expect(toggler.execute).to be_truthy
+    expect(toggler.updated_markdown.lines[4]).to eq "* [x] Task 1\n"
+    expect(toggler.updated_markdown_html).to include('disabled checked> Task 1')
   end
 end
