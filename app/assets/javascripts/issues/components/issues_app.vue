@@ -5,8 +5,12 @@ import { mapActions, mapState, mapGetters } from 'vuex';
 import Icon from '~/vue_shared/components/icon.vue';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import IssuableIndex from '~/issuable_index';
+import { ISSUABLE_INDEX } from '~/pages/projects/constants';
 import { getDayDifference } from '~/lib/utils/datetime_utility';
 import { getParameterValues } from '~/lib/utils/url_utility';
+
+const issuableIndex = new IssuableIndex(ISSUABLE_INDEX.ISSUE);
 
 export default {
   components: {
@@ -25,7 +29,7 @@ export default {
     canBulkUpdate: {
       type: Boolean,
       required: true,
-    }
+    },
   },
   data() {
     return {
@@ -42,10 +46,14 @@ export default {
       this.fetchIssues(this.endpoint);
       this.updateIssueStateTabs();
     },
+    issues() {
+      this.setupExternalEvents();
+    },
   },
   mounted() {
     this.fetchIssues(this.endpoint);
     this.updateIssueStateTabs();
+    this.setupExternalEvents();
   },
   methods: {
     ...mapActions('issuesList', ['fetchIssues']),
@@ -94,18 +102,26 @@ export default {
       return `${issue.web_url}#notes`;
     },
     updateIssueStateTabs() {
-      const [ state ] = getParameterValues('state');
+      const [state] = getParameterValues('state');
+      const currentStatus = state || 'opened';
       const activeTabEl = document.querySelector('.issues-state-filters .active');
+      const newActiveTabEl = document.querySelector(
+        `.issues-state-filters [data-state="${currentStatus}"]`,
+      );
 
-      if (activeTabEl && !activeTabEl.querySelector(`[data-state="${state}"]`)) {
-        const newActiveTabEl = document.querySelector(`.issues-state-filters [data-state="${state}"]`);
-
+      if (activeTabEl && !activeTabEl.querySelector(`[data-state="${currentStatus}"]`)) {
         activeTabEl.classList.remove('active');
+        newActiveTabEl.parentElement.classList.add('active');
+      } else {
         newActiveTabEl.parentElement.classList.add('active');
       }
     },
     bulkUpdateId(id) {
       return `selected_issue_${id}`;
+    },
+    setupExternalEvents() {
+      issuableIndex.bulkUpdateSidebar.initDomElements();
+      issuableIndex.bulkUpdateSidebar.bindEvents();
     },
   },
 };
@@ -114,21 +130,18 @@ export default {
   <ul v-if="issues" class="content-list issues-list issuable-list">
     <li
       v-for="issue in issues"
-      :id="issues.id"
+      :id="`issue_${issue.id}`"
       :key="issue.id"
       :url="issue.web_url"
       :class="issueClasses(issue)"
+      data-labels="[]"
     >
       <div class="issue-box">
-        <div 
-          v-if="canBulkUpdate"
-          class="issue-check"
-          :class="{hidden: !isBulkUpdating}"
-        >
+        <div v-if="canBulkUpdate" class="issue-check" :class="{ hidden: !isBulkUpdating }">
           <input
-            type="checkbox" 
+            :id="bulkUpdateId(issue.id)"
+            type="checkbox"
             class="selected-issuable"
-            :id="bulkUpdateId(issue.id)" 
             :name="bulkUpdateId(issue.id)"
             :data-id="issue.id"
           />
