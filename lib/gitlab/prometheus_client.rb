@@ -16,14 +16,27 @@ module Gitlab
       json_api_get('query', query: '1')
     end
 
-    def query(query, time: Time.now, only_result: true)
-      get_result('vector', only_result) do
+    def proxy(type, args)
+      path = api_path(type)
+      get(path, args)
+    rescue RestClient::ExceptionWithResponse => ex
+      if ex.response
+        ex.response
+      else
+        raise PrometheusClient::Error, "Network connection error"
+      end
+    rescue RestClient::Exception
+      raise PrometheusClient::Error, "Network connection error"
+    end
+
+    def query(query, time: Time.now)
+      get_result('vector') do
         json_api_get('query', query: query, time: time.to_f)
       end
     end
 
-    def query_range(query, start: 8.hours.ago, stop: Time.now, only_result: true)
-      get_result('matrix', only_result) do
+    def query_range(query, start: 8.hours.ago, stop: Time.now)
+      get_result('matrix') do
         json_api_get('query_range',
                      query: query,
                      start: start.to_f,
@@ -42,22 +55,16 @@ module Gitlab
 
     private
 
-    def json_api_get(type, args = {})
-      path = ['api', 'v1', type].join('/')
-      get(path, args)
-    rescue JSON::ParserError
-      raise PrometheusClient::Error, 'Parsing response failed'
-    rescue Errno::ECONNREFUSED
-      raise PrometheusClient::Error, 'Connection refused'
+    def api_path(type)
+      ['api', 'v1', type].join('/')
     end
 
-    def get(path, args)
-      response = rest_client[path].get(params: args)
+    def json_api_get(type, args = {})
+      path = api_path(type)
+      response = get(path, args)
       handle_response(response)
-    rescue SocketError
-      raise PrometheusClient::Error, "Can't connect to #{rest_client.url}"
-    rescue OpenSSL::SSL::SSLError
-      raise PrometheusClient::Error, "#{rest_client.url} contains invalid SSL data"
+    rescue JSON::ParserError
+      raise PrometheusClient::Error, 'Parsing response failed'
     rescue RestClient::ExceptionWithResponse => ex
       if ex.response
         handle_exception_response(ex.response)
@@ -66,6 +73,17 @@ module Gitlab
       end
     rescue RestClient::Exception
       raise PrometheusClient::Error, "Network connection error"
+    end
+
+    def get(path, args)
+      response = rest_client[path].get(params: args)
+      response
+    rescue SocketError
+      raise PrometheusClient::Error, "Can't connect to #{rest_client.url}"
+    rescue OpenSSL::SSL::SSLError
+      raise PrometheusClient::Error, "#{rest_client.url} contains invalid SSL data"
+    rescue Errno::ECONNREFUSED
+      raise PrometheusClient::Error, 'Connection refused'
     end
 
     def handle_response(response)
@@ -86,12 +104,12 @@ module Gitlab
       else
         raise PrometheusClient::Error, "#{response.code} - #{response.body}"
       end
+    rescue JSON::ParserError
+      raise PrometheusClient::Error, 'Parsing response failed'
     end
 
-    def get_result(expected_type, only_result)
+    def get_result(expected_type)
       data = yield
-      return data unless only_result
-
       data['result'] if data['resultType'] == expected_type
     end
   end
