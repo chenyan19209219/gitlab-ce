@@ -6748,6 +6748,9 @@ msgstr ""
 msgid "Profiles|Disconnect"
 msgstr ""
 
+msgid "Profiles|Display time in 24 hour format"
+msgstr ""
+
 msgid "Profiles|Do not show on profile"
 msgstr ""
 
@@ -6829,6 +6832,12 @@ msgstr ""
 msgid "Profiles|This information will appear on your profile"
 msgstr ""
 
+msgid "Profiles|This settings will update how dates and times are displayed for you."
+msgstr ""
+
+msgid "Profiles|Time settings"
+msgstr ""
+
 msgid "Profiles|Two-Factor Authentication"
 msgstr ""
 
@@ -6848,6 +6857,9 @@ msgid "Profiles|Upload new avatar"
 msgstr ""
 
 msgid "Profiles|Use a private email - %{email}"
+msgstr ""
+
+msgid "Profiles|Use relative times"
 msgstr ""
 
 msgid "Profiles|Username change failed - %{message}"

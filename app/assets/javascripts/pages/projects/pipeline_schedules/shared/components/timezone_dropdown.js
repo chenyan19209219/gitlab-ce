@@ -1,3 +1,4 @@
+import $ from 'jquery';
 const defaultTimezone = 'UTC';
 
 export const formatUtcOffset = offset => {
