@@ -1,18 +1,23 @@
 # frozen_string_literal: true
 
 module Prometheus
-  class ProxyService
+  class ProxyService < BaseService
     include ReactiveCaching
 
-    self.reactive_cache_key = ->(service) { service.cache_key }
+    # self.reactive_cache_key = ->(service) { service.cache_key }
     self.reactive_cache_lease_timeout = 30.seconds
     self.reactive_cache_refresh_interval = 30.seconds
     self.reactive_cache_lifetime = 1.minute
     self.reactive_cache_worker_finder = ->(_id, *args) { from_cache(*args) }
 
-    attr_accessor :prometheus_owner, :path, :params
+    attr_accessor :prometheus_owner, :method, :path, :params
 
-    def self.from_cache(prometheus_owner_class_name, prometheus_owner_id, path, params)
+    PROXY_SUPPORT = {
+      'query' => 'GET',
+      'query_range' => 'GET'
+    }.freeze
+
+    def self.from_cache(prometheus_owner_class_name, prometheus_owner_id, method, path, params)
       prometheus_owner_class = begin
         prometheus_owner_class_name.constantize
       rescue NameError
@@ -22,15 +27,16 @@ module Prometheus
 
       prometheus_owner = prometheus_owner_class.find(prometheus_owner_id)
 
-      new(prometheus_owner, path, params)
+      new(prometheus_owner, method, path, params)
     end
 
     # prometheus_owner can be any model which responds to .prometheus_adapter
-    # like environment.
-    def initialize(prometheus_owner, path, params)
+    # like Environment.
+    def initialize(prometheus_owner, method, path, params)
       @prometheus_owner = prometheus_owner
       @path = path
       @params = params
+      @method = method
     end
 
     def id
@@ -38,52 +44,60 @@ module Prometheus
     end
 
     def execute
-      return no_prometheus_response unless prometheus_adapter.can_query?
+      return no_prometheus_response unless can_query?
+      return cannot_proxy_response unless can_proxy?(@method, @path)
 
       with_reactive_cache(*cache_key) do |result|
         result
       end
     end
 
-    def cache_key
-      [@prometheus_owner.class.name, @prometheus_owner.id, @path, @params.stringify_keys]
+    def calculate_reactive_cache(prometheus_owner_class_name, prometheus_owner_id, method, path, params)
+      @prometheus_owner = prometheus_owner_from_class(prometheus_owner_class_name, prometheus_owner_id)
+
+      return no_prometheus_response unless can_query?
+      return cannot_proxy_response unless can_proxy?(method, path)
+
+      response = prometheus_client_wrapper.proxy(path, params)
+
+      { http_status: response.code, body: response.body }
+
+    rescue Gitlab::PrometheusClient::Error => err
+      error(err.message, :service_unavailable)
     end
 
     private
 
-    def no_prometheus_response
-      { status: 'error', message: 'No prometheus server found' }
+    def cache_key
+      [@prometheus_owner.class.name, @prometheus_owner.id, @method, @path, @params.stringify_keys]
     end
 
-    def calculate_reactive_cache(prometheus_owner_class_name, prometheus_owner_id, path, params)
-      @prometheus_owner = Kernel.const_get(prometheus_owner_class_name).find(prometheus_owner_id)
+    def no_prometheus_response
+      error('No prometheus server found', :service_unavailable)
+    end
 
-      return no_prometheus_response unless prometheus_adapter.can_query?
+    def cannot_proxy_response
+      error('Proxy support for this API is not available currently')
+    end
 
-      case path
-      when 'query'
-        {
-          status: 'success',
-          data: prometheus_client_wrapper.query(params['query'], time: params['time'] || Time.now, only_result: false)
-        }
-      when 'query_range'
-        {
-          status: 'success',
-          data: prometheus_client_wrapper.query_range(query, start: params['start'], stop: params['end'], only_result: false)
-        }
-      else
-        { status: 'error', message: 'Not supported' }
-      end
-    rescue Gitlab::PrometheusClient::Error => err
-      { status: 'error', message: err.message }
+    def prometheus_owner_from_class(prometheus_owner_class_name, prometheus_owner_id)
+      Kernel.const_get(prometheus_owner_class_name).find(prometheus_owner_id)
     end
 
     def prometheus_adapter
-      @prometheus_owner.prometheus_adapter
+      @prometheus_adapter ||= @prometheus_owner.prometheus_adapter
     end
 
     def prometheus_client_wrapper
-      prometheus_adapter.prometheus_client_wrapper
+      prometheus_adapter&.prometheus_client_wrapper
+    end
+
+    def can_query?
+      prometheus_adapter&.can_query?
+    end
+
+    def can_proxy?(method, path)
+      PROXY_SUPPORT[path] == method
     end
   end
 end

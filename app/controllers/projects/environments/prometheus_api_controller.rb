@@ -1,29 +1,31 @@
 # frozen_string_literal: true
 
-class Projects::PrometheusAPIController < Projects::ApplicationController
+class Projects::Environments::PrometheusApiController < Projects::ApplicationController
   before_action :environment
 
   # TODO: This should probably be limited to reporters and above. Introduce new policy
   # called read_prometheus (like read_environment)?
 
-  def prometheus
-    result = Prometheus::ProxyService.new(environment, params[:proxy_path], params).execute
+  # TODO: filter params
 
-    if result[:status] == 'success'
-      render json: {
-        status: result[:status],
-        warnings: result[:warnings],
-        data: result[:data]
+  def proxy
+    result = Prometheus::ProxyService.new(environment, request.method, params[:proxy_path], params).execute
+
+    if result.nil?
+      render status: :accepted, json: {
+        status: 'processing',
+        message: 'Not ready yet. Try again later.'
       }
+      return
+    end
+
+    if result[:message]
+      render status: result[:http_status] || :bad_request, json: {
+          status: result[:status],
+          message: result[:message]
+        }
     else
-      render json: {
-        status: result[:status],
-        data: result[:data],
-        errorType: result[:errorType],
-        error: result[:error],
-        warnings: result[:warnings],
-        message: result[:message]
-      }
+      render status: result[:http_status], json: result[:body]
     end
   end
 
