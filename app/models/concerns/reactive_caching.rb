@@ -138,10 +138,13 @@ module ReactiveCaching
 
     private
 
+    def self_id
+      respond_to?(:id) ? id : nil
+    end
+
     def refresh_reactive_cache!(*args)
       clear_reactive_cache!(*args)
       keep_alive_reactive_cache!(*args)
-      self_id = respond_to?(:id) ? id : nil
       ReactiveCachingWorker.perform_async(self.class, self_id, *args)
     end
 
@@ -175,7 +178,7 @@ module ReactiveCaching
     def enqueuing_update(*args)
       yield
     ensure
-      ReactiveCachingWorker.perform_in(self.class.reactive_cache_refresh_interval, self.class, id, *args)
+      ReactiveCachingWorker.perform_in(self.class.reactive_cache_refresh_interval, self.class, self_id, *args)
     end
   end
 end
