@@ -8,22 +8,21 @@ module Prometheus
     self.reactive_cache_lease_timeout = 30.seconds
     self.reactive_cache_refresh_interval = 30.seconds
     self.reactive_cache_lifetime = 1.minute
+    self.reactive_cache_worker_finder = ->(_id, *args) { from_cache(*args) }
 
     attr_accessor :prometheus_owner, :path, :params
 
-    class << self
-      def find_for_reactive_cache(prometheus_owner_class_name, prometheus_owner_id, path, params)
-        prometheus_owner_class = begin
-          prometheus_owner_class_name.constantize
-        rescue NameError
-          nil
-        end
-        return unless prometheus_owner_class
-
-        prometheus_owner = prometheus_owner_class.find(prometheus_owner_id)
-
-        self.new(prometheus_owner, path, params)
+    def self.from_cache(prometheus_owner_class_name, prometheus_owner_id, path, params)
+      prometheus_owner_class = begin
+        prometheus_owner_class_name.constantize
+      rescue NameError
+        nil
       end
+      return unless prometheus_owner_class
+
+      prometheus_owner = prometheus_owner_class.find(prometheus_owner_id)
+
+      new(prometheus_owner, path, params)
     end
 
     # prometheus_owner can be any model which responds to .prometheus_adapter
@@ -32,6 +31,10 @@ module Prometheus
       @prometheus_owner = prometheus_owner
       @path = path
       @params = params
+    end
+
+    def id
+      nil
     end
 
     def execute

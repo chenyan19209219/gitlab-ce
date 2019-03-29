@@ -3,7 +3,6 @@
 class ReactiveCachingWorker
   include ApplicationWorker
 
-  # rubocop: disable CodeReuse/ActiveRecord
   def perform(class_name, id, *args)
     klass = begin
       class_name.constantize
@@ -12,13 +11,9 @@ class ReactiveCachingWorker
     end
     return unless klass
 
-    obj = if klass.reactive_cache_finder && klass.respond_to?(klass.reactive_cache_finder)
-            klass.method(klass.reactive_cache_finder).call(*args)
-          else
-            klass.find_by(klass.primary_key => id)
-          end
-
-    obj.try(:exclusively_update_reactive_cache!, *args) if obj
+    klass
+      .reactive_cache_worker_finder
+      .call(id, *args)
+      .try(:exclusively_update_reactive_cache!, *args)
   end
-  # rubocop: enable CodeReuse/ActiveRecord
 end
