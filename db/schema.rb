@@ -2223,9 +2223,9 @@ ActiveRecord::Schema.define(version: 20190408163745) do
     t.integer "first_day_of_week"
     t.string "issues_sort"
     t.string "merge_requests_sort"
-    t.string "timezone", default: "UTC", null: false
-    t.boolean "time_display_relative", default: false, null: false
-    t.boolean "time_format_in_24h", default: false, null: false
+    t.string "timezone"
+    t.boolean "time_display_relative"
+    t.boolean "time_format_in_24h"
     t.index ["user_id"], name: "index_user_preferences_on_user_id", unique: true, using: :btree
   end
 

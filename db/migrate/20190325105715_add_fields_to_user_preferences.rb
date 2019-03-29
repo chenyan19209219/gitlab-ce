@@ -11,9 +11,9 @@ class AddFieldsToUserPreferences < ActiveRecord::Migration[5.0]
   DOWNTIME = false
 
   def up
-    add_column_with_default(:user_preferences, :timezone, :string, default: 'UTC')
-    add_column_with_default(:user_preferences, :time_display_relative, :boolean, default: false)
-    add_column_with_default(:user_preferences, :time_format_in_24h, :boolean, default: false)
+    add_column(:user_preferences, :timezone, :string)
+    add_column(:user_preferences, :time_display_relative, :boolean)
+    add_column(:user_preferences, :time_format_in_24h, :boolean)
   end
 
   def down
