@@ -64,7 +64,7 @@ module QA
           click_link 'GitHub'
         end
 
-        def toggle_additional_project_settings
+        def click_toggle_additional_project_settings_button
           click_element :toggle_additional_project_settings_button
         end
       end
