@@ -19,13 +19,13 @@ class Projects::Environments::PrometheusApiController < Projects::ApplicationCon
       return
     end
 
-    if result[:message]
+    if result[:status] == :success
+      render status: result[:http_status], json: result[:body]
+    else
       render status: result[:http_status] || :bad_request, json: {
           status: result[:status],
           message: result[:message]
         }
-    else
-      render status: result[:http_status], json: result[:body]
     end
   end
 

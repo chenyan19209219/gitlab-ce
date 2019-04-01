@@ -4,7 +4,7 @@ module Prometheus
   class ProxyService < BaseService
     include ReactiveCaching
 
-    # self.reactive_cache_key = ->(service) { service.cache_key }
+    self.reactive_cache_key = ->(service) { service.cache_key }
     self.reactive_cache_lease_timeout = 30.seconds
     self.reactive_cache_refresh_interval = 30.seconds
     self.reactive_cache_lifetime = 1.minute
@@ -44,8 +44,8 @@ module Prometheus
     end
 
     def execute
-      return no_prometheus_response unless can_query?
       return cannot_proxy_response unless can_proxy?(@method, @path)
+      return no_prometheus_response unless can_query?
 
       with_reactive_cache(*cache_key) do |result|
         result
@@ -55,22 +55,22 @@ module Prometheus
     def calculate_reactive_cache(prometheus_owner_class_name, prometheus_owner_id, method, path, params)
       @prometheus_owner = prometheus_owner_from_class(prometheus_owner_class_name, prometheus_owner_id)
 
-      return no_prometheus_response unless can_query?
       return cannot_proxy_response unless can_proxy?(method, path)
+      return no_prometheus_response unless can_query?
 
       response = prometheus_client_wrapper.proxy(path, params)
 
-      { http_status: response.code, body: response.body }
+      success({ http_status: response.code, body: response.body })
 
     rescue Gitlab::PrometheusClient::Error => err
       error(err.message, :service_unavailable)
     end
 
-    private
-
     def cache_key
       [@prometheus_owner.class.name, @prometheus_owner.id, @method, @path, @params.stringify_keys]
     end
+
+    private
 
     def no_prometheus_response
       error('No prometheus server found', :service_unavailable)
