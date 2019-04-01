@@ -5,11 +5,13 @@ import { ISSUABLE_INDEX } from '~/pages/projects/constants';
 import { getParameterValues } from '~/lib/utils/url_utility';
 import Issue from './issue.vue';
 import IssuesEmptyState from './empty_state.vue';
+import IssuesLoadingState from './loading_state.vue';
 
 const issuableIndex = new IssuableIndex(ISSUABLE_INDEX.ISSUE);
 
 export default {
   components: {
+    IssuesLoadingState,
     IssuesEmptyState,
     Issue,
   },
@@ -32,9 +34,8 @@ export default {
     ...mapState('issuesList', ['issues', 'loading', 'isBulkUpdating']),
     ...mapGetters('issuesList', ['hasFilters', 'appliedFilters']),
 
-    currentState() {
-      const [state] = getParameterValues('state');
-      return state || 'opened';
+    hasIssues() {
+      return !this.loading && this.issues && this.issues.length > 0;
     },
   },
   watch: {
@@ -56,13 +57,17 @@ export default {
   },
   methods: {
     ...mapActions('issuesList', ['fetchIssues']),
+    getCurrentState() {
+      const [state] = getParameterValues('state');
+      return state || 'opened';
+    },
     updateIssueStateTabs() {
       const activeTabEl = document.querySelector('.issues-state-filters .active');
       const newActiveTabEl = document.querySelector(
-        `.issues-state-filters [data-state="${this.currentState}"]`,
+        `.issues-state-filters [data-state="${this.getCurrentState()}"]`,
       );
 
-      if (activeTabEl && !activeTabEl.querySelector(`[data-state="${this.currentState}"]`)) {
+      if (activeTabEl && !activeTabEl.querySelector(`[data-state="${this.getCurrentState()}"]`)) {
         activeTabEl.classList.remove('active');
         newActiveTabEl.parentElement.classList.add('active');
       } else {
@@ -77,7 +82,7 @@ export default {
 };
 </script>
 <template>
-  <ul v-if="issues && issues.length > 0" class="content-list issues-list issuable-list">
+  <ul v-if="hasIssues" class="content-list issues-list issuable-list">
     <issue
       v-for="issue in issues"
       :key="issue.id"
@@ -86,10 +91,11 @@ export default {
       :can-bulk-update="canBulkUpdate"
     />
   </ul>
+  <IssuesLoadingState v-else-if="loading" />
   <issues-empty-state
     v-else
     :has-filters="hasFilters"
-    :state="currentState"
+    :state="getCurrentState()"
     :button-path="createPath"
   />
 </template>
