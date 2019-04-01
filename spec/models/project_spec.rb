@@ -4760,7 +4760,7 @@ describe Project do
   end
 
   describe '#leave_pool_repository' do
-    let(:pool) { create(:pool_repository) }
+    let(:pool) { create(:pool_repository, :ready) }
     let(:project) { create(:project, :repository, pool_repository: pool) }
 
     it 'removes the membership' do
