@@ -1,15 +1,18 @@
 # frozen_string_literal: true
 
 class Projects::Environments::PrometheusApiController < Projects::ApplicationController
+  before_action :authorize_read_prometheus!
   before_action :environment
 
-  # TODO: This should probably be limited to reporters and above. Introduce new policy
-  # called read_prometheus (like read_environment)?
-
-  # TODO: filter params
-
   def proxy
-    result = Prometheus::ProxyService.new(environment, request.method, params[:proxy_path], params).execute
+    permitted = permit_params
+
+    result = Prometheus::ProxyService.new(
+      environment,
+      request.method,
+      permitted[:proxy_path],
+      permitted.except(:proxy_path) # rubocop: disable CodeReuse/ActiveRecord
+    ).execute
 
     if result.nil?
       render status: :accepted, json: {
@@ -30,6 +33,13 @@ class Projects::Environments::PrometheusApiController < Projects::ApplicationCon
   end
 
   private
+
+  def permit_params
+    params.permit([
+      :proxy_path, :query, :time, :timeout, :start, :end, :step, :match,
+      :match_target, :metric, :limit
+    ])
+  end
 
   def environment
     @environment ||= project.environments.find(params[:id])
