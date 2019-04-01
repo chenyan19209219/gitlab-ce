@@ -94,7 +94,7 @@ module ReactiveCaching
     self.reactive_cache_refresh_interval = 1.minute
     self.reactive_cache_lifetime = 10.minutes
 
-    self.reactive_cache_worker_finder = ->(id) do
+    self.reactive_cache_worker_finder = ->(id, *_args) do
       find_by(primary_key => id)
     end
 
