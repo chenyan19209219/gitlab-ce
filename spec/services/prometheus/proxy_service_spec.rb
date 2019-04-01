@@ -4,9 +4,9 @@ require 'spec_helper'
 
 describe Prometheus::ProxyService do
   include ReactiveCachingHelpers
-  include PrometheusHelpers
 
-  let(:environment) { create(:environment) }
+  set(:project) { create(:project) }
+  set(:environment) { create(:environment, project: project) }
 
   describe '#execute' do
     let(:prometheus_adapter) { instance_double(PrometheusService) }
@@ -53,8 +53,7 @@ describe Prometheus::ProxyService do
       end
     end
 
-    context 'When cached' do
-      # TODO: fix this spec
+    context 'When cached', :use_clean_rails_memory_store_caching do
       let(:return_value) { { 'http_status' => 200, 'body' => 'body' } }
       let(:opts) { [environment.class.name, environment.id, 'GET', 'query', { 'query' => '1' }] }
 
@@ -69,14 +68,30 @@ describe Prometheus::ProxyService do
       it 'returns cached value' do
         result = subject.execute
 
-        expect(subject).not_to receive(:calculate_reactive_cache)
         expect(result[:http_status]).to eq(return_value[:http_status])
         expect(result[:body]).to eq(return_value[:body])
       end
     end
 
     context 'When not cached' do
-      # TODO
+      let(:return_value) { { 'http_status' => 200, 'body' => 'body' } }
+      let(:opts) { [environment.class.name, environment.id, 'GET', 'query', { 'query' => '1' }] }
+
+      before do
+        allow(environment).to receive(:prometheus_adapter)
+          .and_return(prometheus_adapter)
+        allow(prometheus_adapter).to receive(:can_query?).and_return(true)
+      end
+
+      it 'returns nil' do
+        expect(ReactiveCachingWorker)
+          .to receive(:perform_async)
+          .with(subject.class, subject.id, *opts)
+
+        result = subject.execute
+
+        expect(result).to eq(nil)
+      end
     end
 
     context 'Call prometheus api' do
