@@ -8,11 +8,13 @@ globals:
 plugins:
   - import
   - html
+  - vanilla-i18n
 settings:
   import/resolver:
     webpack:
       config: './config/webpack.config.js'
 rules:
+  vanilla-i18n/detect-non-i18n-string: error
   import/no-commonjs: error
   no-underscore-dangle:
     - error
@@ -31,3 +33,9 @@ rules:
   vue/no-use-v-if-with-v-for: off
   vue/no-v-html: off
   vue/use-v-on-exact: off
+overrides:
+  files: 
+    - '*.vue'
+    - 'spec/**'
+  rules: 
+    vanilla-i18n/detect-non-i18n-string: off
