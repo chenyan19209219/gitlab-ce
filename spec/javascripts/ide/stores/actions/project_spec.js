@@ -2,7 +2,6 @@ import MockAdapter from 'axios-mock-adapter';
 import axios from '~/lib/utils/axios_utils';
 import {
   refreshLastCommitData,
-  showBranchNotFoundError,
   createNewBranchFromDefault,
   getBranchData,
   showEmptyState,
@@ -88,29 +87,6 @@ describe('IDE store project actions', () => {
         ],
         // action
         [],
-        done,
-      );
-    });
-  });
-
-  describe('showBranchNotFoundError', () => {
-    it('dispatches setErrorMessage', done => {
-      testAction(
-        showBranchNotFoundError,
-        'master',
-        null,
-        [],
-        [
-          {
-            type: 'setErrorMessage',
-            payload: {
-              text: "Branch <strong>master</strong> was not found in this project's repository.",
-              action: jasmine.any(Function),
-              actionText: 'Create branch',
-              actionPayload: 'master',
-            },
-          },
-        ],
         done,
       );
     });

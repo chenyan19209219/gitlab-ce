@@ -2597,6 +2597,9 @@ msgstr ""
 msgid "Create a new branch"
 msgstr ""
 
+msgid "Create a new file as there are no files yet. Afterwards, you'll be able to commit your changes."
+msgstr ""
+
 msgid "Create a new issue"
 msgstr ""
 
@@ -7349,6 +7352,9 @@ msgstr ""
 msgid "Select Archive Format"
 msgstr ""
 
+msgid "Select a file from the left sidebar to begin editing. Afterwards, you'll be able to commit your changes."
+msgstr ""
+
 msgid "Select a group to invite"
 msgstr ""
 
@@ -9452,6 +9458,9 @@ msgid "Web terminal"
 msgstr ""
 
 msgid "Webhooks Help"
+msgstr ""
+
+msgid "Welcome to the GitLab IDE"
 msgstr ""
 
 msgid "When a runner is locked, it cannot be assigned to other projects"

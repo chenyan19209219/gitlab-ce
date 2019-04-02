@@ -1,6 +1,5 @@
-import _ from 'underscore';
 import flash from '~/flash';
-import { __, sprintf } from '~/locale';
+import { __ } from '~/locale';
 import service from '../../services';
 import api from '../../../api';
 import * as types from '../mutation_types';
@@ -106,21 +105,6 @@ export const createNewBranchFromDefault = ({ state, dispatch, getters }, branch)
         actionPayload: branch,
       });
     });
-
-export const showBranchNotFoundError = ({ dispatch }, branchId) => {
-  dispatch('setErrorMessage', {
-    text: sprintf(
-      __("Branch %{branchName} was not found in this project's repository."),
-      {
-        branchName: `<strong>${_.escape(branchId)}</strong>`,
-      },
-      false,
-    ),
-    action: payload => dispatch('createNewBranchFromDefault', payload),
-    actionText: __('Create branch'),
-    actionPayload: branchId,
-  });
-};
 
 export const showEmptyState = ({ commit, state }, { err, projectId, branchId }) => {
   if (err.response && err.response.status === 404) {
