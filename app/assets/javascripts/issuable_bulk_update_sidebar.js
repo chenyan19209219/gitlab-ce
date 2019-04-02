@@ -108,8 +108,12 @@ export default class IssuableBulkUpdateSidebar {
 
   toggleCheckboxDisplay(show) {
     this.$checkAllContainer.toggleClass(HIDDEN_CLASS, !show);
-    // this.$issueChecks.toggleClass(HIDDEN_CLASS, !show);
-    issuesListStore.dispatch('issuesList/setBulkUpdateState', show);
+
+    if (gon.features.issuesVueComponent) {
+      issuesListStore.dispatch('issuesList/setBulkUpdateState', show);
+    } else {
+      this.$issueChecks.toggleClass(HIDDEN_CLASS, !show);
+    }
   }
 
   toggleOtherFiltersDisabled(disable) {
