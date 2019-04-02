@@ -5,6 +5,7 @@ import Icon from '~/vue_shared/components/icon.vue';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { getDayDifference } from '~/lib/utils/datetime_utility';
+import { ISSUE_STATES } from '../constants';
 
 export default {
   components: {
@@ -37,11 +38,10 @@ export default {
   },
   computed: {
     issueClasses() {
-      const { issue } = this;
       const classList = ['issue'];
-      const issueCreatedToday = !getDayDifference(new Date(issue.created_at), new Date());
+      const issueCreatedToday = !getDayDifference(new Date(this.issue.created_at), new Date());
 
-      if (issue.state === 'closed') {
+      if (this.issueIsClosed) {
         classList.push('closed');
       }
 
@@ -71,6 +71,9 @@ export default {
     },
     bulkUpdateId() {
       return `selected_issue_${this.issue.id}`;
+    },
+    issueIsClosed() {
+      return this.issue.state === ISSUE_STATES.CLOSED;
     },
   },
   methods: {
@@ -177,7 +180,7 @@ export default {
         </div>
         <div class="issuable-meta">
           <ul class="controls">
-            <li v-if="issue.state === 'closed'" class="issuable-status">CLOSED</li>
+            <li v-if="issueIsClosed" class="issuable-status">CLOSED</li>
             <li v-if="issue.assignees.length">
               <user-avatar-link
                 v-for="(assignee, index) in issue.assignees"

@@ -1,6 +1,7 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
 import { imagePath } from '~/lib/utils/common_utils';
+import { ISSUE_STATES } from '../constants';
 
 export default {
   components: {
@@ -23,20 +24,27 @@ export default {
   data() {
     return {
       imagePath: imagePath('illustrations/issues.svg'),
+      ISSUE_STATES,
     };
+  },
+  computed: {
+    showFilterEmptyState() {
+      const { hasFilters, state } = this;
+      return hasFilters && ![ISSUE_STATES.OPENED, ISSUE_STATES.CLOSED].includes(state);
+    },
   },
 };
 </script>
 
 <template>
   <gl-empty-state
-    v-if="hasFilters"
+    v-if="showFilterEmptyState"
     :title="__('Sorry, your filter produced no results')"
     :description="__('To widen your search, change or remove filters above')"
     :svg-path="imagePath"
   />
   <gl-empty-state
-    v-else-if="state === 'opened'"
+    v-else-if="state === ISSUE_STATES.OPENED"
     :title="__('There are no open issues')"
     :description="__('To keep this project going, create a new issue')"
     :primary-button-link="buttonPath"
@@ -44,7 +52,7 @@ export default {
     :svg-path="imagePath"
   />
   <gl-empty-state
-    v-else-if="state === 'closed'"
+    v-else-if="state === ISSUE_STATES.CLOSED"
     :title="__('There are no closed issues')"
     :svg-path="imagePath"
   />

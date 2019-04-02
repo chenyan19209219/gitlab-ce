@@ -6,6 +6,7 @@ import { getParameterValues } from '~/lib/utils/url_utility';
 import Issue from './issue.vue';
 import IssuesEmptyState from './empty_state.vue';
 import IssuesLoadingState from './loading_state.vue';
+import { ISSUE_STATES, ACTIVE_TAB_CLASS } from '../constants';
 
 const issuableIndex = new IssuableIndex(ISSUABLE_INDEX.ISSUE);
 
@@ -59,7 +60,7 @@ export default {
     ...mapActions('issuesList', ['fetchIssues']),
     getCurrentState() {
       const [state] = getParameterValues('state');
-      return state || 'opened';
+      return state || ISSUE_STATES.OPENED;
     },
     updateIssueStateTabs() {
       const activeTabEl = document.querySelector('.issues-state-filters .active');
@@ -68,10 +69,10 @@ export default {
       );
 
       if (activeTabEl && !activeTabEl.querySelector(`[data-state="${this.getCurrentState()}"]`)) {
-        activeTabEl.classList.remove('active');
-        newActiveTabEl.parentElement.classList.add('active');
+        activeTabEl.classList.remove(ACTIVE_TAB_CLASS);
+        newActiveTabEl.parentElement.classList.add(ACTIVE_TAB_CLASS);
       } else {
-        newActiveTabEl.parentElement.classList.add('active');
+        newActiveTabEl.parentElement.classList.add(ACTIVE_TAB_CLASS);
       }
     },
     setupExternalEvents() {
@@ -94,8 +95,8 @@ export default {
   <IssuesLoadingState v-else-if="loading" />
   <issues-empty-state
     v-else
-    :has-filters="hasFilters"
     :state="getCurrentState()"
     :button-path="createPath"
+    :has-filters="hasFilters"
   />
 </template>
