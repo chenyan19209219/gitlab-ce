@@ -1,12 +1,14 @@
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex';
+import { GlPagination } from '@gitlab/ui';
 import IssuableIndex from '~/issuable_index';
 import { ISSUABLE_INDEX } from '~/pages/projects/constants';
-import { getParameterValues } from '~/lib/utils/url_utility';
+import { getParameterValues, mergeUrlParams } from '~/lib/utils/url_utility';
+import { scrollToElement } from '~/lib/utils/common_utils';
 import Issue from './issue.vue';
 import IssuesEmptyState from './empty_state.vue';
 import IssuesLoadingState from './loading_state.vue';
-import { ISSUE_STATES, ACTIVE_TAB_CLASS } from '../constants';
+import { ISSUE_STATES, ACTIVE_TAB_CLASS, ISSUES_PER_PAGE } from '../constants';
 
 const issuableIndex = new IssuableIndex(ISSUABLE_INDEX.ISSUE);
 
@@ -14,6 +16,7 @@ export default {
   components: {
     IssuesLoadingState,
     IssuesEmptyState,
+    GlPagination,
     Issue,
   },
   props: {
@@ -30,9 +33,18 @@ export default {
       required: false,
       default: '',
     },
+    filteredSearch: {
+      type: Object,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      ISSUES_PER_PAGE,
+    };
   },
   computed: {
-    ...mapState('issuesList', ['issues', 'loading', 'isBulkUpdating']),
+    ...mapState('issuesList', ['issues', 'loading', 'isBulkUpdating', 'currentPage', 'totalItems']),
     ...mapGetters('issuesList', ['hasFilters', 'appliedFilters']),
 
     hasIssues() {
@@ -57,7 +69,7 @@ export default {
     this.setupExternalEvents();
   },
   methods: {
-    ...mapActions('issuesList', ['fetchIssues']),
+    ...mapActions('issuesList', ['fetchIssues', 'setCurrentPage']),
     getCurrentState() {
       const [state] = getParameterValues('state');
       return state || ISSUE_STATES.OPENED;
@@ -79,19 +91,37 @@ export default {
       issuableIndex.bulkUpdateSidebar.initDomElements();
       issuableIndex.bulkUpdateSidebar.bindEvents();
     },
+    updatePage(page) {
+      this.filteredSearch.updateObject(mergeUrlParams({ page }, this.appliedFilters));
+      this.setCurrentPage(page);
+      scrollToElement('#content-body');
+    },
   },
 };
 </script>
 <template>
-  <ul v-if="hasIssues" class="content-list issues-list issuable-list">
-    <issue
-      v-for="issue in issues"
-      :key="issue.id"
-      :issue="issue"
-      :is-bulk-updating="isBulkUpdating"
-      :can-bulk-update="canBulkUpdate"
-    />
-  </ul>
+  <div v-if="hasIssues">
+    <ul class="content-list issues-list issuable-list">
+      <issue
+        v-for="issue in issues"
+        :key="issue.id"
+        :issue="issue"
+        :is-bulk-updating="isBulkUpdating"
+        :can-bulk-update="canBulkUpdate"
+      />
+    </ul>
+    <div class="gl-pagination prepend-top-default">
+      <gl-pagination
+        :change="updatePage"
+        :page="currentPage"
+        :per-page="ISSUES_PER_PAGE"
+        :total-items="totalItems"
+        :next-text="__('Next')"
+        :prev-text="__('Prev')"
+        class="justify-content-center"
+      />
+    </div>
+  </div>
   <IssuesLoadingState v-else-if="loading" />
   <issues-empty-state
     v-else

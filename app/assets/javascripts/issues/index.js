@@ -14,6 +14,9 @@ export default () => {
   // Set default filters from URL
   store.dispatch('issuesList/setFilters', window.location.search);
 
+  // Setup filterd search component
+  const filteredSearch = new IssuesFilteredSearch(store.state.issuesList.filters);
+
   return new Vue({
     el,
     store,
@@ -21,8 +24,7 @@ export default () => {
       IssuesApp,
     },
     mounted() {
-      this.filteredSearch = new IssuesFilteredSearch(store.state.issuesList.filters);
-      this.filteredSearch.setup();
+      filteredSearch.setup();
     },
     render(createElement) {
       return createElement('issues-app', {
@@ -30,6 +32,7 @@ export default () => {
           endpoint,
           canBulkUpdate,
           createPath,
+          filteredSearch,
         },
       });
     },

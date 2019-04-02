@@ -9,5 +9,5 @@
     - if @issues.blank?
       = render empty_state_path
 
-- if @issues.present?
-  = paginate @issues, theme: "gitlab", total_pages: @total_pages
+  - if @issues.present?
+    = paginate @issues, theme: "gitlab", total_pages: @total_pages

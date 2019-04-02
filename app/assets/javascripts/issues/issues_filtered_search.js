@@ -20,6 +20,8 @@ export default class FilteredSearchIssueAnalytics extends FilteredSearchManager 
 
   updateObject = path => {
     historyPushState(path);
+
     issuesListStore.dispatch('issuesList/setFilters', path);
+    issuesListStore.dispatch('issuesList/setCurrentPage', 1);
   };
 }

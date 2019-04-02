@@ -19,9 +19,20 @@ export const fetchIssues = ({ commit, dispatch, getters }, endpoint) => {
   dispatch('setLoadingState', true);
 
   return service
-    .fetchIssues(endpoint, getters.appliedFilters)
-    .then(res => res.data)
-    .then(data => commit(types.SET_ISSUES_DATA, data))
+    .fetchIssues(endpoint, getters.appliedFilters, getters.currentPage)
+    .then(({ data, headers }) => {
+      dispatch('setTotalItems', headers['x-total']);
+      dispatch('setCurrentPage', headers['x-page']);
+      commit(types.SET_ISSUES_DATA, data);
+    })
     .then(() => dispatch('setLoadingState', false))
     .catch(() => flash(__('An error occurred while loading issues')));
+};
+
+export const setCurrentPage = ({ commit }, value) => {
+  commit(types.SET_CURRENT_PAGE, value);
+};
+
+export const setTotalItems = ({ commit }, value) => {
+  commit(types.SET_TOTAL_ITEMS, value);
 };

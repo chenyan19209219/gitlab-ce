@@ -4,3 +4,4 @@ export const ISSUE_STATES = {
 };
 
 export const ACTIVE_TAB_CLASS = 'active';
+export const ISSUES_PER_PAGE = 20;

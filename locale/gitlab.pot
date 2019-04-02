@@ -732,6 +732,9 @@ msgstr ""
 msgid "An error occurred while loading filenames"
 msgstr ""
 
+msgid "An error occurred while loading issues"
+msgstr ""
+
 msgid "An error occurred while loading the file"
 msgstr ""
 
@@ -5270,6 +5273,9 @@ msgstr ""
 msgid "Newly registered users will by default be external"
 msgstr ""
 
+msgid "Next"
+msgstr ""
+
 msgid "No"
 msgstr ""
 
@@ -5924,6 +5930,9 @@ msgid "Preferences|This feature is experimental and translations are not complet
 msgstr ""
 
 msgid "Press Enter or click to search"
+msgstr ""
+
+msgid "Prev"
 msgstr ""
 
 msgid "Preview"
