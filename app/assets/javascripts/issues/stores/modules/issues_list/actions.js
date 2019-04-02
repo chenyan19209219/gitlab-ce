@@ -1,5 +1,7 @@
 import flash from '~/flash';
 import { __ } from '~/locale';
+import { getParameterValues } from '~/lib/utils/url_utility';
+import { ISSUE_STATES } from '../../../constants';
 import service from '../../../services/issues_service';
 import * as types from './mutation_types';
 
@@ -17,9 +19,13 @@ export const setBulkUpdateState = ({ commit }, value) => {
 
 export const fetchIssues = ({ commit, dispatch, getters }, endpoint) => {
   dispatch('setLoadingState', true);
+  const [currentState] = getParameterValues('state');
+
+  // only set state if it does not exist
+  const state = !currentState ? ISSUE_STATES.OPENED : null;
 
   return service
-    .fetchIssues(endpoint, getters.appliedFilters, getters.currentPage)
+    .fetchIssues(endpoint, getters.appliedFilters, state)
     .then(({ data, headers }) => {
       dispatch('setTotalItems', headers['x-total']);
       dispatch('setCurrentPage', headers['x-page']);
