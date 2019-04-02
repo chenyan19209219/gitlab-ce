@@ -1,0 +1,5 @@
+---
+title: 'API: Add /projects/:id/environments/:environment_id endpoint.'
+merge_request: 26887
+author:
+type: added
