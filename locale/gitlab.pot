@@ -6619,10 +6619,22 @@ msgstr ""
 msgid "Preferences saved."
 msgstr ""
 
+msgid "Preferences|Display time in 24 hour format"
+msgstr ""
+
 msgid "Preferences|Navigation theme"
 msgstr ""
 
+msgid "Preferences|These settings will update how dates and times are displayed for you."
+msgstr ""
+
 msgid "Preferences|This feature is experimental and translations are not complete yet"
+msgstr ""
+
+msgid "Preferences|Time settings"
+msgstr ""
+
+msgid "Preferences|Use relative times"
 msgstr ""
 
 msgid "Press Enter or click to search"
@@ -9334,6 +9346,9 @@ msgid "Time before enforced"
 msgstr ""
 
 msgid "Time between merge request creation and merge/close"
+msgstr ""
+
+msgid "Time display"
 msgstr ""
 
 msgid "Time estimate"

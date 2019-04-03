@@ -82,5 +82,30 @@
       = f.label :first_day_of_week, class: 'label-bold' do
         = _('First day of the week')
       = f.select :first_day_of_week, first_day_of_week_choices_with_default, {}, class: 'form-control'
+  - if Feature.enabled?(:user_time_settings)
+    .col-sm-12
+      %hr
+    .col-lg-4.profile-settings-sidebar
+      %h4.prepend-top-0= s_('Preferences|Time settings')
+      %p= s_('Preferences|These settings will update how dates and times are displayed for you.')
+    .col-lg-8
+      %h5= s_('Time format')
+      .checkbox-icon-inline-wrapper
+        - time_format_label = capture do
+          = s_('Preferences|Display time in 24 hour format')
+        = f.check_box :time_format_in_24h
+        = f.label :time_format_in_24h do
+          = time_format_label
+        = link_to icon('question-circle'), help_page_path('user/profile/index.md', anchor: 'time-settings')
+      %h5= s_('Time display')
+      .checkbox-icon-inline-wrapper
+        - time_display_label = capture do
+          = s_('Preferences|Use relative times')
+        = f.check_box :time_display_relative
+        = f.label :time_display_relative do
+          = time_display_label
+        = link_to icon('question-circle'), help_page_path('user/profile/index.md', anchor: 'time-settings')
+  .col-lg-4.profile-settings-sidebar
+  .col-lg-8
     .form-group
       = f.submit _('Save changes'), class: 'btn btn-success'

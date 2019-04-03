@@ -75,18 +75,6 @@
         %h5= ("Time zone")
         = dropdown_tag(_("Select a timezone"), options: { toggle_class: 'btn js-timezone-dropdown', title: _("Select a timezone"), filter: true, placeholder: s_("OfSearchInADropdown|Filter"), data: { data: timezone_data } } )
         %input.hidden{ :type => 'hidden', :id => 'user_timezone', :name => 'user[timezone]', value: ActiveSupport::TimeZone::MAPPING.key(@user.timezone) }
-        %h5= ("Time format")
-        .checkbox-icon-inline-wrapper
-          - time_format_label = capture do
-            = s_("Profiles|Display time in 24 hour format")
-          = f.check_box :time_format_in_24h, label: time_format_label, inline: true, wrapper_class: 'mr-0'
-          = link_to icon('question-circle'), help_page_path('user/profile/index.md', anchor: 'time-settings')
-        %h5= ("Time display")
-        .checkbox-icon-inline-wrapper
-          - time_display_label = capture do
-            = s_("Profiles|Use relative times")
-          = f.check_box :time_display_relative, label: time_display_label, inline: true, wrapper_class: 'mr-0'
-          = link_to icon('question-circle'), help_page_path('user/profile/index.md', anchor: 'time-settings')
 
   %hr
   .row

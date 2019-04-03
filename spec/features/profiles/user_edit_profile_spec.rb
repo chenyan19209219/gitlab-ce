@@ -355,15 +355,6 @@ describe 'User edit profile' do
       it 'timezone defaults to UTC' do
         expect(page.find('.user-time-preferences #user_timezone', visible: false).value).to eq('UTC')
       end
-
-      it 'allows the user to toggle their time format and display preferences' do
-        %w[time_format_in_24h time_display_relative].each do |field_selector|
-          field = page.find_field("user[#{field_selector}]")
-          expect(field).not_to be_checked
-          field.click
-          expect(field).to be_checked
-        end
-      end
     end
   end
 end
