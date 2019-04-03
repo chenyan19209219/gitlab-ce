@@ -1,5 +1,5 @@
 ---
-title: 'API: Add /projects/:id/environments/:environment_id endpoint.'
+title: 'Add new API endpoint to expose a single environment.'
 merge_request: 26887
 author:
 type: added
