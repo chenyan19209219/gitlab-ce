@@ -12,7 +12,10 @@ export default class Profile {
     this.bindEvents();
     this.initAvatarGlCrop();
 
-    gl.timezoneDropdown = new TimezoneDropdown();
+    gl.timezoneDropdown = new TimezoneDropdown({
+      $inputEl: $('#user_timezone'),
+      $dropdownEl: $('.js-timezone-dropdown'),
+    });
   }
 
   initAvatarGlCrop() {
