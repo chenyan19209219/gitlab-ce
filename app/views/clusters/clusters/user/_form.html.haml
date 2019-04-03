@@ -15,21 +15,21 @@
       = platform_kubernetes_field.text_field :api_url, class: 'form-control', placeholder: s_('ClusterIntegration|API URL')
       .form-text.text-muted
         = s_('ClusterIntegration|The URL used to access the Kubernetes API.')
-        = link_to _('More information'), help_page_path('user/project/clusters/index.md', anchor: 'adding-an-existing-kubernetes-cluster'), target: '_blank'
+        = link_to _('More information'), help_page_path('user/project/clusters/index', anchor: 'adding-an-existing-kubernetes-cluster'), target: '_blank'
 
     .form-group
       = platform_kubernetes_field.label :ca_cert, s_('ClusterIntegration|CA Certificate'), class: 'label-bold'
       = platform_kubernetes_field.text_area :ca_cert, class: 'form-control', placeholder: s_('ClusterIntegration|Certificate Authority bundle (PEM format)')
       .form-text.text-muted
         = s_('ClusterIntegration|The Kubernetes certificate used to authenticate to the cluster.')
-        = link_to _('More information'), help_page_path('user/project/clusters/index.md', anchor: 'adding-an-existing-kubernetes-cluster'), target: '_blank'
+        = link_to _('More information'), help_page_path('user/project/clusters/index', anchor: 'adding-an-existing-kubernetes-cluster'), target: '_blank'
 
     .form-group
       = platform_kubernetes_field.label :token, s_('ClusterIntegration|Token'), class: 'label-bold'
       = platform_kubernetes_field.text_field :token, class: 'form-control', placeholder: s_('ClusterIntegration|Service token'), autocomplete: 'off'
       .form-text.text-muted
         = (s_('ClusterIntegration|A service token scoped to %{kube_system} with %{cluster_admin} privileges.') % { kube_system: '<code>kube-system</code>', cluster_admin: '<code>cluster-admin</code>' }).html_safe
-        = link_to _('More information'), help_page_path('user/project/clusters/index.md', anchor: 'adding-an-existing-kubernetes-cluster'), target: '_blank'
+        = link_to _('More information'), help_page_path('user/project/clusters/index', anchor: 'adding-an-existing-kubernetes-cluster'), target: '_blank'
 
     - if @user_cluster.allow_user_defined_namespace?
       .form-group
@@ -43,7 +43,7 @@
         .form-text.text-muted
           = s_('ClusterIntegration|Enable this setting if using role-based access control (RBAC).')
           = s_('ClusterIntegration|This option will allow you to install applications on RBAC clusters.')
-          = link_to _('More information'), help_page_path('user/project/clusters/index.md', anchor: 'role-based-access-control-rbac-core-only'), target: '_blank'
+          = link_to _('More information'), help_page_path('user/project/clusters/index', anchor: 'role-based-access-control-rbac-core-only'), target: '_blank'
 
     .form-group
       = field.submit s_('ClusterIntegration|Add Kubernetes cluster'), class: 'btn btn-success'
