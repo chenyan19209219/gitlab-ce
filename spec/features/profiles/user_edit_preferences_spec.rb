@@ -1,10 +1,11 @@
+# frozen_string_literal: true
 require 'spec_helper'
 
 describe 'User edit preferences profile' do
   let(:user) { create(:user) }
 
   before do
-    stub_feature_flags(user_time_settings: truer)
+    stub_feature_flags(user_time_settings: true)
     sign_in(user)
     visit(profile_preferences_path)
   end

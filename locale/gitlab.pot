@@ -6631,7 +6631,13 @@ msgstr ""
 msgid "Preferences|This feature is experimental and translations are not complete yet"
 msgstr ""
 
-msgid "Preferences|Time settings"
+msgid "Preferences|Time display"
+msgstr ""
+
+msgid "Preferences|Time format"
+msgstr ""
+
+msgid "Preferences|Time preferences"
 msgstr ""
 
 msgid "Preferences|Use relative times"
@@ -6760,9 +6766,6 @@ msgstr ""
 msgid "Profiles|Disconnect"
 msgstr ""
 
-msgid "Profiles|Display time in 24 hour format"
-msgstr ""
-
 msgid "Profiles|Do not show on profile"
 msgstr ""
 
@@ -6871,9 +6874,6 @@ msgstr ""
 msgid "Profiles|Use a private email - %{email}"
 msgstr ""
 
-msgid "Profiles|Use relative times"
-msgstr ""
-
 msgid "Profiles|Username change failed - %{message}"
 msgstr ""
 
@@ -6893,6 +6893,9 @@ msgid "Profiles|You can change your avatar here"
 msgstr ""
 
 msgid "Profiles|You can change your avatar here or remove the current avatar to revert to %{gravatar_link}"
+msgstr ""
+
+msgid "Profiles|You can set your current timezone here"
 msgstr ""
 
 msgid "Profiles|You can upload your avatar here"
@@ -9346,9 +9349,6 @@ msgid "Time before enforced"
 msgstr ""
 
 msgid "Time between merge request creation and merge/close"
-msgstr ""
-
-msgid "Time display"
 msgstr ""
 
 msgid "Time estimate"

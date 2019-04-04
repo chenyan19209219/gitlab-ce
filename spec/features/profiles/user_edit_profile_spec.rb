@@ -328,7 +328,7 @@ describe 'User edit profile' do
       end
     end
 
-    context 'User time preferences', :focus, :js do
+    context 'User time preferences', :js do
       let(:issue) { create(:issue, project: project)}
       let(:project) { create(:project) }
 
