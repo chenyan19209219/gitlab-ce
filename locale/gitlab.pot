@@ -2933,6 +2933,9 @@ msgstr ""
 msgid "DashboardProjects|Personal"
 msgstr ""
 
+msgid "DashboardProjects|Trending"
+msgstr ""
+
 msgid "Data is still calculating..."
 msgstr ""
 
@@ -7835,6 +7838,9 @@ msgstr ""
 msgid "Search projects"
 msgstr ""
 
+msgid "Search projects..."
+msgstr ""
+
 msgid "Search users"
 msgstr ""
 
@@ -8393,6 +8399,9 @@ msgid "SortOptions|Recent last activity"
 msgstr ""
 
 msgid "SortOptions|Recent sign in"
+msgstr ""
+
+msgid "SortOptions|Stars"
 msgstr ""
 
 msgid "SortOptions|Start later"
@@ -10103,6 +10112,9 @@ msgid "View the documentation"
 msgstr ""
 
 msgid "Viewing commit"
+msgstr ""
+
+msgid "Visibility"
 msgstr ""
 
 msgid "Visibility and access controls"
