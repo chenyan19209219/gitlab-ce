@@ -46,7 +46,7 @@ module Git
         params[:ref],
         commits,
         message,
-        push_options: params[:push_options] || [])
+        push_options: params[:push_options] || {})
     end
 
     def pipeline_options

@@ -177,7 +177,7 @@ module Git
         params[:ref],
         @push_commits,
         commits_count: commits_count,
-        push_options: params[:push_options] || []
+        push_options: params[:push_options] || {}
       )
     end
 
