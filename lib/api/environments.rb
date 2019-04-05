@@ -112,7 +112,9 @@ module API
         authorize! :read_environment, user_project
 
         environment = user_project.environments.find(params[:environment_id])
-        present environment, with: Entities::Environment, current_user: current_user, except: [:project], last_deployment: true
+        present environment, with: Entities::Environment, current_user: current_user,
+                             except: [:project, { last_deployment: [:environment] }],
+                             last_deployment: true
       end
     end
   end

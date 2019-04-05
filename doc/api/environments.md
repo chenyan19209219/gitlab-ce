@@ -66,12 +66,6 @@ Example of response
       "avatar_url": "http://www.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80&d=identicon",
       "web_url": "http://localhost:3000/root"
     }
-    "environment": {
-      "id": 5,
-      "name": "staging",
-      "slug": "staging",
-      "external_url": "https://staging.gitlab.com"
-    },
     "deployable": {
       "id": 710,
       "status": "success",

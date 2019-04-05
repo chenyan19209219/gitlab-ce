@@ -193,14 +193,12 @@ describe API::Environments do
   describe 'GET /projects/:id/environments/:environment_id' do
     context 'as member of the project' do
       it 'returns project environments' do
+        create(:deployment, :success, project: project, environment: environment)
+
         get api("/projects/#{project.id}/environments/#{environment.id}", user)
 
         expect(response).to have_gitlab_http_status(200)
-        expect(json_response['name']).to eq(environment.name)
-        expect(json_response['slug']).to eq(environment.slug)
-        expect(json_response['external_url']).to eq(environment.external_url)
-        expect(json_response).not_to have_key("project")
-        expect(json_response).to have_key("last_deployment")
+        expect(response).to match_response_schema('public_api/v4/environment')
       end
     end
 
