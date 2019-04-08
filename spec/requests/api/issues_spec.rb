@@ -270,114 +270,143 @@ describe API::Issues do
         end
       end
 
-      it 'returns an array of labeled issues' do
-        get api('/issues', user), params: { labels: label.title }
+      context 'filter by labels or label_name param' do
+        it 'returns an array of labeled issues' do
+          get api('/issues', user), params: { labels: label.title }
 
-        expect_paginated_array_response(issue.id)
-        expect(json_response.first['labels']).to eq([label.title])
-      end
+          puts "json_response: #{json_response}"
+          expect_paginated_array_response(issue.id)
+          expect(json_response.first['labels']).to eq([label.title])
+        end
 
-      it 'returns an array of labeled issues with labels param as array' do
-        get api('/issues', user), params: { labels: [label.title] }
+        it 'returns an array of labeled issues with labels param as array' do
+          get api('/issues', user), params: { labels: [label.title] }
 
-        expect_paginated_array_response(issue.id)
-        expect(json_response.first['labels']).to eq([label.title])
-      end
+          expect_paginated_array_response(issue.id)
+          expect(json_response.first['labels']).to eq([label.title])
+        end
 
-      it 'returns an array of labeled issues when all labels matches' do
-        label_b = create(:label, title: 'foo', project: project)
-        label_c = create(:label, title: 'bar', project: project)
+        it 'returns an array of labeled issues when all labels match' do
+          label_b = create(:label, title: 'foo', project: project)
+          label_c = create(:label, title: 'bar', project: project)
 
-        create(:label_link, label: label_b, target: issue)
-        create(:label_link, label: label_c, target: issue)
+          create(:label_link, label: label_b, target: issue)
+          create(:label_link, label: label_c, target: issue)
 
-        get api('/issues', user), params: { labels: "#{label.title},#{label_b.title},#{label_c.title}" }
+          get api('/issues', user), params: { labels: "#{label.title},#{label_b.title},#{label_c.title}" }
 
-        expect_paginated_array_response(issue.id)
-        expect(json_response.first['labels']).to eq([label_c.title, label_b.title, label.title])
-      end
+          expect_paginated_array_response(issue.id)
+          expect(json_response.first['labels']).to eq([label_c.title, label_b.title, label.title])
+        end
 
-      it 'returns an array of labeled issues when all labels matches with labels param as array' do
-        label_b = create(:label, title: 'foo', project: project)
-        label_c = create(:label, title: 'bar', project: project)
+        it 'returns an array of labeled issues when all labels match with labels param as array' do
+          label_b = create(:label, title: 'foo', project: project)
+          label_c = create(:label, title: 'bar', project: project)
 
-        create(:label_link, label: label_b, target: issue)
-        create(:label_link, label: label_c, target: issue)
+          create(:label_link, label: label_b, target: issue)
+          create(:label_link, label: label_c, target: issue)
 
-        get api('/issues', user), params: { labels: [label.title, label_b.title, label_c.title] }
+          get api('/issues', user), params: { labels: [label.title, label_b.title, label_c.title] }
 
-        expect_paginated_array_response(issue.id)
-        expect(json_response.first['labels']).to eq([label_c.title, label_b.title, label.title])
-      end
+          expect_paginated_array_response(issue.id)
+          expect(json_response.first['labels']).to eq([label_c.title, label_b.title, label.title])
+        end
 
-      it 'returns an empty array if no issue matches labels' do
-        get api('/issues', user), params: { labels: 'foo,bar' }
+        it 'returns an array of labeled issues when all labels match the label_name param' do
+          label_b = create(:label, title: 'foo', project: project)
+          label_c = create(:label, title: 'bar', project: project)
 
-        expect_paginated_array_response([])
-      end
+          create(:label_link, label: label_b, target: issue)
+          create(:label_link, label: label_c, target: issue)
 
-      it 'returns an empty array if no issue matches labels with labels param as array' do
-        get api('/issues', user), params: { labels: %w(foo bar) }
+          get api('/issues', user), params: { label_name: "#{label.title},#{label_b.title},#{label_c.title}" }
 
-        expect_paginated_array_response([])
-      end
+          expect_paginated_array_response(issue.id)
+          expect(json_response.first['labels']).to eq([label_c.title, label_b.title, label.title])
+        end
 
-      it 'returns an array of labeled issues matching given state' do
-        get api('/issues', user), params: { labels: label.title, state: :opened }
+        it 'returns an array of labeled issues when all labels match with label_name param as array' do
+          label_b = create(:label, title: 'foo', project: project)
+          label_c = create(:label, title: 'bar', project: project)
 
-        expect_paginated_array_response(issue.id)
-        expect(json_response.first['labels']).to eq([label.title])
-        expect(json_response.first['state']).to eq('opened')
-      end
+          create(:label_link, label: label_b, target: issue)
+          create(:label_link, label: label_c, target: issue)
 
-      it 'returns an array of labeled issues matching given state with labels param as array' do
-        get api('/issues', user), params: { labels: [label.title], state: :opened }
+          get api('/issues', user), params: { label_name: [label.title, label_b.title, label_c.title] }
 
-        expect_paginated_array_response(issue.id)
-        expect(json_response.first['labels']).to eq([label.title])
-        expect(json_response.first['state']).to eq('opened')
-      end
+          expect_paginated_array_response(issue.id)
+          expect(json_response.first['labels']).to eq([label_c.title, label_b.title, label.title])
+        end
 
-      it 'returns an empty array if no issue matches labels and state filters' do
-        get api('/issues', user), params: { labels: label.title, state: :closed }
+        it 'returns an empty array if no issue matches labels' do
+          get api('/issues', user), params: { labels: 'foo,bar' }
 
-        expect_paginated_array_response([])
-      end
+          expect_paginated_array_response([])
+        end
 
-      it 'returns an array of issues with any label' do
-        get api('/issues', user), params: { labels: IssuesFinder::FILTER_ANY }
+        it 'returns an empty array if no issue matches labels with labels param as array' do
+          get api('/issues', user), params: { labels: %w(foo bar) }
 
-        expect_paginated_array_response(issue.id)
-      end
+          expect_paginated_array_response([])
+        end
 
-      it 'returns an array of issues with any label with labels param as array' do
-        get api('/issues', user), params: { labels: [IssuesFinder::FILTER_ANY] }
+        it 'returns an array of labeled issues matching given state' do
+          get api('/issues', user), params: { labels: label.title, state: :opened }
 
-        expect_paginated_array_response(issue.id)
-      end
+          expect_paginated_array_response(issue.id)
+          expect(json_response.first['labels']).to eq([label.title])
+          expect(json_response.first['state']).to eq('opened')
+        end
 
-      it 'returns an array of issues with no label' do
-        get api('/issues', user), params: { labels: IssuesFinder::FILTER_NONE }
+        it 'returns an array of labeled issues matching given state with labels param as array' do
+          get api('/issues', user), params: { labels: [label.title], state: :opened }
 
-        expect_paginated_array_response(closed_issue.id)
-      end
+          expect_paginated_array_response(issue.id)
+          expect(json_response.first['labels']).to eq([label.title])
+          expect(json_response.first['state']).to eq('opened')
+        end
 
-      it 'returns an array of issues with no label with labels param as array' do
-        get api('/issues', user), params: { labels: [IssuesFinder::FILTER_NONE] }
+        it 'returns an empty array if no issue matches labels and state filters' do
+          get api('/issues', user), params: { labels: label.title, state: :closed }
 
-        expect_paginated_array_response(closed_issue.id)
-      end
+          expect_paginated_array_response([])
+        end
 
-      it 'returns an array of issues with no label when using the legacy No+Label filter' do
-        get api('/issues', user), params: { labels: 'No Label' }
+        it 'returns an array of issues with any label' do
+          get api('/issues', user), params: { labels: IssuesFinder::FILTER_ANY }
 
-        expect_paginated_array_response(closed_issue.id)
-      end
+          expect_paginated_array_response(issue.id)
+        end
 
-      it 'returns an array of issues with no label when using the legacy No+Label filter with labels param as array' do
-        get api('/issues', user), params: { labels: ['No Label'] }
+        it 'returns an array of issues with any label with labels param as array' do
+          get api('/issues', user), params: { labels: [IssuesFinder::FILTER_ANY] }
 
-        expect_paginated_array_response(closed_issue.id)
+          expect_paginated_array_response(issue.id)
+        end
+
+        it 'returns an array of issues with no label' do
+          get api('/issues', user), params: { labels: IssuesFinder::FILTER_NONE }
+
+          expect_paginated_array_response(closed_issue.id)
+        end
+
+        it 'returns an array of issues with no label with labels param as array' do
+          get api('/issues', user), params: { labels: [IssuesFinder::FILTER_NONE] }
+
+          expect_paginated_array_response(closed_issue.id)
+        end
+
+        it 'returns an array of issues with no label when using the legacy No+Label filter' do
+          get api('/issues', user), params: { labels: 'No Label' }
+
+          expect_paginated_array_response(closed_issue.id)
+        end
+
+        it 'returns an array of issues with no label when using the legacy No+Label filter with labels param as array' do
+          get api('/issues', user), params: { label: ['No Label'] }
+
+          expect_paginated_array_response(closed_issue.id)
+        end
       end
 
       it 'returns an empty array if no issue matches milestone' do
@@ -398,6 +427,12 @@ describe API::Issues do
         expect_paginated_array_response([issue.id, closed_issue.id])
       end
 
+      it 'returns an array of issues in given milestone_title param' do
+        get api("/issues?milestone_title=#{milestone.title}", user)
+
+        expect_paginated_array_response([issue.id, closed_issue.id])
+      end
+
       it 'returns an array of issues matching state in milestone' do
         get api("/issues?milestone=#{milestone.title}"\
                 '&state=closed', user)
@@ -407,6 +442,12 @@ describe API::Issues do
 
       it 'returns an array of issues with no milestone' do
         get api("/issues?milestone=#{no_milestone_title}", author)
+
+        expect_paginated_array_response(confidential_issue.id)
+      end
+
+      it 'returns an array of issues with no milestone using milestone_title param' do
+        get api("/issues?milestone_title=#{no_milestone_title}", author)
 
         expect_paginated_array_response(confidential_issue.id)
       end
@@ -2243,3 +2284,4 @@ describe API::Issues do
     end
   end
 end
+

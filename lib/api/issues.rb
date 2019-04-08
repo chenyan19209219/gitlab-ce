@@ -23,24 +23,26 @@ module API
         args = declared_params.merge(args)
 
         args.delete(:id)
-        args[:milestone_title] = args.delete(:milestone)
-        args[:label_name] = args.delete(:labels)
+        args[:milestone_title] ||= args.delete(:milestone)
+        args[:milestone_title] ||= args.delete(:milestone_title)
+        args[:label_name] ||= args.delete(:labels)
         args[:scope] = args[:scope].underscore if args[:scope]
 
         issues = IssuesFinder.new(current_user, args).execute
                    .with_api_entity_associations
-        issues.reorder(order_options_with_tie_breaker)
+        issues = issues.reorder(order_options_with_tie_breaker) if ["asc", "desc"].include?(params[:sort].downcase)
+        issues
       end
       # rubocop: enable CodeReuse/ActiveRecord
 
       params :issues_params do
-        optional :labels, type: Array[String], coerce_with: Validations::Types::LabelsList.coerce, desc: 'Comma-separated list of label names'
+        optional :labels, :label_name, type: Array[String], coerce_with: Validations::Types::LabelsList.coerce, desc: 'Comma-separated list of label names'
         optional :milestone, type: String, desc: 'Milestone title'
         optional :order_by, type: String, values: %w[created_at updated_at], default: 'created_at',
                             desc: 'Return issues ordered by `created_at` or `updated_at` fields.'
-        optional :sort, type: String, values: %w[asc desc], default: 'desc',
+        optional :sort, type: String, default: 'desc',
                         desc: 'Return issues sorted in `asc` or `desc` order.'
-        optional :milestone, type: String, desc: 'Return issues for a specific milestone'
+        optional :milestone, :milestone_title, type: String, desc: 'Return issues for a specific milestone'
         optional :iids, type: Array[Integer], desc: 'The IID array of issues'
         optional :search, type: String, desc: 'Search issues for text present in the title, description, or any combination of these'
         optional :in, type: String, desc: '`title`, `description`, or a string joining them with comma'
@@ -49,7 +51,10 @@ module API
         optional :updated_after, type: DateTime, desc: 'Return issues updated after the specified time'
         optional :updated_before, type: DateTime, desc: 'Return issues updated before the specified time'
         optional :author_id, type: Integer, desc: 'Return issues which are authored by the user with the given ID'
+        optional :author_username, type: String, desc: 'Return issues which are authored by the user with the given username'
         optional :assignee_id, types: [Integer, String], integer_none_any: true,
+                               desc: 'Return issues which are assigned to the user with the given ID'
+        optional :assignee_username, type: String,
                                desc: 'Return issues which are assigned to the user with the given ID'
         optional :scope, type: String, values: %w[created-by-me assigned-to-me created_by_me assigned_to_me all],
                          desc: 'Return issues for the given scope: `created_by_me`, `assigned_to_me` or `all`'
