@@ -100,6 +100,10 @@ module Ci
       @groups ||= Ci::Group.fabricate(self)
     end
 
+    def manual_playable?
+      %w[success running failed].include?(status)
+    end
+
     def has_warnings?
       number_of_warnings.positive?
     end

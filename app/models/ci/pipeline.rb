@@ -758,6 +758,10 @@ module Ci
       user == current_user
     end
 
+    def find_stage_by_name(name)
+      stages.find_by(name: name)
+    end
+
     private
 
     def ci_yaml_from_repo

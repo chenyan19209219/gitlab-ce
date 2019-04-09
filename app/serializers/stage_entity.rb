@@ -42,13 +42,19 @@ class StageEntity < Grape::Entity
       format: :json)
   end
 
+  expose :play_manual_details,
+    if: -> (status, _) { detailed_status.has_manual_builds? },
+    with: Stages::PlayManualEntity
+
   private
 
   alias_method :stage, :object
 
   def detailed_status
-    stage.detailed_status(request.current_user)
+    @detailed_status ||= stage.detailed_status(request.current_user)
   end
+
+  alias_method :play_manual_details, :detailed_status
 
   def grouped_statuses
     @grouped_statuses ||= stage.statuses.latest_ordered.group_by(&:status)

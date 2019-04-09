@@ -393,4 +393,47 @@ describe Projects::PipelinesController do
       end
     end
   end
+
+  describe 'POST #play_all_manual.json' do
+    let(:pipeline) { create(:ci_pipeline, project: project) }
+    let(:stage_name) { 'test' }
+
+    before do
+      create_manual_build(pipeline, 'test', 'rspec 1/3')
+      create_manual_build(pipeline, 'test', 'rspec 2/3')
+      create_manual_build(pipeline, 'test', 'rspec 3/3')
+
+      pipeline.reload
+
+      post :play_all_manual, params: {
+        namespace_id: project.namespace,
+        project_id: project,
+        id: pipeline.id,
+        stage: stage_name
+      }, format: :json
+    end
+
+    context 'when the stage does not exists' do
+      let(:stage_name) { 'deploy' }
+
+      it 'fails to play all manual' do
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when the stage exists' do
+      it 'starts all manual jobs' do
+        expect(response).to have_gitlab_http_status(:ok)
+
+        expect(pipeline.builds.manual.count).to eq(0)
+      end
+    end
+
+    def create_manual_build(pipeline, stage, name)
+      create(:ci_build, :manual,
+             pipeline: pipeline,
+             stage: stage,
+             name: name)
+    end
+  end
 end

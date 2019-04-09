@@ -6,7 +6,7 @@ class Projects::PipelinesController < Projects::ApplicationController
   before_action :authorize_read_pipeline!
   before_action :authorize_read_build!, only: [:index]
   before_action :authorize_create_pipeline!, only: [:new, :create]
-  before_action :authorize_update_pipeline!, only: [:retry, :cancel]
+  before_action :authorize_update_pipeline!, only: [:retry, :cancel, :play_all_manual]
 
   around_action :allow_gitaly_ref_name_caching, only: [:index, :show]
 
@@ -147,6 +147,17 @@ class Projects::PipelinesController < Projects::ApplicationController
     @counts[:failed] = @project.all_pipelines.failed.count(:all)
   end
 
+  def play_all_manual
+    return not_found unless pipeline_stage
+
+    ::Ci::PlayStageManualBuildsService.new(@project, current_user)
+      .execute(pipeline_stage)
+
+    render json: StageSerializer
+      .new(project: @project, current_user: @current_user)
+      .represent(pipeline_stage, details: true)
+  end
+
   private
 
   def serialize_pipelines
@@ -195,5 +206,9 @@ class Projects::PipelinesController < Projects::ApplicationController
     finder = PipelinesFinder.new(project, current_user, scope: scope)
 
     view_context.limited_counter_with_delimiter(finder.execute)
+  end
+
+  def pipeline_stage
+    @pipeline_stage ||= pipeline.find_stage_by_name(params[:stage])
   end
 end

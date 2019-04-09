@@ -152,7 +152,7 @@ describe Ci::Stage, :models do
       %w[created]         | :created
       %w[success]         | :passed
       %w[pending]         | :pending
-      %w[skipped]         | :skipped
+      %w[skipped]         | 'play all manual'
       %w[canceled]        | :canceled
       %w[success failed]  | :failed
       %w[running pending] | :running
@@ -188,6 +188,21 @@ describe Ci::Stage, :models do
 
       it 'is passed with warnings' do
         expect(subject.label).to eq 'passed with warnings'
+      end
+    end
+
+    context 'when stage has manual builds' do
+      before do
+        create(:ci_build, project: stage.project,
+                          pipeline: stage.pipeline,
+                          stage_id: stage.id,
+                          status: 'manual')
+
+        stage.update_status
+      end
+
+      it 'is passed with warnings' do
+        expect(subject.label).to eq 'play all manual'
       end
     end
   end
@@ -282,6 +297,20 @@ describe Ci::Stage, :models do
     describe '#has_warnings?' do
       it 'returns false' do
         expect(stage).not_to have_warnings
+      end
+    end
+  end
+
+  describe '#manual_playable?' do
+    let(:success) { create(:ci_stage_entity, status: 'success') }
+    let(:failed) { create(:ci_stage_entity, status: 'failed') }
+    let(:running) { create(:ci_stage_entity, status: 'running') }
+
+    context 'when status is success, running, or failed' do
+      it 'returns true' do
+        [success, failed, running].each do |stage|
+          expect(stage.manual_playable?).to be_truthy
+        end
       end
     end
   end

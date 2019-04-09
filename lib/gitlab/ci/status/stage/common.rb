@@ -18,6 +18,10 @@ module Gitlab
           def has_action?
             false
           end
+
+          def has_manual_builds?
+            false
+          end
         end
       end
     end

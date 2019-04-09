@@ -122,6 +122,10 @@ module HasStatus
     BLOCKED_STATUS.include?(status)
   end
 
+  def blocked_or_skipped?
+    blocked? || status == 'skipped'
+  end
+
   private
 
   def calculate_duration

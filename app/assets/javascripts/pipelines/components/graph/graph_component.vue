@@ -24,6 +24,7 @@ export default {
           :groups="stage.groups"
           :stage-connector-class="stageConnectorClass(index, stage)"
           :is-first-column="isFirstColumn(index)"
+          :action="stage.play_manual_details"
           @refreshPipelineGraph="refreshPipelineGraph"
         />
       </ul>

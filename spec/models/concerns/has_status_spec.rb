@@ -367,4 +367,28 @@ describe HasStatus do
       puts subject
     end
   end
+
+  describe '#blocked_or_skipped?' do
+    %w[ci_pipeline ci_stage ci_build generic_commit_status].each do |type|
+      let(:object) { build(type, status: status) }
+
+      context 'when status is scheduled' do
+        let(:status) { :scheduled }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when status is manual' do
+        let(:status) { :manual }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when status is skipped' do
+        let(:status) { :skipped }
+
+        it { is_expected.to be_truthy }
+      end
+    end
+  end
 end

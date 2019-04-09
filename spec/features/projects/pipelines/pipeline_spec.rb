@@ -225,6 +225,12 @@ describe 'Pipeline', :js do
 
           expect(page).not_to have_content('Play job')
         end
+
+        it 'is possible to play the stage with manual job' do
+          find('.js-stage-action').click
+
+          expect(page).not_to have_content('Play job')
+        end
       end
 
       context 'when pipeline has external job' do

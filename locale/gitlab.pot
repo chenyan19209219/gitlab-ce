@@ -6559,6 +6559,9 @@ msgstr ""
 msgid "Play"
 msgstr ""
 
+msgid "Play all manual"
+msgstr ""
+
 msgid "Please %{link_to_register} or %{link_to_sign_in} to comment"
 msgstr ""
 

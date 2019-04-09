@@ -200,6 +200,7 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
           get :builds
           get :failures
           get :status
+          post :play_all_manual, path: 'stages/:stage/play_all_manual'
         end
       end
 

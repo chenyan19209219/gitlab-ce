@@ -51,6 +51,14 @@ module Ci
       status.to_s == 'success'
     end
 
+    def manual_playable?
+      %w[success running failed].include?(status.to_s)
+    end
+
+    def blocked_or_skipped?
+      %[manual scheduled skipped].include?(status.to_s)
+    end
+
     def has_warnings?
       if @warnings.is_a?(Integer)
         @warnings > 0
