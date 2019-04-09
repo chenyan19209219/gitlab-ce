@@ -15,9 +15,6 @@ module Clusters
       include ::Clusters::Concerns::ApplicationVersion
       include ::Clusters::Concerns::ApplicationData
       include AfterCommitQueue
-      include ReactiveCaching
-
-      self.reactive_cache_key = ->(knative) { [knative.class.model_name.singular, knative.id] }
 
       def set_initial_status
         return unless not_installable?
@@ -41,7 +38,7 @@ module Clusters
 
       scope :for_cluster, -> (cluster) { where(cluster: cluster) }
 
-      after_save :clear_reactive_cache!
+      after_save :clear_cluster_knative_services_cache!
 
       def chart
         'knative/knative'
@@ -71,54 +68,11 @@ module Clusters
         ClusterWaitForIngressIpAddressWorker.perform_async(name, id)
       end
 
-      def client
-        cluster.kubeclient.knative_client
-      end
-
-      def services
-        with_reactive_cache do |data|
-          data[:services]
-        end
-      end
-
-      def calculate_reactive_cache
-        { services: read_services, pods: read_pods }
-      end
-
       def ingress_service
         cluster.kubeclient.get_service('istio-ingressgateway', 'istio-system')
       end
 
-      def services_for(ns: namespace)
-        return [] unless services
-        return [] unless ns
-
-        services.select do |service|
-          service.dig('metadata', 'namespace') == ns
-        end
-      end
-
-      def service_pod_details(ns, service)
-        with_reactive_cache do |data|
-          data[:pods].select { |pod| filter_pods(pod, ns, service) }
-        end
-      end
-
       private
-
-      def read_pods
-        cluster.kubeclient.core_client.get_pods.as_json
-      end
-
-      def filter_pods(pod, namespace, service)
-        pod["metadata"]["namespace"] == namespace && pod["metadata"]["labels"]["serving.knative.dev/service"] == service
-      end
-
-      def read_services
-        client.get_services.as_json
-      rescue Kubeclient::ResourceNotFoundError
-        []
-      end
 
       def install_knative_metrics
         ["kubectl apply -f #{METRICS_CONFIG}"] if cluster.application_prometheus_available?
@@ -126,6 +80,10 @@ module Clusters
 
       def verify_cluster?
         cluster&.application_helm_available? && cluster&.platform_kubernetes_rbac?
+      end
+
+      def clear_cluster_knative_services_cache!
+        cluster.knative_services_finder.clear_cache!
       end
     end
   end

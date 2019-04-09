@@ -10,7 +10,7 @@ describe Projects::Serverless::FunctionsFinder do
   let(:user) { create(:user) }
   let(:cluster) { create(:cluster, :project, :provided_by_gcp) }
   let(:service) { cluster.platform_kubernetes }
-  let(:project) { cluster.project}
+  let(:project) { cluster.project }
 
   let(:namespace) do
     create(:cluster_kubernetes_namespace,
@@ -38,22 +38,24 @@ describe Projects::Serverless::FunctionsFinder do
 
       it 'there are functions', :use_clean_rails_memory_store_caching do
         stub_kubeclient_service_pods
-        stub_reactive_cache(knative,
+        stub_reactive_cache(cluster.knative_services_finder,
           {
             services: kube_knative_services_body(namespace: namespace.namespace, name: cluster.project.name)["items"],
             pods: kube_knative_pods_body(cluster.project.name, namespace.namespace)["items"]
-          })
+          },
+          *cluster.knative_services_finder.cache_key)
 
         expect(finder.execute).not_to be_empty
       end
 
       it 'has a function', :use_clean_rails_memory_store_caching do
         stub_kubeclient_service_pods
-        stub_reactive_cache(knative,
+        stub_reactive_cache(cluster.knative_services_finder,
           {
             services: kube_knative_services_body(namespace: namespace.namespace, name: cluster.project.name)["items"],
             pods: kube_knative_pods_body(cluster.project.name, namespace.namespace)["items"]
-          })
+          },
+          *cluster.knative_services_finder.cache_key)
 
         result = finder.service(cluster.environment_scope, cluster.project.name)
         expect(result).not_to be_empty
@@ -81,22 +83,6 @@ describe Projects::Serverless::FunctionsFinder do
 
       it 'has query data' do
         expect(finder.invocation_metrics("*", cluster.project.name)).not_to be_nil
-      end
-    end
-  end
-
-  describe 'verify if knative is installed' do
-    context 'knative is not installed' do
-      it 'does not have knative installed' do
-        expect(described_class.new(project).installed?).to be false
-      end
-    end
-
-    context 'knative is installed' do
-      let!(:knative) { create(:clusters_applications_knative, :installed, cluster: cluster) }
-
-      it 'does have knative installed' do
-        expect(described_class.new(project).installed?).to be true
       end
     end
   end

@@ -8,9 +8,8 @@ describe Projects::Serverless::FunctionsController do
 
   let(:user) { create(:user) }
   let(:cluster) { create(:cluster, :project, :provided_by_gcp) }
-  let(:knative) { create(:clusters_applications_knative, :installed, cluster: cluster) }
   let(:service) { cluster.platform_kubernetes }
-  let(:project) { cluster.project}
+  let(:project) { cluster.project }
 
   let(:namespace) do
     create(:cluster_kubernetes_namespace,
@@ -56,11 +55,12 @@ describe Projects::Serverless::FunctionsController do
     context 'valid data', :use_clean_rails_memory_store_caching do
       before do
         stub_kubeclient_service_pods
-        stub_reactive_cache(knative,
+        stub_reactive_cache(cluster.knative_services_finder,
           {
             services: kube_knative_services_body(namespace: namespace.namespace, name: cluster.project.name)["items"],
             pods: kube_knative_pods_body(cluster.project.name, namespace.namespace)["items"]
-          })
+          },
+          *cluster.knative_services_finder.cache_key)
       end
 
       it 'has a valid function name' do
@@ -88,11 +88,12 @@ describe Projects::Serverless::FunctionsController do
   describe 'GET #index with data', :use_clean_rails_memory_store_caching do
     before do
       stub_kubeclient_service_pods
-      stub_reactive_cache(knative,
+      stub_reactive_cache(cluster.knative_services_finder,
         {
           services: kube_knative_services_body(namespace: namespace.namespace, name: cluster.project.name)["items"],
           pods: kube_knative_pods_body(cluster.project.name, namespace.namespace)["items"]
-        })
+        },
+        *cluster.knative_services_finder.cache_key)
     end
 
     it 'has data' do

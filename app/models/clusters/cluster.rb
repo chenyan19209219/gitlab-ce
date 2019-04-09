@@ -209,6 +209,10 @@ module Clusters
       end
     end
 
+    def knative_services_finder
+      @knative_services_finder ||= KnativeServicesFinder.new(self)
+    end
+
     private
 
     def instance_domain

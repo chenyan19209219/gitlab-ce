@@ -17,11 +17,30 @@ module KubernetesHelpers
     kube_response(kube_deployments_body)
   end
 
-  def stub_kubeclient_discover(api_url)
+  def stub_kubeclient_discover_base(api_url)
     WebMock.stub_request(:get, api_url + '/api/v1').to_return(kube_response(kube_v1_discovery_body))
-    WebMock.stub_request(:get, api_url + '/apis/extensions/v1beta1').to_return(kube_response(kube_v1beta1_discovery_body))
-    WebMock.stub_request(:get, api_url + '/apis/rbac.authorization.k8s.io/v1').to_return(kube_response(kube_v1_rbac_authorization_discovery_body))
-    WebMock.stub_request(:get, api_url + '/apis/serving.knative.dev/v1alpha1').to_return(kube_response(kube_v1alpha1_serving_knative_discovery_body))
+    WebMock
+      .stub_request(:get, api_url + '/apis/extensions/v1beta1')
+      .to_return(kube_response(kube_v1beta1_discovery_body))
+    WebMock
+      .stub_request(:get, api_url + '/apis/rbac.authorization.k8s.io/v1')
+      .to_return(kube_response(kube_v1_rbac_authorization_discovery_body))
+  end
+
+  def stub_kubeclient_discover(api_url)
+    stub_kubeclient_discover_base(api_url)
+
+    WebMock
+      .stub_request(:get, api_url + '/apis/serving.knative.dev/v1alpha1')
+      .to_return(kube_response(kube_v1alpha1_serving_knative_discovery_body))
+  end
+
+  def stub_kubeclient_discover_knative_not_found(api_url)
+    stub_kubeclient_discover_base(api_url)
+
+    WebMock
+      .stub_request(:get, api_url + '/apis/serving.knative.dev/v1alpha1')
+      .to_return(status: [404, "Resource Not Found"])
   end
 
   def stub_kubeclient_service_pods(response = nil)

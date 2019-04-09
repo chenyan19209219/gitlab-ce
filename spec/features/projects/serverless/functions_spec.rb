@@ -13,28 +13,25 @@ describe 'Functions', :js do
     gitlab_sign_in(user)
   end
 
-  context 'when user does not have a cluster and visits the serverless page' do
+  shared_examples "it's missing knative installation" do
     before do
       visit project_serverless_functions_path(project)
     end
 
-    it 'sees an empty state' do
+    it 'sees an empty state require Knative installation' do
       expect(page).to have_link('Install Knative')
       expect(page).to have_selector('.empty-state')
     end
   end
 
+  context 'when user does not have a cluster and visits the serverless page' do
+    it_behaves_like "it's missing knative installation"
+  end
+
   context 'when the user does have a cluster and visits the serverless page' do
     let(:cluster) { create(:cluster, :project, :provided_by_gcp) }
 
-    before do
-      visit project_serverless_functions_path(project)
-    end
-
-    it 'sees an empty state' do
-      expect(page).to have_link('Install Knative')
-      expect(page).to have_selector('.empty-state')
-    end
+    it_behaves_like "it's missing knative installation"
   end
 
   context 'when the user has a cluster and knative installed and visits the serverless page' do

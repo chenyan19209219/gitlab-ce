@@ -13,14 +13,17 @@ module Projects
             functions = finder.execute
 
             if functions.any?
-              render json: serialize_function(functions)
+              render json: {
+                knative_installed: "checking",
+                # knative_installed: finder.installed,
+                functions: serialize_function(functions)
+              }.to_json
             else
               head :no_content
             end
           end
 
           format.html do
-            @installed = finder.installed?
             render
           end
         end

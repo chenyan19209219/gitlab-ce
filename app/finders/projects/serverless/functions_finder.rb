@@ -13,7 +13,11 @@ module Projects
       end
 
       def installed?
-        clusters_with_knative_installed.exists?
+        @clusters.with_knative_installed.exists? || knative_detected?
+      end
+
+      def knative_detected?
+        @clusters.any? { |c| c.knative_services_finder.knative_detected? }
       end
 
       def service(environment_scope, name)
@@ -23,7 +27,7 @@ module Projects
       def invocation_metrics(environment_scope, name)
         return unless prometheus_adapter&.can_query?
 
-        cluster = clusters_with_knative_installed.preload_knative.find do |c|
+        cluster = @clusters.find do |c|
           environment_scope == c.environment_scope
         end
 
@@ -32,18 +36,21 @@ module Projects
       end
 
       def has_prometheus?(environment_scope)
-        clusters_with_knative_installed.preload_knative.to_a.any? do |cluster|
+        @clusters.any? do |cluster|
           environment_scope == cluster.environment_scope && cluster.application_prometheus_available?
         end
+        true
       end
 
       private
 
       def knative_service(environment_scope, name)
-        clusters_with_knative_installed.preload_knative.map do |cluster|
+        @clusters.map do |cluster|
           next if environment_scope != cluster.environment_scope
 
-          services = cluster.application_knative.services_for(ns: cluster.platform_kubernetes&.actual_namespace)
+          services = cluster
+            .knative_services_finder
+            .services
             .select { |svc| svc["metadata"]["name"] == name }
 
           add_metadata(cluster, services).first unless services.nil?
@@ -51,8 +58,11 @@ module Projects
       end
 
       def knative_services
-        clusters_with_knative_installed.preload_knative.map do |cluster|
-          services = cluster.application_knative.services_for(ns: cluster.platform_kubernetes&.actual_namespace)
+        @clusters.map do |cluster|
+          services = cluster
+          .knative_services_finder
+          .services
+
           add_metadata(cluster, services) unless services.nil?
         end
       end
@@ -63,15 +73,12 @@ module Projects
           s["cluster_id"] = cluster.id
 
           if services.length == 1
-            s["podcount"] = cluster.application_knative.service_pod_details(
-              cluster.platform_kubernetes&.actual_namespace,
-              s["metadata"]["name"]).length
+            s["podcount"] = cluster
+            .knative_services_finder
+            .service_pod_details(s["metadata"]["name"])
+            .length
           end
         end
-      end
-
-      def clusters_with_knative_installed
-        @clusters.with_knative_installed
       end
 
       # rubocop: disable CodeReuse/ServiceClass
