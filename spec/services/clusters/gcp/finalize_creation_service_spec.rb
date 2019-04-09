@@ -42,6 +42,12 @@ describe Clusters::Gcp::FinalizeCreationService, '#execute' do
       expect(platform.password).to eq(password)
       expect(platform.token).to eq(token)
     end
+
+    it 'calls ClusterConfigureWorker in a ascync fashion' do
+      expect(ClusterConfigureWorker).to receive(:perform_async).with(cluster.id)
+
+      subject
+    end
   end
 
   shared_examples 'error' do
@@ -155,32 +161,5 @@ describe Clusters::Gcp::FinalizeCreationService, '#execute' do
     end
 
     it_behaves_like 'kubernetes information not successfully fetched'
-  end
-
-  context 'when user changes how gitlab is managed' do
-    before do
-      stub_kubeclient_get_cluster_role_binding_error(api_url, 'gitlab-admin')
-      stub_kubeclient_create_cluster_role_binding(api_url)
-    end
-
-    include_context 'kubernetes information successfully fetched'
-
-    context 'with a gitlab-managed cluster' do
-      it 'configures Kubernetes resources' do
-        expect(ClusterConfigureWorker).to receive(:perform_async).with(cluster.id)
-
-        subject
-      end
-    end
-
-    context 'with a non gitlab-managed cluster' do
-      let(:cluster) { create(:cluster, :project, :providing_by_gcp, :not_managed) }
-
-      it 'does not configure kubernetes resources' do
-        expect(ClusterConfigureWorker).not_to receive(:perform_async)
-
-        subject
-      end
-    end
   end
 end

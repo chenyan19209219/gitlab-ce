@@ -12,7 +12,9 @@ module Clusters
         create_gitlab_service_account!
         configure_kubernetes
         cluster.save!
-        configure_kubernetes_resources_on_cluster
+
+        ClusterConfigureWorker.perform_async(cluster.id)
+
       rescue Google::Apis::ServerError, Google::Apis::ClientError, Google::Apis::AuthorizationError => e
         log_service_error(e.class.name, provider.id, e.message)
         provider.make_errored!(s_('ClusterIntegration|Failed to request to Google Cloud Platform: %{message}') % { message: e.message })
@@ -118,12 +120,6 @@ module Clusters
           provider_id: provider_id,
           message: message
         )
-      end
-
-      def configure_kubernetes_resources_on_cluster
-        return unless cluster.managed?
-
-        ClusterConfigureWorker.perform_async(cluster.id)
       end
     end
   end

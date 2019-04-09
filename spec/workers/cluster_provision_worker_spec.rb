@@ -29,16 +29,6 @@ describe ClusterProvisionWorker do
 
         described_class.new.perform(cluster.id)
       end
-
-      context 'when cluster is not managed by GitLab' do
-        let(:cluster) { create(:cluster, :provided_by_user, :not_managed) }
-
-        it 'does not configure kubernetes platform' do
-          expect(ClusterConfigureWorker).not_to receive(:perform_async)
-
-          described_class.new.perform(cluster.id)
-        end
-      end
     end
 
     context 'when cluster does not exist' do
