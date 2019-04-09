@@ -12,6 +12,7 @@ describe('Timezone Dropdown', function() {
   let $dropdownEl = null;
   let $wrapper = null;
   const tzListSel = '.dropdown-content ul li a.is-active';
+  const tzDropdownToggleText = '.dropdown-toggle-text';
 
   describe('Initialize', () => {
     describe('with dropdown already loaded', () => {
@@ -93,6 +94,36 @@ describe('Timezone Dropdown', function() {
           .trigger('click');
 
         expect(onSelectTimezone).toHaveBeenCalled();
+      });
+
+      it('will correctly set the dropdown label if a default timezone is set on the inputEl', () => {
+        $inputEl.val('Newfoundland');
+
+        // eslint-disable-next-line no-new
+        new TimezoneDropdown({
+          $inputEl,
+          $dropdownEl,
+          displayFormat: selectedItem => formatTimezone(selectedItem),
+        });
+
+        expect($wrapper.find(tzDropdownToggleText).html()).toEqual('[UTC - 2.5] Newfoundland');
+      });
+
+      it('will call a provided `displayFormat` handler to format the dropdown value', () => {
+        const displayFormat = jasmine.createSpy('displayFormat');
+        // eslint-disable-next-line no-new
+        new TimezoneDropdown({
+          $inputEl,
+          $dropdownEl,
+          displayFormat,
+        });
+
+        $wrapper
+          .find(tzListSel)
+          .first()
+          .trigger('click');
+
+        expect(displayFormat).toHaveBeenCalled();
       });
     });
   });

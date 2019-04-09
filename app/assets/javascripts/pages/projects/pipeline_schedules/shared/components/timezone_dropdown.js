@@ -1,4 +1,4 @@
-const defaultTimezone = 'UTC';
+const defaultTimezone = { name: 'UTC', offset: 0 };
 
 export const formatUtcOffset = offset => {
   const parsed = parseInt(offset, 10);
@@ -11,6 +11,13 @@ export const formatUtcOffset = offset => {
 
 export const formatTimezone = item => `[UTC ${formatUtcOffset(item.offset)}] ${item.name}`;
 
+const findTimezoneByName = (tzList = [], name = null) => {
+  if (tzList.length && name && name.length) {
+    return tzList.find(tz => tz.name === name);
+  }
+  return null;
+};
+
 const defaults = {
   $inputEl: null,
   $dropdownEl: null,
@@ -18,16 +25,25 @@ const defaults = {
 };
 
 export default class TimezoneDropdown {
-  constructor({ $dropdownEl, $inputEl, onSelectTimezone } = defaults) {
+  constructor({
+    $dropdownEl,
+    $inputEl,
+    onSelectTimezone,
+    displayFormat = item => item.name,
+  } = defaults) {
     this.$dropdown = $dropdownEl;
     this.$dropdownToggle = this.$dropdown.find('.dropdown-toggle-text');
     this.$input = $inputEl;
     this.timezoneData = this.$dropdown.data('data');
 
-    this.initDefaultTimezone();
-    this.initDropdown();
-
     this.onSelectTimezone = onSelectTimezone;
+    this.displayFormat = displayFormat;
+
+    this.initialTimezone =
+      findTimezoneByName(this.timezoneData, this.$input.val()) || defaultTimezone;
+
+    this.initDefaultTimezone(); // TODO: this should look through the list of tz's provided and find the corresponding one
+    this.initDropdown();
   }
 
   initDropdown() {
@@ -35,7 +51,7 @@ export default class TimezoneDropdown {
       data: this.timezoneData,
       filterable: true,
       selectable: true,
-      toggleLabel: item => item.name,
+      toggleLabel: this.displayFormat,
       search: {
         fields: ['name'],
       },
@@ -43,20 +59,17 @@ export default class TimezoneDropdown {
       text: item => formatTimezone(item),
     });
 
-    this.setDropdownToggle();
+    this.setDropdownToggle(this.displayFormat(this.initialTimezone));
   }
 
   initDefaultTimezone() {
-    const initialValue = this.$input.val();
-
-    if (!initialValue) {
-      this.$input.val(defaultTimezone);
+    if (!this.$input.val()) {
+      this.$input.val(defaultTimezone.name);
     }
   }
 
-  setDropdownToggle() {
-    const initialValue = this.$input.val();
-    this.$dropdownToggle.text(initialValue);
+  setDropdownToggle(dropdownText) {
+    this.$dropdownToggle.text(dropdownText);
   }
 
   updateInputValue({ selectedObj, e }) {

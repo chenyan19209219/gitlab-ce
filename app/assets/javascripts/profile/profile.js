@@ -2,7 +2,9 @@ import $ from 'jquery';
 import axios from '~/lib/utils/axios_utils';
 import flash from '../flash';
 import { parseBoolean } from '~/lib/utils/common_utils';
-import TimezoneDropdown from '~/pages/projects/pipeline_schedules/shared/components/timezone_dropdown';
+import TimezoneDropdown, {
+  formatTimezone,
+} from '~/pages/projects/pipeline_schedules/shared/components/timezone_dropdown';
 
 export default class Profile {
   constructor({ form } = {}) {
@@ -12,9 +14,12 @@ export default class Profile {
     this.bindEvents();
     this.initAvatarGlCrop();
 
+    this.$inputEl = $('#user_timezone');
+
     this.timezoneDropdown = new TimezoneDropdown({
-      $inputEl: $('#user_timezone'),
+      $inputEl: this.$inputEl,
       $dropdownEl: $('.js-timezone-dropdown'),
+      displayFormat: selectedItem => formatTimezone(selectedItem),
     });
   }
 
