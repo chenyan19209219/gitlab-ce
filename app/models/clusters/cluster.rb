@@ -100,7 +100,7 @@ module Clusters
     scope :missing_kubernetes_namespace, -> (kubernetes_namespaces) do
       subquery = kubernetes_namespaces.select('1').where('clusters_kubernetes_namespaces.cluster_id = clusters.id')
 
-      where('NOT EXISTS (?)', subquery)
+      where(managed: true).where('NOT EXISTS (?)', subquery)
     end
 
     scope :with_knative_installed, -> { joins(:application_knative).merge(Clusters::Applications::Knative.available) }

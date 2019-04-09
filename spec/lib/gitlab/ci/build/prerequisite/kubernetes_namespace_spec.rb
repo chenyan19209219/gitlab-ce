@@ -19,14 +19,20 @@ describe Gitlab::Ci::Build::Prerequisite::KubernetesNamespace do
     context 'build has a deployment' do
       let!(:deployment) { create(:deployment, deployable: build) }
 
-      context 'and a not-managed cluster to deploy to' do
-        let(:cluster) { create(:cluster, :not_managed, projects: [build.project]) }
+      context 'and a cluster to deploy to' do
+        let(:cluster) { create(:cluster, projects: [build.project]) }
 
         before do
           allow(build.deployment).to receive(:cluster).and_return(cluster)
         end
 
         it { is_expected.to be_truthy }
+
+        context 'and the cluster is not managed' do
+          let(:cluster) { create(:cluster, :not_managed, projects: [build.project]) }
+
+          it { is_expected.to be_falsey }
+        end
 
         context 'and a namespace is already created for this project' do
           let!(:kubernetes_namespace) { create(:cluster_kubernetes_namespace, cluster: cluster, project: build.project) }
@@ -52,7 +58,7 @@ describe Gitlab::Ci::Build::Prerequisite::KubernetesNamespace do
     subject { described_class.new(build).complete! }
 
     context 'completion is required' do
-      let(:cluster) { create(:cluster, :not_managed, projects: [build.project]) }
+      let(:cluster) { create(:cluster, projects: [build.project]) }
 
       before do
         allow(build.deployment).to receive(:cluster).and_return(cluster)
@@ -71,26 +77,14 @@ describe Gitlab::Ci::Build::Prerequisite::KubernetesNamespace do
     end
 
     context 'completion is not required' do
-      context 'when deployment does not have a cluster' do
-        it 'does not create a kubernetes namespace' do
-          expect(Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService).not_to receive(:new)
-
-          subject
-        end
+      before do
+        expect(deployment.cluster).to be_nil
       end
 
-      context 'when cluster is managed' do
-        let(:cluster) { create(:cluster, projects: [build.project]) }
+      it 'does not create a namespace' do
+        expect(Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService).not_to receive(:new)
 
-        before do
-          allow(build.deployment).to receive(:cluster).and_return(cluster)
-        end
-
-        it 'does not create a kubernetes namespace' do
-          expect(Clusters::Gcp::Kubernetes::CreateOrUpdateNamespaceService).not_to receive(:new)
-
-          subject
-        end
+        subject
       end
     end
   end

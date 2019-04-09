@@ -7,7 +7,7 @@ module Gitlab
         class KubernetesNamespace < Base
           def unmet?
             deployment_cluster.present? &&
-              !deployment_cluster.managed? &&
+              deployment_cluster.managed? &&
               kubernetes_namespace.new_record?
           end
 
