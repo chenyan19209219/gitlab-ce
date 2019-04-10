@@ -2,6 +2,8 @@ import Vue from 'vue';
 import MockAdapter from 'axios-mock-adapter';
 import Dashboard from '~/monitoring/components/dashboard.vue';
 import { timeWindows } from '~/monitoring/constants';
+import { mergeUrlParams } from '~/lib/utils/url_utility';
+import { historyPushState } from '~/lib/utils/common_utils';
 import axios from '~/lib/utils/axios_utils';
 import { metricsGroupsAPIResponse, mockApiEndpoint, environmentData } from './mock_data';
 
@@ -244,6 +246,50 @@ describe('Dashboard', () => {
 
         expect(timeWindowDropdown).not.toBeNull();
         expect(timeWindowDropdownEls.length).toEqual(numberOfTimeWindows);
+
+        done();
+      });
+    });
+
+    it('shows a specific time window selected from the url params', done => {
+      const newUrl = mergeUrlParams(
+        {
+          time_window: 'thirtyMinutes',
+        },
+        window.location.href,
+      );
+      historyPushState(newUrl);
+      const component = new DashboardComponent({
+        el: document.querySelector('.prometheus-graphs'),
+        propsData: { ...propsData, hasMetrics: true, showTimeWindowDropdown: true },
+      });
+
+      setTimeout(() => {
+        const selectedTimeWindow = component.$el.querySelector(
+          '.js-time-window-dropdown [active="true"]',
+        );
+
+        expect(component.selectedTimeWindowKey).toEqual('thirtyMinutes');
+        expect(selectedTimeWindow.textContent.trim()).toEqual(component.selectedTimeWindow);
+        done();
+      });
+    });
+
+    it('defaults to the eight hours time window for non valid url parameters', done => {
+      const newUrl = mergeUrlParams(
+        {
+          time_window: '<script>alert("XSS")</script>',
+        },
+        window.location.href,
+      );
+      historyPushState(newUrl);
+      const component = new DashboardComponent({
+        el: document.querySelector('.prometheus-graphs'),
+        propsData: { ...propsData, hasMetrics: true, showTimeWindowDropdown: true },
+      });
+
+      Vue.nextTick(() => {
+        expect(component.selectedTimeWindowKey).toEqual('eightHours');
 
         done();
       });

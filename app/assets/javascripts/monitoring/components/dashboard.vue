@@ -4,6 +4,8 @@ import _ from 'underscore';
 import { s__ } from '~/locale';
 import Icon from '~/vue_shared/components/icon.vue';
 import '~/vue_shared/mixins/is_ee';
+import { historyPushState } from '~/lib/utils/common_utils';
+import { mergeUrlParams, getParameterValues } from '~/lib/utils/url_utility';
 import Flash from '../../flash';
 import MonitoringService from '../services/monitoring_service';
 import MonitorAreaChart from './charts/area.vue';
@@ -102,6 +104,7 @@ export default {
       showEmptyState: true,
       elWidth: 0,
       selectedTimeWindow: '',
+      selectedTimeWindowKey: '',
     };
   },
   created() {
@@ -110,9 +113,22 @@ export default {
       deploymentEndpoint: this.deploymentEndpoint,
       environmentsEndpoint: this.environmentsEndpoint,
     });
-
     this.timeWindows = timeWindows;
-    this.selectedTimeWindow = this.timeWindows.eightHours;
+    this.selectedTimeWindowKey = _.escape(getParameterValues('time_window')[0]);
+
+    if (this.selectedTimeWindowKey !== undefined) {
+      this.selectedTimeWindow =
+        this.timeWindows[this.selectedTimeWindowKey] !== undefined
+          ? this.timeWindows[this.selectedTimeWindowKey]
+          : this.timeWindows.eightHours;
+      // Default to another time window if the selectedTimeWindowKey is bogus
+      if (!Object.keys(this.timeWindows).includes(this.selectedTimeWindowKey)) {
+        this.selectedTimeWindowKey = 'eightHours';
+      }
+    } else {
+      this.selectedTimeWindow = this.timeWindows.eightHours;
+      this.selectedTimeWindowKey = 'eightHours';
+    }
   },
   beforeDestroy() {
     if (sidebarMutationObserver) {
@@ -120,9 +136,10 @@ export default {
     }
   },
   mounted() {
+    const startEndWindow = getTimeDiff(this.timeWindows[this.selectedTimeWindowKey]);
     this.servicePromises = [
       this.service
-        .getGraphsData()
+        .getGraphsData(startEndWindow)
         .then(data => this.store.storeMetrics(data))
         .catch(() => Flash(s__('Metrics|There was an error while retrieving metrics'))),
       this.service
@@ -177,13 +194,22 @@ export default {
         });
     },
     getGraphsDataWithTime(timeFrame) {
+      const startEndWindow = getTimeDiff(this.timeWindows[timeFrame]);
       this.state = 'loading';
       this.showEmptyState = true;
       this.service
-        .getGraphsData(getTimeDiff(this.timeWindows[timeFrame]))
+        .getGraphsData(startEndWindow)
         .then(data => {
           this.store.storeMetrics(data);
           this.selectedTimeWindow = this.timeWindows[timeFrame];
+          // Set url parameters without reloading the page
+          const url = mergeUrlParams(
+            {
+              time_window: timeFrame,
+            },
+            window.location.href,
+          );
+          historyPushState(url);
         })
         .catch(() => {
           Flash(s__('Metrics|Not enough data to display'));
