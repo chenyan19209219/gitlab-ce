@@ -94,13 +94,14 @@ module Clusters
     scope :user_provided, -> { where(provider_type: ::Clusters::Cluster.provider_types[:user]) }
     scope :gcp_provided, -> { where(provider_type: ::Clusters::Cluster.provider_types[:gcp]) }
     scope :gcp_installed, -> { gcp_provided.includes(:provider_gcp).where(cluster_providers_gcp: { status: ::Clusters::Providers::Gcp.state_machines[:status].states[:created].value }) }
+    scope :managed, -> { where(managed: true) }
 
     scope :default_environment, -> { where(environment_scope: DEFAULT_ENVIRONMENT) }
 
     scope :missing_kubernetes_namespace, -> (kubernetes_namespaces) do
       subquery = kubernetes_namespaces.select('1').where('clusters_kubernetes_namespaces.cluster_id = clusters.id')
 
-      where(managed: true).where('NOT EXISTS (?)', subquery)
+      where('NOT EXISTS (?)', subquery)
     end
 
     scope :with_knative_installed, -> { joins(:application_knative).merge(Clusters::Applications::Knative.available) }
