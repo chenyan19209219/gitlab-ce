@@ -23,7 +23,7 @@ module API
       get ':id/releases' do
         releases = ::ReleasesFinder.new(user_project, current_user).execute
 
-        present paginate(releases), with: Entities::Release
+        present paginate(releases), with: Entities::Release, except: sensitive_info
       end
 
       desc 'Get a single project release' do
@@ -34,9 +34,12 @@ module API
         requires :tag_name, type: String, desc: 'The name of the tag', as: :tag
       end
       get ':id/releases/:tag_name', requirements: RELEASE_ENDPOINT_REQUIREMETS do
+        guest_user = user_project.team.guest?(current_user)
+        non_public_project = !user_project.public?
+        forbidden! if guest_user && non_public_project
         authorize_read_release!
 
-        present release, with: Entities::Release
+        present release, with: Entities::Release, except: sensitive_info
       end
 
       desc 'Create a new release' do
@@ -133,6 +136,13 @@ module API
 
       def authorize_destroy_release!
         authorize! :destroy_release, release
+      end
+
+      def sensitive_info
+        [].tap do |except|
+          except.concat([:tag_name, :commit]) unless can?(current_user, :read_commit_status, user_project)
+          except.concat([{ assets: [:sources] }]) unless can?(current_user, :download_code, user_project)
+        end
       end
 
       def release

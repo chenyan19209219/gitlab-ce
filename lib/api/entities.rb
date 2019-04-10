@@ -1158,7 +1158,10 @@ module API
       expose :commit, using: Entities::Commit
 
       expose :assets do
-        expose :assets_count, as: :count
+        expose :assets_count, as: :count do |release, options|
+          assets_to_exclude = options[:except] || []
+          release.assets_count(except: assets_to_exclude)
+        end
         expose :sources, using: Entities::Releases::Source
         expose :links, using: Entities::Releases::Link do |release, options|
           release.links.sorted
