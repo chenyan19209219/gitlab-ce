@@ -271,6 +271,7 @@ describe('IDE commit module actions', () => {
         short_id: '123',
         message: 'test message',
         committed_date: 'date',
+        parent_ids: '321',
         stats: {
           additions: '1',
           deletions: '2',
@@ -457,6 +458,56 @@ describe('IDE commit module actions', () => {
 
             expect(alert.textContent.trim()).toBe('failed message');
 
+            done();
+          })
+          .catch(done.fail);
+      });
+    });
+
+    describe('first commit on empty repo', () => {
+      const COMMIT_RESPONSE = {
+        id: '123456',
+        short_id: '123',
+        message: 'test message',
+        committed_date: 'date',
+        parent_ids: [],
+        stats: {
+          additions: '1',
+          deletions: '2',
+        },
+      };
+
+      it('fetches branch info after very first commit', done => {
+        spyOn(service, 'commit').and.returnValue(
+          Promise.resolve({
+            data: COMMIT_RESPONSE,
+          }),
+        );
+
+        spyOn(store, 'dispatch').and.callThrough();
+
+        store
+          .dispatch('commit/commitChanges')
+          .then(() => {
+            expect(store.dispatch.calls.argsFor(1)[0]).toEqual('getBranchData');
+            done();
+          })
+          .catch(done.fail);
+      });
+
+      it('does not fetch branch after commit to existing project', done => {
+        COMMIT_RESPONSE.parent_ids.push('1234');
+        spyOn(service, 'commit').and.returnValue(
+          Promise.resolve({
+            data: COMMIT_RESPONSE,
+          }),
+        );
+        spyOn(store, 'dispatch').and.callThrough();
+
+        store
+          .dispatch('commit/commitChanges')
+          .then(() => {
+            expect(store.dispatch.calls.argsFor(1)[0]).not.toEqual('getBranchData');
             done();
           })
           .catch(done.fail);

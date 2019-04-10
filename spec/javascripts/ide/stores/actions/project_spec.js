@@ -173,58 +173,6 @@ describe('IDE store project actions', () => {
     });
   });
 
-  describe('getBranchData', () => {
-    describe('error', () => {
-      let dispatch;
-      const callParams = [
-        {
-          commit() {},
-          dispatch,
-          state: store.state,
-        },
-        {
-          projectId: 'abc/def',
-          branchId: 'master-testing',
-        },
-      ];
-
-      beforeEach(() => {
-        dispatch = jasmine.createSpy('dispatchSpy');
-        document.body.innerHTML += '<div class="flash-container"></div>';
-      });
-
-      afterEach(() => {
-        document.querySelector('.flash-container').remove();
-      });
-
-      it('passes the error further unchanged without dispatching any action when response is 404', done => {
-        mock.onGet(/(.*)/).replyOnce(404);
-
-        getBranchData(...callParams)
-          .then(done.fail)
-          .catch(e => {
-            expect(dispatch.calls.count()).toEqual(0);
-            expect(e.response.status).toEqual(404);
-            expect(document.querySelector('.flash-alert')).toBeNull();
-            done();
-          });
-      });
-
-      it('does not pass the error further and flashes an alert if error is not 404', done => {
-        mock.onGet(/(.*)/).replyOnce(418);
-
-        getBranchData(...callParams)
-          .then(done.fail)
-          .catch(e => {
-            expect(dispatch.calls.count()).toEqual(0);
-            expect(e.response).toBeUndefined();
-            expect(document.querySelector('.flash-alert')).not.toBeNull();
-            done();
-          });
-      });
-    });
-  });
-
   describe('showEmptyState', () => {
     it('does nothing if error is not 404', done => {
       testAction(

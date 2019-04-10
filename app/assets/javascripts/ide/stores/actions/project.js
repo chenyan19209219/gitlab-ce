@@ -34,45 +34,6 @@ export const getProjectData = ({ commit, state }, { namespace, projectId, force 
     }
   });
 
-export const getBranchData = ({ commit, state }, { projectId, branchId, force = false } = {}) =>
-  new Promise((resolve, reject) => {
-    if (
-      typeof state.projects[`${projectId}`] === 'undefined' ||
-      !state.projects[`${projectId}`].branches[branchId] ||
-      force
-    ) {
-      service
-        .getBranchData(`${projectId}`, branchId)
-        .then(({ data }) => {
-          const { id } = data.commit;
-          commit(types.SET_BRANCH, {
-            projectPath: `${projectId}`,
-            branchName: branchId,
-            branch: data,
-          });
-          commit(types.SET_BRANCH_WORKING_REFERENCE, { projectId, branchId, reference: id });
-          resolve(data);
-        })
-        .catch(e => {
-          if (e.response.status === 404) {
-            reject(e);
-          } else {
-            flash(
-              __('Error loading branch data. Please try again.'),
-              'alert',
-              document,
-              null,
-              false,
-              true,
-            );
-            reject(new Error(`Branch not loaded - ${projectId}/${branchId}`));
-          }
-        });
-    } else {
-      resolve(state.projects[`${projectId}`].branches[branchId]);
-    }
-  });
-
 export const refreshLastCommitData = ({ commit }, { projectId, branchId } = {}) =>
   service
     .getBranchData(projectId, branchId)
