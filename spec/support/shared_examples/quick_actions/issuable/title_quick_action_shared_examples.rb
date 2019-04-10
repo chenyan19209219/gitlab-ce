@@ -44,7 +44,7 @@ shared_examples 'title quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/title new title'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Changed the title to "New title".'
       expect(page).to have_content 'New title'
 
       issuable.reload

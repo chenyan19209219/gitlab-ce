@@ -11,9 +11,22 @@ module Gitlab
         desc _('Assign')
         # rubocop: disable CodeReuse/ActiveRecord
         explanation do |users|
-          users = quick_action_target.allows_multiple_assignees? ? users : users.take(1)
-          "Assigns #{users.map(&:to_reference).to_sentence}."
+          "Assigns #{assignee_users_sentence(users)}."
         end
+        execution_message do |users|
+          next if users.empty?
+
+          "Assigned #{assignee_users_sentence(users)}."
+        end
+        def assignee_users_sentence(users)
+          if quick_action_target.allows_multiple_assignees?
+            users
+          else
+            users.take(1)
+          end.map(&:to_reference).to_sentence
+        end
+        private :assignee_users_sentence
+
         # rubocop: enable CodeReuse/ActiveRecord
         params do
           quick_action_target.allows_multiple_assignees? ? '@user1 @user2' : '@user'
@@ -44,10 +57,23 @@ module Gitlab
           end
         end
         explanation do |users = nil|
-          assignees = quick_action_target.assignees
-          assignees &= users if users.present? && quick_action_target.allows_multiple_assignees?
+          assignees = assignees_for_removal(users)
           "Removes #{'assignee'.pluralize(assignees.size)} #{assignees.map(&:to_reference).to_sentence}."
         end
+        execution_message do |users = nil|
+          assignees = assignees_for_removal(users)
+          "Removed #{'assignee'.pluralize(assignees.size)} #{assignees.map(&:to_reference).to_sentence}."
+        end
+        def assignees_for_removal(users)
+          assignees = quick_action_target.assignees
+          if users.present? && quick_action_target.allows_multiple_assignees?
+            assignees & users
+          else
+            assignees
+          end
+        end
+        private :assignees_for_removal
+
         params do
           quick_action_target.allows_multiple_assignees? ? '@user1 @user2' : ''
         end
@@ -74,6 +100,9 @@ module Gitlab
         explanation do |milestone|
           _("Sets the milestone to %{milestone_reference}.") % { milestone_reference: milestone.to_reference } if milestone
         end
+        execution_message do |milestone|
+          _("Set the milestone to %{milestone_reference}.") % { milestone_reference: milestone.to_reference } if milestone
+        end
         params '%"milestone"'
         types Issue, MergeRequest
         condition do
@@ -92,6 +121,9 @@ module Gitlab
         explanation do
           _("Removes %{milestone_reference} milestone.") % { milestone_reference: quick_action_target.milestone.to_reference(format: :name) }
         end
+        execution_message do
+          _("Removed %{milestone_reference} milestone.") % { milestone_reference: quick_action_target.milestone.to_reference(format: :name) }
+        end
         types Issue, MergeRequest
         condition do
           quick_action_target.persisted? &&
@@ -106,6 +138,11 @@ module Gitlab
         explanation do |source_issuable|
           _("Copy labels and milestone from %{source_issuable_reference}.") % { source_issuable_reference: source_issuable.to_reference }
         end
+        execution_message do |source_issuable|
+          next unless can_copy_metadata?(source_issuable)
+
+          _("Copied labels and milestone from %{source_issuable_reference}.") % { source_issuable_reference: source_issuable.to_reference }
+        end
         params '#issue | !merge_request'
         types Issue, MergeRequest
         condition do
@@ -116,18 +153,30 @@ module Gitlab
             extract_references(issuable_param, :merge_request).first
         end
         command :copy_metadata do |source_issuable|
-          if source_issuable.present? && source_issuable.project.id == quick_action_target.project.id
+          if can_copy_metadata?(source_issuable)
             @updates[:add_label_ids] = source_issuable.labels.map(&:id)
             @updates[:milestone_id] = source_issuable.milestone.id if source_issuable.milestone
           end
         end
+        def can_copy_metadata?(source_issuable)
+          source_issuable.present? && source_issuable.project.id == quick_action_target.project.id
+        end
+        private :can_copy_metadata?
 
         desc _('Set time estimate')
         explanation do |time_estimate|
-          time_estimate = Gitlab::TimeTrackingFormatter.output(time_estimate)
-
-          _("Sets time estimate to %{time_estimate}.") % { time_estimate: time_estimate } if time_estimate
+          formatted_time_estimate = format_time_estimate(time_estimate)
+          _("Sets time estimate to %{time_estimate}.") % { time_estimate: formatted_time_estimate } if formatted_time_estimate
         end
+        execution_message do |time_estimate|
+          formatted_time_estimate = format_time_estimate(time_estimate)
+          _("Set time estimate to %{time_estimate}.") % { time_estimate: formatted_time_estimate } if formatted_time_estimate
+        end
+        def format_time_estimate(time_estimate)
+          Gitlab::TimeTrackingFormatter.output(time_estimate)
+        end
+        private :format_time_estimate
+
         params '<1w 3d 2h 14m>'
         types Issue, MergeRequest
         condition do
@@ -144,18 +193,26 @@ module Gitlab
 
         desc _('Add or subtract spent time')
         explanation do |time_spent, time_spent_date|
+          spend_time_message(time_spent, time_spent_date, false)
+        end
+        execution_message do |time_spent, time_spent_date|
+          spend_time_message(time_spent, time_spent_date, true)
+        end
+        def spend_time_message(time_spent, time_spent_date, paste_tense)
           if time_spent
             if time_spent > 0
-              verb = _('Adds')
+              verb = paste_tense ? _('Added') : _('Adds')
               value = time_spent
             else
-              verb = _('Subtracts')
+              verb = paste_tense ? _('Subtracted') : _('Subtracts')
               value = -time_spent
             end
 
             _("%{verb} %{time_spent_value} spent time.") % { verb: verb, time_spent_value: Gitlab::TimeTrackingFormatter.output(value) }
           end
         end
+        private :spend_time_message
+
         params '<time(1h30m | -1h30m)> <date(YYYY-MM-DD)>'
         types Issue, MergeRequest
         condition do
@@ -176,6 +233,7 @@ module Gitlab
 
         desc _('Remove time estimate')
         explanation _('Removes time estimate.')
+        execution_message _('Removed time estimate.')
         types Issue, MergeRequest
         condition do
           quick_action_target.persisted? &&
@@ -187,6 +245,7 @@ module Gitlab
 
         desc _('Remove spent time')
         explanation _('Removes spent time.')
+        execution_message _('Removed spent time.')
         condition do
           quick_action_target.persisted? &&
             current_user.can?(:"admin_#{quick_action_target.to_ability_name}", project)
@@ -198,6 +257,7 @@ module Gitlab
 
         desc _("Lock the discussion")
         explanation _("Locks the discussion")
+        execution_message _("Locked the discussion")
         types Issue, MergeRequest
         condition do
           quick_action_target.persisted? &&
@@ -210,6 +270,7 @@ module Gitlab
 
         desc _("Unlock the discussion")
         explanation _("Unlocks the discussion")
+        execution_message _("Unlocked the discussion")
         types Issue, MergeRequest
         condition do
           quick_action_target.persisted? &&

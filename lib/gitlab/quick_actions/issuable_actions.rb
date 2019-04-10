@@ -17,6 +17,9 @@ module Gitlab
         explanation do
           "Closes this #{quick_action_target.to_ability_name.humanize(capitalize: false)}."
         end
+        execution_message do
+          "Closed this #{quick_action_target.to_ability_name.humanize(capitalize: false)}."
+        end
         types Issuable
         condition do
           quick_action_target.persisted? &&
@@ -33,6 +36,9 @@ module Gitlab
         explanation do
           "Reopens this #{quick_action_target.to_ability_name.humanize(capitalize: false)}."
         end
+        execution_message do
+          "Reopened this #{quick_action_target.to_ability_name.humanize(capitalize: false)}."
+        end
         types Issuable
         condition do
           quick_action_target.persisted? &&
@@ -46,6 +52,9 @@ module Gitlab
         desc _('Change title')
         explanation do |title_param|
           _("Changes the title to \"%{title_param}\".") % { title_param: title_param }
+        end
+        execution_message do |title_param|
+          _("Changed the title to \"%{title_param}\".") % { title_param: title_param }
         end
         params '<New title>'
         types Issuable
@@ -62,6 +71,11 @@ module Gitlab
           labels = find_label_references(labels_param)
 
           "Adds #{labels.join(' ')} #{'label'.pluralize(labels.count)}." if labels.any?
+        end
+        execution_message do |labels_param|
+          labels = find_label_references(labels_param, :name)
+
+          "Added #{labels.join(' ')} #{'label'.pluralize(labels.count)}." if labels.any?
         end
         params '~label1 ~"label 2"'
         types Issuable
@@ -83,11 +97,19 @@ module Gitlab
 
         desc _('Remove all or specific label(s)')
         explanation do |labels_param = nil|
+          remove_label_message(labels_param, false)
+        end
+        execution_message do |labels_param = nil|
+          remove_label_message(labels_param, true)
+        end
+        def remove_label_message(labels_param, paste_tense)
+          suffix = paste_tense ? 'd' : 's'
+
           if labels_param.present?
-            labels = find_label_references(labels_param)
-            "Removes #{labels.join(' ')} #{'label'.pluralize(labels.count)}." if labels.any?
+            labels = find_label_references(labels_param, :name)
+            "Remove#{suffix} #{labels.join(' ')} #{'label'.pluralize(labels.count)}." if labels.any?
           else
-            _('Removes all labels.')
+            _("Remove%{suffix} all labels.") % { suffix: suffix }
           end
         end
         params '~label1 ~"label 2"'
@@ -117,6 +139,10 @@ module Gitlab
           labels = find_label_references(labels_param)
           "Replaces all labels with #{labels.join(' ')} #{'label'.pluralize(labels.count)}." if labels.any?
         end
+        execution_message do |labels_param|
+          labels = find_label_references(labels_param, :name)
+          "Replaced all labels with #{labels.join(' ')} #{'label'.pluralize(labels.count)}." if labels.any?
+        end
         params '~label1 ~"label 2"'
         types Issuable
         condition do
@@ -137,6 +163,7 @@ module Gitlab
 
         desc _('Add a todo')
         explanation _('Adds a todo.')
+        execution_message _('Added a todo.')
         types Issuable
         condition do
           quick_action_target.persisted? &&
@@ -148,6 +175,7 @@ module Gitlab
 
         desc _('Mark todo as done')
         explanation _('Marks todo as done.')
+        execution_message _('Marked todo as done.')
         types Issuable
         condition do
           quick_action_target.persisted? &&
@@ -160,6 +188,9 @@ module Gitlab
         desc _('Subscribe')
         explanation do
           "Subscribes to this #{quick_action_target.to_ability_name.humanize(capitalize: false)}."
+        end
+        execution_message do
+          "Subscribed to this #{quick_action_target.to_ability_name.humanize(capitalize: false)}."
         end
         types Issuable
         condition do
@@ -174,6 +205,9 @@ module Gitlab
         explanation do
           "Unsubscribes from this #{quick_action_target.to_ability_name.humanize(capitalize: false)}."
         end
+        execution_message do
+          "Unsubscribed from this #{quick_action_target.to_ability_name.humanize(capitalize: false)}."
+        end
         types Issuable
         condition do
           quick_action_target.persisted? &&
@@ -186,6 +220,9 @@ module Gitlab
         desc _('Toggle emoji award')
         explanation do |name|
           _("Toggles :%{name}: emoji award.") % { name: name } if name
+        end
+        execution_message do |name|
+          _("Toggled :%{name}: emoji award.") % { name: name } if name
         end
         params ':emoji:'
         types Issuable

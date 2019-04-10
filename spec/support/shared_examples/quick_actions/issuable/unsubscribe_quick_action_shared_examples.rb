@@ -46,7 +46,7 @@ shared_examples 'unsubscribe quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/unsubscribe'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content "Unsubscribed from this #{issuable_type.humanize(capitalize: false)}."
       expect(issuable.subscribed?(maintainer, project)).to be_falsey
     end
 

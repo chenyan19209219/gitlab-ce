@@ -12,7 +12,7 @@ shared_examples 'wip quick action' do
       add_note('/wip')
 
       expect(page).not_to have_content '/wip'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Marked this merge request as Work In Progress.'
 
       expect(merge_request.reload.work_in_progress?).to eq true
     end
@@ -22,7 +22,7 @@ shared_examples 'wip quick action' do
       add_note('/wip')
 
       expect(page).not_to have_content '/wip'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Unmarked this merge request as Work In Progress.'
 
       expect(merge_request.reload.work_in_progress?).to eq false
     end
@@ -39,7 +39,7 @@ shared_examples 'wip quick action' do
       add_note('/wip')
 
       expect(page).not_to have_content '/wip'
-      expect(page).not_to have_content 'Commands applied'
+      expect(page).not_to have_content 'Marked this merge request as Work In Progress.'
 
       expect(merge_request.reload.work_in_progress?).to eq false
     end

@@ -45,7 +45,7 @@ shared_examples 'milestone quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/milestone'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content %{Set the milestone to %"ASAP".}
       expect(issuable.reload.milestone).to eq milestone
     end
 

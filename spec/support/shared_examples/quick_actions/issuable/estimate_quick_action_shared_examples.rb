@@ -43,7 +43,7 @@ shared_examples 'estimate quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/estimate'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Set time estimate to 1d 2h 3m'
       expect(issuable.reload.time_estimate).to eq 36180
     end
 

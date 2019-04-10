@@ -46,7 +46,7 @@ shared_examples 'todo quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/todo'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Added a todo.'
 
       todos = TodosFinder.new(maintainer).execute
       todo = todos.first
@@ -72,7 +72,7 @@ shared_examples 'todo quick action' do |issuable_type|
       it "does not add todo the #{issuable_type}" do
         add_note('/todo')
 
-        expect(page).not_to have_content 'Commands applied'
+        expect(page).not_to have_content 'Added a todo.'
         todos = TodosFinder.new(maintainer).execute
         expect(todos.size).to eq 0
       end

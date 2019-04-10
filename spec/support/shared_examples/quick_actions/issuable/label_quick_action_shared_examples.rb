@@ -45,7 +45,7 @@ shared_examples 'label quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/label'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content %{Added ~"bug" ~"feature" labels.}
       expect(issuable.reload.labels).to match_array([label_bug, label_feature])
     end
 

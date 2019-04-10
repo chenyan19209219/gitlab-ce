@@ -45,7 +45,7 @@ shared_examples 'copy_metadata quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/copy_metadata'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content "Copied labels and milestone from #{source_issuable.to_reference(project)}."
       issuable.reload
       expect(issuable.milestone).to eq milestone
       expect(issuable.labels).to match_array([label_bug, label_feature])
@@ -67,7 +67,7 @@ shared_examples 'copy_metadata quick action' do |issuable_type|
 
         wait_for_requests
         expect(page).not_to have_content '/copy_metadata'
-        expect(page).not_to have_content 'Commands applied'
+        expect(page).to have_content "Copied labels and milestone from #{source_issuable.to_reference(project)}."
         issuable.reload
         expect(issuable.milestone).not_to eq milestone
         expect(issuable.labels).to eq []

@@ -6,7 +6,7 @@ shared_examples 'remove_due_date quick action' do
       add_note('/remove_due_date')
 
       expect(page).not_to have_content '/remove_due_date'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Removed the due date.'
 
       visit project_issue_path(project, issue)
 
@@ -28,7 +28,7 @@ shared_examples 'remove_due_date quick action' do
     it 'does not remove the due date' do
       add_note("/remove_due_date")
 
-      expect(page).not_to have_content 'Commands applied'
+      expect(page).not_to have_content 'Removed the due date.'
       expect(page).not_to have_content '/remove_due_date'
     end
   end

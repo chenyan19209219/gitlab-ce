@@ -72,7 +72,7 @@ shared_examples 'assign quick action' do |issuable_type|
       add_note("/assign me")
 
       expect(page).not_to have_content '/assign me'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content "Assigned #{maintainer.to_reference}"
 
       expect(issuable.reload.assignees).to eq [maintainer]
     end

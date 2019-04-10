@@ -173,6 +173,33 @@ describe Notes::QuickActionsService do
     end
   end
 
+  describe '#execute_message' do
+    include_context 'note on noteable'
+
+    let(:note) { create(:note_on_issue, project: project) }
+
+    subject { described_class.new(project, maintainer) }
+
+    it 'returns an empty string when the command is not supported' do
+      expect(subject).to receive(:supported?).and_return(false)
+
+      expect(subject.execute_message(note)).to be_empty
+    end
+
+    it 'delegates to the interpret_service' do
+      message = 'Changed title to foo'
+      fake_interpret_service = double.tap do |dbl|
+        expect(dbl).to receive(:execute_message)
+          .with(note.note, note.noteable)
+          .and_return(message)
+      end
+      expect(subject).to receive(:interpret_service).and_return(fake_interpret_service)
+      expect(subject).to receive(:supported?).and_return(true)
+
+      expect(subject.execute_message(note)).to eq(message)
+    end
+  end
+
   context 'CE restriction for issue assignees' do
     describe '/assign' do
       let(:project) { create(:project) }

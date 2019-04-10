@@ -6,7 +6,7 @@ shared_examples 'due quick action' do
       add_note('/due 2016-08-28')
 
       expect(page).not_to have_content '/due 2016-08-28'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Set the due date to 2016-08-28'
 
       visit project_issue_path(project, issue)
 
@@ -28,7 +28,7 @@ shared_examples 'due quick action' do
     it 'does not set the due date' do
       add_note('/due 2016-08-28')
 
-      expect(page).not_to have_content 'Commands applied'
+      expect(page).not_to have_content 'Set the due date to 2016-08-28'
       expect(page).not_to have_content '/due 2016-08-28'
     end
   end

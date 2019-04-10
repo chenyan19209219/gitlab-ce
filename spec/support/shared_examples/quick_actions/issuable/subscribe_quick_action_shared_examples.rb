@@ -45,7 +45,7 @@ shared_examples 'subscribe quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/subscribe'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content "Subscribed to this #{issuable_type.humanize(capitalize: false)}."
       expect(issuable.subscribed?(maintainer, project)).to be_truthy
     end
 

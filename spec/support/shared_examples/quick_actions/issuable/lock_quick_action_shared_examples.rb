@@ -46,7 +46,7 @@ shared_examples 'lock quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/lock'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Locked the discussion'
       expect(issuable.reload).to be_discussion_locked
     end
 

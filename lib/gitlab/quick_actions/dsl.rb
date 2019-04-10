@@ -66,6 +66,21 @@ module Gitlab
           @explanation = block_given? ? block : text
         end
 
+        # Allows to give a message of what the command has done after
+        # has been executed. This message is shown after saving the note.
+        #
+        # Example:
+        #
+        #   execution_message do |arguments|
+        #     "Added label(s) #{arguments.join(' ')}"
+        #   end
+        #   command :command_key do |arguments|
+        #     # Awesome code block
+        #   end
+        def execution_message(text = '', &block)
+          @execution_message = block_given? ? block : text
+        end
+
         # Allows to define type(s) that must be met in order for the command
         # to be returned by `.command_names` & `.command_definitions`.
         #
@@ -158,6 +173,7 @@ module Gitlab
             description: @description,
             warning: @warning,
             explanation: @explanation,
+            execution_message: @execution_message,
             params: @params,
             condition_block: @condition_block,
             parse_params_block: @parse_params_block,
@@ -173,6 +189,7 @@ module Gitlab
 
           @description = nil
           @explanation = nil
+          @execution_message = nil
           @params = nil
           @condition_block = nil
           @warning = nil

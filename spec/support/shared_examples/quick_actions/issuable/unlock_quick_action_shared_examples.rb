@@ -46,7 +46,7 @@ shared_examples 'unlock quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/unlock'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Unlocked the discussion'
       expect(issuable.reload).not_to be_discussion_locked
     end
 

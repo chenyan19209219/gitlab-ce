@@ -10,6 +10,7 @@ module Gitlab
         # MergeRequest only quick actions definitions
         desc 'Merge (when the pipeline succeeds)'
         explanation 'Merges this merge request when the pipeline succeeds.'
+        execution_message 'Scheduled to merge this merge request when the pipeline succeeds.'
         types MergeRequest
         condition do
           last_diff_sha = params && params[:merge_request_diff_head_sha]
@@ -22,10 +23,18 @@ module Gitlab
 
         desc 'Toggle the Work In Progress status'
         explanation do
-          verb = quick_action_target.work_in_progress? ? 'Unmarks' : 'Marks'
-          noun = quick_action_target.to_ability_name.humanize(capitalize: false)
-          "#{verb} this #{noun} as Work In Progress."
+          wip_message(false)
         end
+        execution_message do
+          wip_message(true)
+        end
+        def wip_message(paste_tense)
+          verb = quick_action_target.work_in_progress? ? "Unmark" : "Mark"
+          verb_suffix = paste_tense ? 'ed' : 's'
+          noun = quick_action_target.to_ability_name.humanize(capitalize: false)
+          "#{verb + verb_suffix} this #{noun} as Work In Progress."
+        end
+        private :wip_message
         types MergeRequest
         condition do
           quick_action_target.respond_to?(:work_in_progress?) &&
@@ -39,6 +48,9 @@ module Gitlab
         desc 'Set target branch'
         explanation do |branch_name|
           "Sets target branch to #{branch_name}."
+        end
+        execution_message do |branch_name|
+          "Set target branch to #{branch_name}."
         end
         params '<Local branch name>'
         types MergeRequest

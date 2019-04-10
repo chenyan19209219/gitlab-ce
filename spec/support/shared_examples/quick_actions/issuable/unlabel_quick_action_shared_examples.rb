@@ -45,7 +45,7 @@ shared_examples 'unlabel quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/unlabel'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Removed all labels.'
       expect(issuable.reload.labels).to eq []
     end
 
@@ -54,7 +54,7 @@ shared_examples 'unlabel quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/unlabel'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content %{Removed "~bug" label.}
       expect(issuable.reload.labels).to match_array([label_feature])
     end
 

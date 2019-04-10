@@ -2,30 +2,38 @@
 
 shared_examples 'create_merge_request quick action' do
   context 'create a merge request starting from an issue' do
-    def expect_mr_quickaction(success)
-      expect(page).to have_content 'Commands applied'
+    def expect_mr_quickaction(success, branch_name = nil)
+      command_message = if branch_name
+                          "Created branch '#{branch_name}' and a merge request to resolve this issue"
+                        else
+                          "Created a branch and a merge request to resolve this issue"
+                        end
 
       if success
+        expect(page).to have_content command_message
         expect(page).to have_content 'created merge request'
       else
+        expect(page).not_to have_content command_message
         expect(page).not_to have_content 'created merge request'
       end
     end
 
     it "doesn't create a merge request when the branch name is invalid" do
-      add_note("/create_merge_request invalid branch name")
+      branch_name = 'invalid branch name'
+      add_note("/create_merge_request #{branch_name}")
 
       wait_for_requests
 
-      expect_mr_quickaction(false)
+      expect_mr_quickaction(false, branch_name)
     end
 
     it "doesn't create a merge request when a branch with that name already exists" do
-      add_note("/create_merge_request feature")
+      branch_name = 'feature'
+      add_note("/create_merge_request #{branch_name}")
 
       wait_for_requests
 
-      expect_mr_quickaction(false)
+      expect_mr_quickaction(false, branch_name)
     end
 
     it 'creates a new merge request using issue iid and title as branch name when the branch name is empty' do
@@ -46,7 +54,7 @@ shared_examples 'create_merge_request quick action' do
       branch_name = '1-feature'
       add_note("/create_merge_request #{branch_name}")
 
-      expect_mr_quickaction(true)
+      expect_mr_quickaction(true, branch_name)
 
       created_mr = project.merge_requests.last
       expect(created_mr.source_branch).to eq(branch_name)

@@ -45,7 +45,7 @@ shared_examples 'relabel quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/relabel'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content %{Replaced all labels with ~"feature" label.}
       expect(issuable.reload.labels).to match_array([label_feature])
     end
 

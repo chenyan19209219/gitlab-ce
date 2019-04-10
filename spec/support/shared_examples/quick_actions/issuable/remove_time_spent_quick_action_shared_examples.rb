@@ -44,7 +44,7 @@ shared_examples 'remove_time_spent quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/remove_time_spent'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Removed spent time.'
       expect(issuable.reload.total_time_spent).to eq 0
     end
 

@@ -45,7 +45,7 @@ shared_examples 'award quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/award'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Toggled :100: emoji award.'
       expect(issuable.reload.award_emoji.last.name).to eq('100')
     end
   end

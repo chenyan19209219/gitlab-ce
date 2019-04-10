@@ -46,7 +46,7 @@ shared_examples 'remove_milestone quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/remove_milestone'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content "Removed #{milestone.to_reference} milestone."
       expect(issuable.reload.milestone).to be_nil
     end
 

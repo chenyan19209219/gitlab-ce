@@ -45,7 +45,7 @@ shared_examples 'reopen quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/reopen'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content "Reopened this #{issuable_type.humanize(capitalize: false)}."
 
       issuable.reload
       expect(issuable).to be_opened

@@ -44,7 +44,7 @@ shared_examples 'remove_estimate quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/remove_estimate'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Removed time estimate.'
       expect(issuable.reload.time_estimate).to eq 0
     end
 

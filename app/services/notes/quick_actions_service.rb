@@ -9,8 +9,6 @@
 #
 module Notes
   class QuickActionsService < BaseService
-    attr_reader :interpret_service
-
     delegate :commands_executed_count, to: :interpret_service, allow_nil: true
 
     UPDATE_SERVICES = {
@@ -36,12 +34,16 @@ module Notes
       self.class.supported?(note)
     end
 
-    def execute(note, options = {})
+    def execute(note)
       return [note.note, {}] unless supported?(note)
 
-      @interpret_service = QuickActions::InterpretService.new(project, current_user, options)
+      interpret_service.execute(note.note, note.noteable)
+    end
 
-      @interpret_service.execute(note.note, note.noteable)
+    def execute_message(note)
+      return '' unless supported?(note)
+
+      interpret_service.execute_message(note.note, note.noteable)
     end
 
     # Applies updates extracted to note#noteable
@@ -51,6 +53,12 @@ module Notes
       return unless supported?(note)
 
       self.class.noteable_update_service(note).new(note.parent, current_user, update_params).execute(note.noteable)
+    end
+
+    private
+
+    def interpret_service
+      @interpet_service ||= QuickActions::InterpretService.new(project, current_user, params)
     end
   end
 end

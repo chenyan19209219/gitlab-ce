@@ -12,6 +12,9 @@ module Gitlab
         explanation do |due_date|
           _("Sets the due date to %{due_date}.") % { due_date: due_date.strftime('%b %-d, %Y') } if due_date
         end
+        execution_message do |due_date|
+          _("Set the due date to %{due_date}.") % { due_date: due_date.strftime('%b %-d, %Y') } if due_date
+        end
         params '<in 2 days | this Friday | December 31st>'
         types Issue
         condition do
@@ -27,6 +30,7 @@ module Gitlab
 
         desc _('Remove due date')
         explanation _('Removes the due date.')
+        execution_message _('Removed the due date.')
         types Issue
         condition do
           quick_action_target.persisted? &&
@@ -43,6 +47,15 @@ module Gitlab
           label = find_label_references(target_list_name).first
           _("Moves issue to %{label} column in the board.") % { label: label } if label
         end
+        execution_message do |target_list_name|
+          label_id = board_move_label_id(target_list_name)
+
+          if label_id && label_exists_on_board?(label_id)
+            label = find_label_references(target_list_name).first
+            _("Moved issue to %{label} column in the board.") % { label: label } if label
+          end
+        end
+
         params '~"Target column"'
         types Issue
         condition do
@@ -51,25 +64,36 @@ module Gitlab
         end
         # rubocop: disable CodeReuse/ActiveRecord
         command :board_move do |target_list_name|
-          label_ids = find_label_ids(target_list_name)
+          label_id = board_move_label_id(target_list_name)
 
-          if label_ids.size == 1
-            label_id = label_ids.first
-
-            # Ensure this label corresponds to a list on the board
-            next unless Label.on_project_boards(quick_action_target.project_id).where(id: label_id).exists?
-
+          if label_id && label_exists_on_board?(label_id)
             @updates[:remove_label_ids] =
               quick_action_target.labels.on_project_boards(quick_action_target.project_id).where.not(id: label_id).pluck(:id)
             @updates[:add_label_ids] = [label_id]
           end
         end
         # rubocop: enable CodeReuse/ActiveRecord
+        def board_move_label_id(target_list_name)
+          label_ids = find_label_ids(target_list_name)
+          # doesn't handle multiple label its
+          label_ids.size == 1 ? label_ids.first : nil
+        end
+
+        def label_exists_on_board?(label_id)
+          Label.on_project_boards(quick_action_target.project_id).where(id: label_id).exists? # rubocop: disable CodeReuse/ActiveRecord
+        end
+        private :board_move_label_id, :label_exists_on_board?
 
         desc _('Mark this issue as a duplicate of another issue')
         explanation do |duplicate_reference|
           _("Marks this issue as a duplicate of %{duplicate_reference}.") % { duplicate_reference: duplicate_reference }
         end
+        execution_message do |duplicate_reference|
+          next unless extract_references(duplicate_reference, :issue).any?
+
+          _("Marked this issue as a duplicate of %{duplicate_reference}.") % { duplicate_reference: duplicate_reference }
+        end
+
         params '#issue'
         types Issue
         condition do
@@ -87,6 +111,9 @@ module Gitlab
         desc _('Move this issue to another project.')
         explanation do |path_to_project|
           _("Moves this issue to %{path_to_project}.") % { path_to_project: path_to_project }
+        end
+        execution_message do |path_to_project|
+          _("Moved this issue to %{path_to_project}.") % { path_to_project: path_to_project }
         end
         params 'path/to/project'
         types Issue
@@ -106,6 +133,9 @@ module Gitlab
         explanation do
           _('Makes this issue confidential')
         end
+        execution_message do
+          _('Made this issue confidential')
+        end
         types Issue
         condition do
           current_user.can?(:"admin_#{quick_action_target.to_ability_name}", quick_action_target)
@@ -122,6 +152,14 @@ module Gitlab
             "Creates a branch and a merge request to resolve this issue"
           end
         end
+        execution_message do |branch_name = nil|
+          if branch_name
+            _("Created branch '%{branch_name}' and a merge request to resolve this issue") % { branch_name: branch_name }
+          else
+            "Created a branch and a merge request to resolve this issue"
+          end
+        end
+
         params "<branch name>"
         types Issue
         condition do

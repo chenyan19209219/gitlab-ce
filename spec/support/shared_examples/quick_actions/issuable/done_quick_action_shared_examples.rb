@@ -56,7 +56,7 @@ shared_examples 'done quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/done'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Marked todo as done.'
       expect(todo.reload).to be_done
     end
 
@@ -83,7 +83,7 @@ shared_examples 'done quick action' do |issuable_type|
 
         add_note('/done')
 
-        expect(page).not_to have_content 'Commands applied'
+        expect(page).not_to have_content 'Marked todo as done.'
         expect(todo.reload).to be_pending
       end
     end

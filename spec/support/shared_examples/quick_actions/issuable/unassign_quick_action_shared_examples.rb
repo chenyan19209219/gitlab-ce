@@ -77,7 +77,7 @@ shared_examples 'unassign quick action' do |issuable_type|
       add_note("/unassign me")
 
       expect(page).not_to have_content '/unassign me'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content "Removed assignee #{maintainer.to_reference}."
 
       expect(issuable.reload.assignees).to eq []
     end

@@ -43,7 +43,7 @@ shared_examples 'spend quick action' do |issuable_type|
 
       wait_for_requests
       expect(page).not_to have_content '/spend'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Added 1d 2h 3m spent time.'
       expect(issuable.reload.total_time_spent).to eq 36180
     end
 

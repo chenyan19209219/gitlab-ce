@@ -6,7 +6,7 @@ shared_examples 'confidential quick action' do
       add_note('/confidential')
 
       expect(page).not_to have_content '/confidential'
-      expect(page).to have_content 'Commands applied'
+      expect(page).to have_content 'Made this issue confidential'
       expect(page).to have_content 'made the issue confidential'
 
       expect(issue.reload).to be_confidential
@@ -26,7 +26,7 @@ shared_examples 'confidential quick action' do
     it 'does not create a note, and does not mark the issue as confidential' do
       add_note('/confidential')
 
-      expect(page).not_to have_content 'Commands applied'
+      expect(page).not_to have_content 'Made this issue confidential'
       expect(page).not_to have_content 'made the issue confidential'
 
       expect(issue.reload).not_to be_confidential

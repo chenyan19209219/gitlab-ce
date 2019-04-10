@@ -17,11 +17,12 @@ module Notes
       # We execute commands (extracted from `params[:note]`) on the noteable
       # **before** we save the note because if the note consists of commands
       # only, there is no need be create a note!
-      quick_actions_service = QuickActionsService.new(project, current_user)
+      quick_actions_service = QuickActionsService.new(project, current_user, {
+        merge_request_diff_head_sha: merge_request_diff_head_sha
+      })
 
       if quick_actions_service.supported?(note)
-        options = { merge_request_diff_head_sha: merge_request_diff_head_sha }
-        content, update_params = quick_actions_service.execute(note, options)
+        content, update_params, message = quick_actions_service.execute(note)
 
         only_commands = content.empty?
 
@@ -52,7 +53,7 @@ module Notes
         # We must add the error after we call #save because errors are reset
         # when #save is called
         if only_commands
-          note.errors.add(:commands_only, 'Commands applied')
+          note.errors.add(:commands_only, message.presence || 'Commands applied')
         end
       end
 
