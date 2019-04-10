@@ -4,7 +4,6 @@ class Deployment < ApplicationRecord
   include AtomicInternalId
   include IidRoutes
   include AfterCommitQueue
-  include Gitlab::Utils::StrongMemoize
 
   belongs_to :project, required: true
   belongs_to :environment, required: true
@@ -80,9 +79,7 @@ class Deployment < ApplicationRecord
   end
 
   def cluster
-    strong_memoize(:cluster) do
-      project.deployment_platform(environment: environment.name)&.cluster
-    end
+    project.deployment_platform(environment: environment.name)&.cluster
   end
 
   def last?
