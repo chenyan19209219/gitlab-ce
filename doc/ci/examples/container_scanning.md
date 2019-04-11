@@ -25,6 +25,7 @@ container_scanning:
     ## https://docs.gitlab.com/ee/ci/variables/#predefined-environment-variables
     CI_APPLICATION_REPOSITORY: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG
     CI_APPLICATION_TAG: $CI_COMMIT_SHA
+    NO_PROXY: docker
   allow_failure: true
   services:
     - docker:stable-dind
