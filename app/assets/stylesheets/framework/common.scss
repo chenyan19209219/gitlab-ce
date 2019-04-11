@@ -80,6 +80,10 @@
   overflow: visible;
 }
 
+.svg-fill-secondary {
+  fill: $gl-text-color-secondary;
+}
+
 pre {
   &.clean {
     background: none;

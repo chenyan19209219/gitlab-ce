@@ -209,7 +209,7 @@ module EventsHelper
 
   def inline_event_icon(event)
     unless current_path?('users#show')
-      content_tag :span, class: "system-note-image-inline d-none d-sm-flex append-right-4 #{event.action_name.parameterize}-icon align-self-center" do
+      content_tag :span, class: "svg-fill-secondary d-none d-sm-flex append-right-4 #{event.action_name.parameterize}-icon align-self-center" do
         icon_for_event(event.action_name, size: 14)
       end
     end
@@ -217,7 +217,7 @@ module EventsHelper
 
   def event_user_info(event)
     content_tag(:div, class: "event-user-info") do
-      concat content_tag(:span, link_to_author(event), class: "author_name")
+      concat content_tag(:span, link_to_author(event), class: "author-name")
       concat "&nbsp;".html_safe
       concat content_tag(:span, event.author.to_reference, class: "username")
     end
