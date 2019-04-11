@@ -543,7 +543,7 @@ module API
       expose :closed_by, using: Entities::UserBasic
       expose :labels do |issue|
         # Avoids an N+1 query since labels are preloaded
-        issue.labels.map(&:title).sort
+        ::API::Entities::LabelBasic.represent(issue.labels)
       end
       expose :milestone, using: Entities::Milestone
       expose :assignees, :author, using: Entities::UserBasic
@@ -559,6 +559,8 @@ module API
       expose :due_date
       expose :confidential
       expose :discussion_locked
+      expose(:has_tasks)            {|issue, _| issue.task_list_items.size > 0 }
+      expose :task_status, if: -> (issue, _) { issue.task_list_items.size > 0 }
 
       expose :web_url do |issue|
         Gitlab::UrlBuilder.build(issue)
