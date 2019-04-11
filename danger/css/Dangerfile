@@ -1,0 +1,21 @@
+# frozen_string_literal: true
+
+css_paths_to_review = helper.changes_by_category[:css]
+
+unless css_paths_to_review.empty?
+  message 'This Merge Request adds page-specific CSS.'
+
+  markdown(<<~MARKDOWN)
+## Page Specific CSS review
+
+This Merge Request adds page specific CSS in the following files:
+
+* #{css_paths_to_review.map { |path| "`#{path}`" }.join("\n* ")}
+
+Please double check if any of the additions could be done through utility classes. See:
+
+- [CSS Cleanup](https://gitlab.com/groups/gitlab-org/-/epics/950) for the guidelines towards cleaning our CSS.
+- [Documentation about utility classes](https://docs.gitlab.com/ce/development/fe_guide/style_guide_scss.html#utility-classes) for more information on existing classes.
+  MARKDOWN
+
+end

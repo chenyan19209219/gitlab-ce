@@ -16,4 +16,5 @@ unless helper.release_automation?
   danger.import_dangerfile(path: 'danger/roulette')
   danger.import_dangerfile(path: 'danger/single_codebase')
   danger.import_dangerfile(path: 'danger/gitlab_ui_wg')
+  danger.import_dangerfile(path: 'danger/css')
 end

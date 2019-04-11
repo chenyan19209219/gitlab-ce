@@ -37,6 +37,17 @@ module Gitlab
           .sort
       end
 
+      # Returns a list of all files that have been added or where new code has been added.
+      #
+      # @return [Array<String>]
+      def additions_files
+        Set.new
+          .merge(git.added_files.to_a)
+          .merge(git.insertions)
+          .to_a
+          .sort
+      end
+
       def ee?
         ENV['CI_PROJECT_NAME'] == 'gitlab-ee' || File.exist?('../../CHANGELOG-EE.md')
       end
@@ -82,6 +93,12 @@ module Gitlab
         end
       end
 
+      def additions_by_category
+        additions_files.each_with_object(Hash.new { |h, k| h[k] = [] }) do |file, hash|
+          hash[category_for_file(file)] << file
+        end
+      end
+
       # Determines the category a file is in, e.g., `:frontend` or `:backend`
       # @return[Symbol]
       def category_for_file(file)
@@ -110,6 +127,8 @@ module Gitlab
         %r{\A(CONTRIBUTING|LICENSE|MAINTENANCE|PHILOSOPHY|PROCESS|README)(\.md)?\z} => :docs,
 
         %r{\A(ee/)?app/(assets|views)/} => :frontend,
+        %r{\A(ee/)?app/assets/stylesheets/pages} => :css,
+
         %r{\A(ee/)?public/} => :frontend,
         %r{\A(ee/)?spec/(javascripts|frontend)/} => :frontend,
         %r{\A(ee/)?vendor/assets/} => :frontend,
