@@ -311,7 +311,6 @@ describe Projects::ClustersController do
 
     describe 'security' do
       before do
-        allow(ClusterConfigureWorker).to receive(:perform_async)
         stub_kubeclient_get_namespace('https://kubernetes.example.com', namespace: 'my-namespace')
       end
 
@@ -409,7 +408,6 @@ describe Projects::ClustersController do
     end
 
     before do
-      allow(ClusterConfigureWorker).to receive(:perform_async)
       stub_kubeclient_get_namespace('https://kubernetes.example.com', namespace: 'my-namespace')
     end
 
