@@ -663,9 +663,9 @@
   resolved "https://registry.yarnpkg.com/@gitlab/svgs/-/svgs-1.59.0.tgz#affcf9596d736836d37469bb4aea2226ac03e087"
   integrity sha512-dokGyyLRRsoBKO70KP1g+ZsDGyTK/RIHWDmvWI6Bx5AxQ3UqAzVXn2OIb3owjJAexyRG1uBmJrriiVVyHznQ4g==
 
-"@gitlab/ui@https://gitlab.com/gitlab-org/gitlab-ui/-/jobs/195402109/artifacts/raw/gitlab-ui.76-create-toast-component.tgz":
+"@gitlab/ui@https://gitlab.com/gitlab-org/gitlab-ui/-/jobs/195488823/artifacts/raw/gitlab-ui.76-create-toast-component.tgz":
   version "3.2.0"
-  resolved "https://gitlab.com/gitlab-org/gitlab-ui/-/jobs/195402109/artifacts/raw/gitlab-ui.76-create-toast-component.tgz#c621965b84dbc9956d69df56c5e54598ce697f8f"
+  resolved "https://gitlab.com/gitlab-org/gitlab-ui/-/jobs/195488823/artifacts/raw/gitlab-ui.76-create-toast-component.tgz#a82f01d091506bc7f1c687f231d761a833ab0e84"
   dependencies:
     "@babel/standalone" "^7.0.0"
     bootstrap-vue "^2.0.0-rc.11"
