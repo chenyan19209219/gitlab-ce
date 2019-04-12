@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Groups::Settings::CiCdController do
+  include ExternalAuthorizationServiceHelpers
+
   let(:group) { create(:group) }
   let(:user) { create(:user) }
 
@@ -31,6 +33,19 @@ describe Groups::Settings::CiCdController do
         get :show, params: { group_id: group }
 
         expect(response).to have_gitlab_http_status(404)
+      end
+    end
+
+    context 'external authorization' do
+      before do
+        enable_external_authorization_service_check
+        group.add_owner(user)
+      end
+
+      it 'renders show with 200 status code' do
+        get :show, params: { group_id: group }
+
+        expect(response).to have_gitlab_http_status(200)
       end
     end
   end
@@ -124,7 +139,7 @@ describe Groups::Settings::CiCdController do
         end
 
         context 'when explicitly enabling auto devops' do
-          it 'should update group attribute' do
+          it 'updates group attribute' do
             expect(group.auto_devops_enabled).to eq(true)
           end
         end
@@ -132,7 +147,7 @@ describe Groups::Settings::CiCdController do
         context 'when explicitly disabling auto devops' do
           let(:auto_devops_param) { '0' }
 
-          it 'should update group attribute' do
+          it 'updates group attribute' do
             expect(group.auto_devops_enabled).to eq(false)
           end
         end

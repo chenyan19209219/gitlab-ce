@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '5.0.7.1'
+gem 'rails', '5.0.7.2'
 gem 'rails-deprecated_sanitizer', '~> 1.0.3'
 
 # Improves copy-on-write performance for MRI
@@ -116,7 +116,7 @@ gem 'seed-fu', '~> 2.3.7'
 # Markdown and HTML processing
 gem 'html-pipeline', '~> 2.8'
 gem 'deckar01-task_list', '2.2.0'
-gem 'gitlab-markup', '~> 1.6.5'
+gem 'gitlab-markup', '~> 1.7.0'
 gem 'github-markup', '~> 1.7.0', require: 'github/markup'
 gem 'commonmarker', '~> 0.17'
 gem 'RedCloth', '~> 4.3.2'
@@ -128,7 +128,7 @@ gem 'asciidoctor', '~> 1.5.8'
 gem 'asciidoctor-plantuml', '0.0.8'
 gem 'rouge', '~> 3.1'
 gem 'truncato', '~> 0.7.11'
-gem 'bootstrap_form', '~> 2.7.0'
+gem 'bootstrap_form', '~> 4.2.0'
 gem 'nokogiri', '~> 1.10.1'
 gem 'escape_utils', '~> 1.1'
 
@@ -139,10 +139,7 @@ gem 'icalendar'
 gem 'diffy', '~> 3.1.0'
 
 # Application server
-# The 2.0.6 version of rack requires monkeypatch to be present in
-# `config.ru`. This can be removed once a new update for Rack
-# is available that contains https://github.com/rack/rack/pull/1201.
-gem 'rack', '2.0.6'
+gem 'rack', '~> 2.0.7'
 
 group :unicorn do
   gem 'unicorn', '~> 5.4.1'
@@ -203,6 +200,9 @@ gem 'connection_pool', '~> 2.0'
 
 # Discord integration
 gem 'discordrb-webhooks-blackst0ne', '~> 3.3', require: false
+
+# HipChat integration
+gem 'hipchat', '~> 1.5.0'
 
 # JIRA integration
 gem 'jira-ruby', '~> 1.4'
@@ -419,7 +419,7 @@ group :ed25519 do
 end
 
 # Gitaly GRPC client
-gem 'gitaly-proto', '~> 1.13.0', require: 'gitaly'
+gem 'gitaly-proto', '~> 1.19.0', require: 'gitaly'
 
 gem 'grpc', '~> 1.15.0'
 

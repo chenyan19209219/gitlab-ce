@@ -59,7 +59,7 @@ module API
             actor
           end
 
-        access_checker_klass = wiki? ? Gitlab::GitAccessWiki : Gitlab::GitAccess
+        access_checker_klass = repo_type.access_checker_class
         access_checker = access_checker_klass.new(actor, project,
           protocol, authentication_abilities: ssh_authentication_abilities,
                     namespace_path: namespace_path, project_path: project_path,
@@ -87,7 +87,8 @@ module API
             gl_id: Gitlab::GlId.gl_id(user),
             gl_username: user&.username,
             git_config_options: [],
-            gitaly: gitaly_payload(params[:action])
+            gitaly: gitaly_payload(params[:action]),
+            gl_console_messages: check_result.console_messages
           }
 
           # Custom option for git-receive-pack command
@@ -255,19 +256,27 @@ module API
       post '/post_receive' do
         status 200
 
+        output = {} # Messages to gitlab-shell
+        user = identify(params[:identifier])
+        project = Gitlab::GlRepository.parse(params[:gl_repository]).first
+        push_options = Gitlab::PushOptions.new(params[:push_options])
+
         PostReceive.perform_async(params[:gl_repository], params[:identifier],
-          params[:changes], params[:push_options].to_a)
+          params[:changes], push_options.as_json)
+
+        if Feature.enabled?(:mr_push_options, default_enabled: true)
+          mr_options = push_options.get(:merge_request)
+          output.merge!(process_mr_push_options(mr_options, project, user, params[:changes])) if mr_options.present?
+        end
+
         broadcast_message = BroadcastMessage.current&.last&.message
         reference_counter_decreased = Gitlab::ReferenceCounter.new(params[:gl_repository]).decrease
 
-        output = {
-          merge_request_urls: merge_request_urls,
+        output.merge!(
           broadcast_message: broadcast_message,
-          reference_counter_decreased: reference_counter_decreased
-        }
-
-        project = Gitlab::GlRepository.parse(params[:gl_repository]).first
-        user = identify(params[:identifier])
+          reference_counter_decreased: reference_counter_decreased,
+          merge_request_urls: merge_request_urls
+        )
 
         # A user is not guaranteed to be returned; an orphaned write deploy
         # key could be used

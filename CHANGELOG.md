@@ -2,6 +2,97 @@
 documentation](doc/development/changelog.md) for instructions on adding your own
 entry.
 
+## 11.9.8 (2019-04-11)
+
+### Deprecated (1 change)
+
+- Allow to use untrusted Regexp via feature flag. !26905
+
+### Performance (2 changes)
+
+- Improve performance of PR import. !27121
+- Disable method instrumentation for diffs. !27235
+
+### Other (1 change)
+
+- Restore HipChat project service. !27172
+
+
+## 11.9.7 (2019-04-09)
+
+- No changes.
+
+## 11.9.6 (2019-04-04)
+
+### Fixed (3 changes)
+
+- Force to recreate all MR diffs on import. !26480
+- Fix API /project/:id/branches not returning correct merge status. !26785
+- Avoid excessive recursive calls with Rugged TreeEntries. !26813
+
+### Performance (1 change)
+
+- Force a full GC after importing a project. !26803
+
+
+## 11.9.5 (2019-04-03)
+
+### Fixed (3 changes)
+
+- Force to recreate all MR diffs on import. !26480
+- Fix API /project/:id/branches not returning correct merge status. !26785
+- Avoid excessive recursive calls with Rugged TreeEntries. !26813
+
+### Performance (1 change)
+
+- Force a full GC after importing a project. !26803
+
+
+## 11.9.3 (2019-03-27)
+
+### Security (8 changes)
+
+- Disallow guest users from accessing Releases.
+- Fix PDF.js vulnerability.
+- Hide "related branches" when user does not have permission.
+- Fix XSS in resolve conflicts form.
+- Added rake task for removing EXIF data from existing uploads.
+- Return cached languages if they've been detected before.
+- Disallow updating namespace when updating a project.
+- Use UntrustedRegexp for matching refs policy.
+
+
+## 11.9.2 (2019-03-26)
+
+### Security (8 changes)
+
+- Disallow guest users from accessing Releases.
+- Fix PDF.js vulnerability.
+- Hide "related branches" when user does not have permission.
+- Fix XSS in resolve conflicts form.
+- Added rake task for removing EXIF data from existing uploads.
+- Return cached languages if they've been detected before.
+- Disallow updating namespace when updating a project.
+- Use UntrustedRegexp for matching refs policy.
+
+
+## 11.9.1 (2019-03-25)
+
+### Fixed (7 changes)
+
+- Fix issue that caused the "Show all activity" button to appear on top of the mini pipeline status dropdown on the merge request page. !26274
+- Fix duplicated bottom match line on merge request parallel diff view. !26402
+- Allow users who can push to protected branches to create protected branches via CLI. !26413
+- Add missing .gitlab-ci.yml to Android template. !26415
+- Refresh commit count after repository head changes. !26473
+- Set proper default-branch for repository on GitHub Import. !26476
+- GitHub importer: Use the project creator to create branches from forks. !26510
+
+### Changed (1 change)
+
+- Upgrade to Gitaly v1.27.1. !26533
+
+
 ## 11.9.0 (2019-03-22)
 
 ### Security (24 changes)
@@ -529,6 +620,36 @@ entry.
 - Update Workhorse to v8.3.1.
 - Upgraded Codesandbox smooshpack package.
 - Creates mixin to reduce code duplication between CE and EE in graph component.
+
+
+## 11.7.11 (2019-04-09)
+
+- No changes.
+
+## 11.7.10 (2019-03-28)
+
+### Security (7 changes)
+
+- Disallow guest users from accessing Releases.
+- Fix PDF.js vulnerability.
+- Hide "related branches" when user does not have permission.
+- Fix XSS in resolve conflicts form.
+- Added rake task for removing EXIF data from existing uploads.
+- Disallow updating namespace when updating a project.
+- Use UntrustedRegexp for matching refs policy.
+
+
+## 11.7.8 (2019-03-26)
+
+### Security (7 changes)
+
+- Disallow guest users from accessing Releases.
+- Fix PDF.js vulnerability.
+- Hide "related branches" when user does not have permission.
+- Fix XSS in resolve conflicts form.
+- Added rake task for removing EXIF data from existing uploads.
+- Disallow updating namespace when updating a project.
+- Use UntrustedRegexp for matching refs policy.
 
 
 ## 11.7.7 (2019-03-19)

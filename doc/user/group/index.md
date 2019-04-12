@@ -58,7 +58,7 @@ By doing so:
 ## Issues and merge requests within a group
 
 Issues and merge requests are part of projects. For a given group, view all the
-[issues](../project/issues/index.md#issues-per-group) and [merge requests](../project/merge_requests/index.md#merge-requests-per-group) across all the projects in that group,
+[issues](../project/issues/index.md#issues-list) and [merge requests](../project/merge_requests/index.md#merge-requests-per-group) across all the projects in that group,
 together in a single list view.
 
 ## Create a new group
@@ -150,6 +150,17 @@ There are two different ways to add a new project to a group:
   you've already created from the dropdown menu.
 
     ![Select group](img/select_group_dropdown.png)
+
+### Default project creation level
+
+Group owners or administrators can allow users with the
+Developer role to create projects under groups.
+
+By default, [Developers and Maintainers](../permissions.md#group-members-permissions) can create projects under agroup, but this can be changed either within the group settings for a group, or
+be set globally by a GitLab administrator in the Admin area
+at **Settings > General > Visibility and access controls**.
+
+Available settings are `No one`, `Maintainers`, or `Developers + Maintainers`.
 
 ## Transfer projects into groups
 

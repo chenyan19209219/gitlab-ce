@@ -1,5 +1,20 @@
 # Testing best practices
 
+## Test Design
+
+Testing at GitLab is a first class citizen, not an afterthought. It's important we consider the design of our tests 
+as we do the design of our features. 
+
+When implementing a feature, we think about developing the right capabilities the right way, which helps us 
+narrow our scope to a manageable level. When implementing tests for a feature, we must think about developing 
+the right tests, but then cover _all_ the important ways the test may fail, which can quickly widen our scope to 
+a level that is difficult to manage.
+
+Test heuristics can help solve this problem. They concisely address many of the common ways bugs 
+manifest themselves within our code. When designing our tests, take time to review known test heuristics to inform 
+our test design. We can find some helpful heuristics documented in the Handbook in the 
+[Test Design](https://about.gitlab.com/handbook/engineering/quality/guidelines/test-engineering/test-design/) section.
+
 ## Test speed
 
 GitLab has a massive test suite that, without [parallelization], can take hours
@@ -201,8 +216,10 @@ project, one project will do for the entire file. This can be achieved by using
 reloads or recreates the model, _only_ if needed. That is, when you changed
 properties or destroyed the object.
 
-There is one gotcha; you can't reference a model defined in a `let` block in a
-`set` block.
+Note that you can't reference a model defined in a `let` block in a `set` block.
+
+Also, `set` is not supported in `:js` specs since those don't use transactions
+to clean up database state after each example.
 
 ### Time-sensitive tests
 

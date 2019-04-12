@@ -43,7 +43,7 @@ describe "User creates wiki page" do
         expect(page).to have_content("Create Page")
       end
 
-      it "shows non-escaped link in the pages list", :js do
+      it "shows non-escaped link in the pages list", :js, :quarantine do
         fill_in(:wiki_title, with: "one/two/three-test")
 
         page.within(".wiki-form") do
@@ -136,7 +136,7 @@ describe "User creates wiki page" do
           click_button("Create page")
         end
 
-        page.within ".wiki" do
+        page.within ".md" do
           expect(page).to have_selector(".katex", count: 3).and have_content("2+2 is 4")
         end
       end

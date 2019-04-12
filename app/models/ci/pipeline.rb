@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Ci
-  class Pipeline < ActiveRecord::Base
+  class Pipeline < ApplicationRecord
     extend Gitlab::Ci::Model
     include HasStatus
     include Importable
@@ -184,7 +184,7 @@ module Ci
 
     scope :sort_by_merge_request_pipelines, -> do
       sql = 'CASE ci_pipelines.source WHEN (?) THEN 0 ELSE 1 END, ci_pipelines.id DESC'
-      query = ActiveRecord::Base.send(:sanitize_sql_array, [sql, sources[:merge_request_event]]) # rubocop:disable GitlabSecurity/PublicSend
+      query = ApplicationRecord.send(:sanitize_sql_array, [sql, sources[:merge_request_event]]) # rubocop:disable GitlabSecurity/PublicSend
 
       order(query)
     end
@@ -204,10 +204,6 @@ module Ci
 
     scope :merge_request_pipelines, -> (merge_request, source_sha) do
       triggered_by_merge_request(merge_request).for_source_sha(source_sha)
-    end
-
-    scope :mergeable_merge_request_pipelines, -> (merge_request) do
-      triggered_by_merge_request(merge_request).where(target_sha: merge_request.target_branch_sha)
     end
 
     scope :triggered_for_branch, -> (ref) do
@@ -465,9 +461,9 @@ module Ci
     end
 
     def latest?
-      return false unless ref && commit.present?
+      return false unless git_ref && commit.present?
 
-      project.commit(ref) == commit
+      project.commit(git_ref) == commit
     end
 
     def retried
@@ -738,16 +734,24 @@ module Ci
       triggered_by_merge_request? && target_sha.nil?
     end
 
+    def legacy_detached_merge_request_pipeline?
+      detached_merge_request_pipeline? && !merge_request_ref?
+    end
+
     def merge_request_pipeline?
       triggered_by_merge_request? && target_sha.present?
     end
 
-    def mergeable_merge_request_pipeline?
-      triggered_by_merge_request? && target_sha == merge_request.target_branch_sha
+    def merge_request_ref?
+      MergeRequest.merge_request_ref?(ref)
     end
 
     def matches_sha_or_source_sha?(sha)
       self.sha == sha || self.source_sha == sha
+    end
+
+    def triggered_by?(current_user)
+      user == current_user
     end
 
     private
@@ -781,16 +785,18 @@ module Ci
     end
 
     def git_ref
-      if merge_request_event?
-        ##
-        # In the future, we're going to change this ref to
-        # merge request's merged reference, such as "refs/merge-requests/:iid/merge".
-        # In order to do that, we have to update GitLab-Runner's source pulling
-        # logic.
-        # See https://gitlab.com/gitlab-org/gitlab-runner/merge_requests/1092
-        Gitlab::Git::BRANCH_REF_PREFIX + ref.to_s
-      else
-        super
+      strong_memoize(:git_ref) do
+        if merge_request_event?
+          ##
+          # In the future, we're going to change this ref to
+          # merge request's merged reference, such as "refs/merge-requests/:iid/merge".
+          # In order to do that, we have to update GitLab-Runner's source pulling
+          # logic.
+          # See https://gitlab.com/gitlab-org/gitlab-runner/merge_requests/1092
+          Gitlab::Git::BRANCH_REF_PREFIX + ref.to_s
+        else
+          super
+        end
       end
     end
 

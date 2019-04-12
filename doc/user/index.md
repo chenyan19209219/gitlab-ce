@@ -38,8 +38,8 @@ GitLab is a Git-based platform that integrates a great number of essential tools
 
 - Hosting code in repositories with version control.
 - Tracking proposals for new implementations, bug reports, and feedback with a
-  fully featured [Issue Tracker](project/issues/index.md#issue-tracker).
-- Organizing and prioritizing with [Issue Boards](project/issues/index.md#issue-board).
+  fully featured [Issue Tracker](project/issues/index.md#issues-list).
+- Organizing and prioritizing with [Issue Boards](project/issues/index.md#issue-boards).
 - Reviewing code in [Merge Requests](project/merge_requests/index.md) with live-preview changes per
   branch with [Review Apps](../ci/review_apps/index.md).
 - Building, testing, and deploying with built-in [Continuous Integration](../ci/README.md).
@@ -65,9 +65,7 @@ With GitLab Enterprise Edition, you can also:
 - View the current health and status of each CI environment running on Kubernetes with [Deploy Boards](https://docs.gitlab.com/ee/user/project/deploy_boards.html).
 - Leverage continuous delivery method with [Canary Deployments](https://docs.gitlab.com/ee/user/project/canary_deployments.html).
 
-You can also [integrate](project/integrations/project_services.md) GitLab with
-numerous third-party applications, such as Mattermost, Microsoft Teams, Trello,
-Slack, Bamboo CI, JIRA, and a lot more.
+You can also [integrate](project/integrations/project_services.md) GitLab with numerous third-party applications, such as Mattermost, Microsoft Teams, HipChat, Trello, Slack, Bamboo CI, JIRA, and a lot more.
 
 ## Projects
 

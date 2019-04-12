@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe User do
@@ -96,6 +98,11 @@ describe User do
   end
 
   describe 'validations' do
+    describe 'name' do
+      it { is_expected.to validate_presence_of(:name) }
+      it { is_expected.to validate_length_of(:name).is_at_most(128) }
+    end
+
     describe 'username' do
       it 'validates presence' do
         expect(subject).to validate_presence_of(:username)
@@ -2809,9 +2816,9 @@ describe User do
       project = create(:project, :public)
       archived_project = create(:project, :public, :archived)
 
-      create(:merge_request, source_project: project, author: user, assignee: user)
-      create(:merge_request, :closed, source_project: project, author: user, assignee: user)
-      create(:merge_request, source_project: archived_project, author: user, assignee: user)
+      create(:merge_request, source_project: project, author: user, assignees: [user])
+      create(:merge_request, :closed, source_project: project, author: user, assignees: [user])
+      create(:merge_request, source_project: archived_project, author: user, assignees: [user])
 
       expect(user.assigned_open_merge_requests_count(force: true)).to eq 1
     end

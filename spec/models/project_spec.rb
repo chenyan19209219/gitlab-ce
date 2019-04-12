@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Project do
   include ProjectForksHelper
   include GitHelpers
+  include ExternalAuthorizationServiceHelpers
 
   it_behaves_like 'having unique enum values'
 
@@ -41,6 +44,7 @@ describe Project do
     it { is_expected.to have_one(:pipelines_email_service) }
     it { is_expected.to have_one(:irker_service) }
     it { is_expected.to have_one(:pivotaltracker_service) }
+    it { is_expected.to have_one(:hipchat_service) }
     it { is_expected.to have_one(:flowdock_service) }
     it { is_expected.to have_one(:assembla_service) }
     it { is_expected.to have_one(:slack_slash_commands_service) }
@@ -413,7 +417,7 @@ describe Project do
         project.project_feature.update_attribute(:builds_access_level, ProjectFeature::DISABLED)
       end
 
-      it 'should return .external pipelines' do
+      it 'returns .external pipelines' do
         expect(project.all_pipelines).to all(have_attributes(source: 'external'))
         expect(project.all_pipelines.size).to eq(1)
       end
@@ -437,7 +441,7 @@ describe Project do
         project.project_feature.update_attribute(:builds_access_level, ProjectFeature::DISABLED)
       end
 
-      it 'should return .external pipelines' do
+      it 'returns .external pipelines' do
         expect(project.ci_pipelines).to all(have_attributes(source: 'external'))
         expect(project.ci_pipelines.size).to eq(1)
       end
@@ -1908,7 +1912,7 @@ describe Project do
                                        tags: %w[latest rc1])
         end
 
-        it 'should have image tags' do
+        it 'has image tags' do
           expect(project).to have_container_registry_tags
         end
       end
@@ -1919,7 +1923,7 @@ describe Project do
                                        tags: %w[latest rc1 pre1])
         end
 
-        it 'should have image tags' do
+        it 'has image tags' do
           expect(project).to have_container_registry_tags
         end
       end
@@ -1929,7 +1933,7 @@ describe Project do
           stub_container_registry_tags(repository: :any, tags: [])
         end
 
-        it 'should not have image tags' do
+        it 'does not have image tags' do
           expect(project).not_to have_container_registry_tags
         end
       end
@@ -1940,16 +1944,16 @@ describe Project do
         stub_container_registry_config(enabled: false)
       end
 
-      it 'should not have image tags' do
+      it 'does not have image tags' do
         expect(project).not_to have_container_registry_tags
       end
 
-      it 'should not check root repository tags' do
+      it 'does not check root repository tags' do
         expect(project).not_to receive(:full_path)
         expect(project).not_to have_container_registry_tags
       end
 
-      it 'should iterate through container repositories' do
+      it 'iterates through container repositories' do
         expect(project).to receive(:container_repositories)
         expect(project).not_to have_container_registry_tags
       end
@@ -2140,6 +2144,15 @@ describe Project do
         expect(RepositoryForkWorker).to receive(:perform_async).with(project.id).and_return(import_jid)
 
         expect(project.add_import_job).to eq(import_jid)
+      end
+
+      context 'without repository' do
+        it 'schedules RepositoryImportWorker' do
+          project = create(:project, import_url: generate(:url))
+
+          expect(RepositoryImportWorker).to receive(:perform_async).with(project.id).and_return(import_jid)
+          expect(project.add_import_job).to eq(import_jid)
+        end
       end
     end
 
@@ -2627,7 +2640,7 @@ describe Project do
         let!(:cluster) { kubernetes_namespace.cluster }
         let(:project) { kubernetes_namespace.project }
 
-        it 'should return token from kubernetes namespace' do
+        it 'returns token from kubernetes namespace' do
           expect(project.deployment_variables).to include(
             { key: 'KUBE_TOKEN', value: kubernetes_namespace.service_account_token, public: false, masked: true }
           )
@@ -3428,7 +3441,7 @@ describe Project do
       end
 
       it 'schedules HashedStorage::ProjectMigrateWorker with delayed start when the project repo is in use' do
-        Gitlab::ReferenceCounter.new(project.gl_repository(is_wiki: false)).increase
+        Gitlab::ReferenceCounter.new(Gitlab::GlRepository::PROJECT.identifier_for_subject(project)).increase
 
         expect(HashedStorage::ProjectMigrateWorker).to receive(:perform_in)
 
@@ -3436,7 +3449,7 @@ describe Project do
       end
 
       it 'schedules HashedStorage::ProjectMigrateWorker with delayed start when the wiki repo is in use' do
-        Gitlab::ReferenceCounter.new(project.gl_repository(is_wiki: true)).increase
+        Gitlab::ReferenceCounter.new(Gitlab::GlRepository::WIKI.identifier_for_subject(project)).increase
 
         expect(HashedStorage::ProjectMigrateWorker).to receive(:perform_in)
 
@@ -3566,16 +3579,6 @@ describe Project do
           expect { project.rollback_to_legacy_storage! }.to change(HashedStorage::ProjectRollbackWorker.jobs, :size).by(1)
         end
       end
-    end
-  end
-
-  describe '#gl_repository' do
-    let(:project) { create(:project) }
-
-    it 'delegates to Gitlab::GlRepository.gl_repository' do
-      expect(Gitlab::GlRepository).to receive(:gl_repository).with(project, true)
-
-      project.gl_repository(is_wiki: true)
     end
   end
 
@@ -4366,6 +4369,25 @@ describe Project do
             .not_to exceed_query_limit(control).with_threshold(2)
         end
       end
+    end
+  end
+
+  describe '#external_authorization_classification_label' do
+    it 'falls back to the default when none is configured' do
+      enable_external_authorization_service_check
+
+      expect(build(:project).external_authorization_classification_label)
+        .to eq('default_label')
+    end
+
+    it 'returns the classification label if it was configured on the project' do
+      enable_external_authorization_service_check
+
+      project = build(:project,
+                      external_authorization_classification_label: 'hello')
+
+      expect(project.external_authorization_classification_label)
+        .to eq('hello')
     end
   end
 

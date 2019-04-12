@@ -141,7 +141,7 @@ in any of the following places:
 
 NOTE: **Note**
 The Auto DevOps base domain variable (`KUBE_INGRESS_BASE_DOMAIN`) follows the same order of precedence
-as other environment [variables](../../ci/variables/README.md#priority-of-variables).
+as other environment [variables](../../ci/variables/README.md#priority-of-environment-variables).
 
 A wildcard DNS A record matching the base domain(s) is required, for example,
 given a base domain of `example.com`, you'd need a DNS entry like:
@@ -444,13 +444,6 @@ This is an optional step, since many projects do not have a Kubernetes cluster
 available. If the [requirements](#requirements) are not met, the job will
 silently be skipped.
 
-CAUTION: **Caution:**
-Your apps should *not* be manipulated outside of Helm (using Kubernetes directly.)
-This can cause confusion with Helm not detecting the change, and subsequent
-deploys with Auto DevOps can undo your changes. Also, if you change something
-and want to undo it by deploying again, Helm may not detect that anything changed
-in the first place, and thus not realize that it needs to re-apply the old config.
-
 [Review Apps][review-app] are temporary application environments based on the
 branch's code so developers, designers, QA, product managers, and other
 reviewers can actually see and interact with code changes as part of the review
@@ -465,6 +458,24 @@ example, `13083-review-project-branch-123456.example.com`. A link to the Review 
 up in the merge request widget for easy discovery. When the branch or tag is deleted,
 for example after the merge request is merged, the Review App will automatically
 be deleted.
+
+Review apps are deployed using the
+[auto-deploy-app](https://gitlab.com/charts/auto-deploy-app) chart with
+Helm. The app will be deployed into the [Kubernetes
+namespace](../../user/project/clusters/index.md#deployment-variables)
+for the environment.
+
+Since GitLab 11.4, a [local
+Tiller](https://gitlab.com/gitlab-org/gitlab-ce/merge_requests/22036) is
+used. Previous versions of GitLab had a Tiller installed in the project
+namespace.
+
+CAUTION: **Caution:**
+Your apps should *not* be manipulated outside of Helm (using Kubernetes directly).
+This can cause confusion with Helm not detecting the change and subsequent
+deploys with Auto DevOps can undo your changes. Also, if you change something
+and want to undo it by deploying again, Helm may not detect that anything changed
+in the first place, and thus not realize that it needs to re-apply the old config.
 
 ### Auto DAST **[ULTIMATE]**
 
@@ -504,13 +515,6 @@ This is an optional step, since many projects do not have a Kubernetes cluster
 available. If the [requirements](#requirements) are not met, the job will
 silently be skipped.
 
-CAUTION: **Caution:**
-Your apps should *not* be manipulated outside of Helm (using Kubernetes directly.)
-This can cause confusion with Helm not detecting the change, and subsequent
-deploys with Auto DevOps can undo your changes. Also, if you change something
-and want to undo it by deploying again, Helm may not detect that anything changed
-in the first place, and thus not realize that it needs to re-apply the old config.
-
 After a branch or merge request is merged into the project's default branch (usually
 `master`), Auto Deploy deploys the application to a `production` environment in
 the Kubernetes cluster, with a namespace based on the project name and unique
@@ -522,6 +526,24 @@ enable them.
 
 You can make use of [environment variables](#environment-variables) to automatically
 scale your pod replicas.
+
+Apps are deployed using the
+[auto-deploy-app](https://gitlab.com/charts/auto-deploy-app) chart with
+Helm. The app will be deployed into the [Kubernetes
+namespace](../../user/project/clusters/index.md#deployment-variables)
+for the environment.
+
+Since GitLab 11.4, a [local
+Tiller](https://gitlab.com/gitlab-org/gitlab-ce/merge_requests/22036) is
+used. Previous versions of GitLab had a Tiller installed in the project
+namespace.
+
+CAUTION: **Caution:**
+Your apps should *not* be manipulated outside of Helm (using Kubernetes directly).
+This can cause confusion with Helm not detecting the change and subsequent
+deploys with Auto DevOps can undo your changes. Also, if you change something
+and want to undo it by deploying again, Helm may not detect that anything changed
+in the first place, and thus not realize that it needs to re-apply the old config.
 
 > [Introduced][ce-19507] in GitLab 11.0.
 
@@ -647,12 +669,12 @@ repo or by specifying a project variable:
   file in it, Auto DevOps will detect the chart and use it instead of the [default
   one](https://gitlab.com/charts/auto-deploy-app).
   This can be a great way to control exactly how your application is deployed.
-- **Project variable** - Create a [project variable](../../ci/variables/README.md#variables)
+- **Project variable** - Create a [project variable](../../ci/variables/README.md#gitlab-cicd-environment-variables)
   `AUTO_DEVOPS_CHART` with the URL of a custom chart to use or create two project variables `AUTO_DEVOPS_CHART_REPOSITORY` with the URL of a custom chart repository and `AUTO_DEVOPS_CHART` with the path to the chart.
 
 ### Custom Helm chart per environment **[PREMIUM]**
 
-You can specify the use of a custom Helm chart per environment by scoping the environment variable 
+You can specify the use of a custom Helm chart per environment by scoping the environment variable
 to the desired environment. See [Limiting environment scopes of variables](https://docs.gitlab.com/ee/ci/variables/#limiting-environment-scopes-of-variables-premium).
 
 ### Customizing `.gitlab-ci.yml`
@@ -676,6 +698,21 @@ instead of directly to a production one, you can enable the `staging` job by
 renaming `.staging` to `staging`. Then make sure to uncomment the `when` key of
 the `production` job to turn it into a manual action instead of deploying
 automatically.
+
+### Using components of Auto-DevOps
+
+If you only require a subset of the features offered by Auto-DevOps, you can include
+individual Auto-DevOps jobs into your own `.gitlab-ci.yml`.
+
+For example, to make use of [Auto Build](#auto-build), you can add the following to
+your `.gitlab-ci.yml`:
+
+```yaml
+include:
+  - template: Jobs/Build.gitlab-ci.yml
+```
+
+Consult the [Auto DevOps template] for information on available jobs.
 
 ### PostgreSQL database support
 
@@ -733,7 +770,7 @@ also be customized, and you can easily use a [custom buildpack](#custom-buildpac
 
 TIP: **Tip:**
 Set up the replica variables using a
-[project variable](../../ci/variables/README.md#variables)
+[project variable](../../ci/variables/README.md#gitlab-cicd-environment-variables)
 and scale your application by just redeploying it!
 
 CAUTION: **Caution:**
@@ -901,7 +938,7 @@ increasing the rollout up to 100%.
 
 If `INCREMENTAL_ROLLOUT_MODE` is set to `manual` in your project, then instead
 of the standard `production` job, 4 different
-[manual jobs](../../ci/pipelines.md#manual-actions-from-the-pipeline-graph)
+[manual jobs](../../ci/pipelines.md#manual-actions-from-pipeline-graphs)
 will be created:
 
 1. `rollout 10%`
@@ -918,7 +955,7 @@ required to go from `10%` to `100%`, you can jump to whatever job you want.
 You can also scale down by running a lower percentage job, just before hitting
 `100%`. Once you get to `100%`, you cannot scale down, and you'd have to roll
 back by redeploying the old version using the
-[rollback button](../../ci/environments.md#rolling-back-changes) in the
+[rollback button](../../ci/environments.md#retrying-and-rolling-back) in the
 environment page.
 
 Below, you can see how the pipeline will look if the rollout or staging
@@ -1022,10 +1059,9 @@ planned for a subsequent release.
   buildpack](#custom-buildpacks).
 - Auto Test may fail because of a mismatch between testing frameworks. In this
   case, you may need to customize your `.gitlab-ci.yml` with your test commands.
-- Auto Deploy may fail if it is unable to create a Kubernetes namespace and
-  service account for your project. See the
-  [troubleshooting failed deployments](../../user/project/clusters/index.md#troubleshooting-failed-deployment-jobs)
-  section to debug why these resources were not created.
+- Auto Deploy will fail if GitLab can not create a Kubernetes namespace and
+  service account for your project. For help debugging this issue, see
+  [Troubleshooting failed deployment jobs](../../user/project/clusters/index.md#troubleshooting-failed-deployment-jobs).
 
 ### Disable the banner instance wide
 

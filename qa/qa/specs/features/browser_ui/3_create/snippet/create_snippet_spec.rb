@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 module QA
-  context 'Create', :smoke do
+  # Failure issue: https://gitlab.com/gitlab-org/quality/staging/issues/49
+  context 'Create', :smoke, :quarantine do
     describe 'Snippet creation' do
       it 'User creates a snippet' do
         Runtime::Browser.visit(:gitlab, Page::Main::Login)
         Page::Main::Login.perform(&:sign_in_using_credentials)
 
-        Page::Main::Menu.perform(&:go_to_snippets)
+        Page::Main::Menu.perform(&:click_snippets_link)
 
         Resource::Snippet.fabricate_via_browser_ui! do |snippet|
           snippet.title = 'Snippet title'

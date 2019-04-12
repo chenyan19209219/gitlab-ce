@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Ci::Pipeline, :mailer do
@@ -320,43 +322,37 @@ describe Ci::Pipeline, :mailer do
     end
   end
 
-  describe '.mergeable_merge_request_pipelines' do
-    subject { described_class.mergeable_merge_request_pipelines(merge_request) }
+  describe '#merge_request_ref?' do
+    subject { pipeline.merge_request_ref? }
 
-    let!(:pipeline) do
-      create(:ci_pipeline, source: :merge_request_event, merge_request: merge_request, target_sha: target_sha)
-    end
+    it 'calls MergeRequest#merge_request_ref?' do
+      expect(MergeRequest).to receive(:merge_request_ref?).with(pipeline.ref)
 
-    let(:merge_request) { create(:merge_request) }
-    let(:target_sha) { merge_request.target_branch_sha }
-
-    it 'returns mergeable merge pipelines' do
-      is_expected.to eq([pipeline])
-    end
-
-    context 'when target sha does not point the head of the target branch' do
-      let(:target_sha) { merge_request.diff_head_sha }
-
-      it 'returns empty array' do
-        is_expected.to be_empty
-      end
+      subject
     end
   end
 
-  describe '#mergeable_merge_request_pipeline?' do
-    subject { pipeline.mergeable_merge_request_pipeline? }
+  describe '#legacy_detached_merge_request_pipeline?' do
+    subject { pipeline.legacy_detached_merge_request_pipeline? }
 
-    let!(:pipeline) do
-      create(:ci_pipeline, source: :merge_request_event, merge_request: merge_request, target_sha: target_sha)
+    set(:merge_request) { create(:merge_request) }
+    let(:ref) { 'feature' }
+    let(:target_sha) { nil }
+
+    let(:pipeline) do
+      build(:ci_pipeline, source: :merge_request_event, merge_request: merge_request, ref: ref, target_sha: target_sha)
     end
-
-    let(:merge_request) { create(:merge_request) }
-    let(:target_sha) { merge_request.target_branch_sha }
 
     it { is_expected.to be_truthy }
 
-    context 'when target sha does not point the head of the target branch' do
-      let(:target_sha) { merge_request.diff_head_sha }
+    context 'when pipeline ref is a merge request ref' do
+      let(:ref) { 'refs/merge-requests/1/head' }
+
+      it { is_expected.to be_falsy }
+    end
+
+    context 'when target sha is set' do
+      let(:target_sha) { 'target-sha' }
 
       it { is_expected.to be_falsy }
     end
@@ -688,12 +684,12 @@ describe Ci::Pipeline, :mailer do
                source_branch: 'feature',
                target_project: project,
                target_branch: 'master',
-               assignee: assignee,
+               assignees: assignees,
                milestone: milestone,
                labels: labels)
       end
 
-      let(:assignee) { create(:user) }
+      let(:assignees) { create_list(:user, 2) }
       let(:milestone) { create(:milestone, project: project) }
       let(:labels) { create_list(:label, 2) }
 
@@ -714,7 +710,7 @@ describe Ci::Pipeline, :mailer do
             'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME' => merge_request.source_branch.to_s,
             'CI_MERGE_REQUEST_SOURCE_BRANCH_SHA' => pipeline.source_sha.to_s,
             'CI_MERGE_REQUEST_TITLE' => merge_request.title,
-            'CI_MERGE_REQUEST_ASSIGNEES' => assignee.username,
+            'CI_MERGE_REQUEST_ASSIGNEES' => merge_request.assignee_username_list,
             'CI_MERGE_REQUEST_MILESTONE' => milestone.title,
             'CI_MERGE_REQUEST_LABELS' => labels.map(&:title).join(','))
       end
@@ -734,7 +730,7 @@ describe Ci::Pipeline, :mailer do
       end
 
       context 'without assignee' do
-        let(:assignee) { nil }
+        let(:assignees) { [] }
 
         it 'does not expose assignee variable' do
           expect(subject.to_hash.keys).not_to include('CI_MERGE_REQUEST_ASSIGNEES')
@@ -1456,6 +1452,14 @@ describe Ci::Pipeline, :mailer do
     describe '#latest?' do
       context 'with latest sha' do
         it 'returns true' do
+          expect(pipeline).to be_latest
+        end
+      end
+
+      context 'with a branch name as the ref' do
+        it 'looks up commit with the full ref name' do
+          expect(pipeline.project).to receive(:commit).with('refs/heads/master').and_call_original
+
           expect(pipeline).to be_latest
         end
       end

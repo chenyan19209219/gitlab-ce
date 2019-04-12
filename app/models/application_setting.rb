@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class ApplicationSetting < ActiveRecord::Base
+class ApplicationSetting < ApplicationRecord
   include CacheableAttributes
   include CacheMarkdownField
   include TokenAuthenticatable
@@ -48,17 +48,17 @@ class ApplicationSetting < ActiveRecord::Base
 
   validates :home_page_url,
             allow_blank: true,
-            url: true,
+            addressable_url: true,
             if: :home_page_url_column_exists?
 
   validates :help_page_support_url,
             allow_blank: true,
-            url: true,
+            addressable_url: true,
             if: :help_page_support_url_column_exists?
 
   validates :after_sign_out_path,
             allow_blank: true,
-            url: true
+            addressable_url: true
 
   validates :admin_notification_email,
             devise_email: true,
@@ -213,6 +213,40 @@ class ApplicationSetting < ActiveRecord::Base
 
   validate :terms_exist, if: :enforce_terms?
 
+  validates :external_authorization_service_default_label,
+            presence: true,
+            if: :external_authorization_service_enabled
+
+  validates :external_authorization_service_url,
+            addressable_url: true, allow_blank: true,
+            if: :external_authorization_service_enabled
+
+  validates :external_authorization_service_timeout,
+            numericality: { greater_than: 0, less_than_or_equal_to: 10 },
+            if: :external_authorization_service_enabled
+
+  validates :external_auth_client_key,
+            presence: true,
+            if: -> (setting) { setting.external_auth_client_cert.present? }
+
+  validates_with X509CertificateCredentialsValidator,
+                 certificate: :external_auth_client_cert,
+                 pkey: :external_auth_client_key,
+                 pass: :external_auth_client_key_pass,
+                 if: -> (setting) { setting.external_auth_client_cert.present? }
+
+  attr_encrypted :external_auth_client_key,
+                 mode: :per_attribute_iv,
+                 key: Settings.attr_encrypted_db_key_base_truncated,
+                 algorithm: 'aes-256-gcm',
+                 encode: true
+
+  attr_encrypted :external_auth_client_key_pass,
+                 mode: :per_attribute_iv,
+                 key: Settings.attr_encrypted_db_key_base_truncated,
+                 algorithm: 'aes-256-gcm',
+                 encode: true
+
   before_validation :ensure_uuid!
   before_validation :strip_sentry_values
 
@@ -223,4 +257,13 @@ class ApplicationSetting < ActiveRecord::Base
     reset_memoized_terms
   end
   after_commit :expire_performance_bar_allowed_user_ids_cache, if: -> { previous_changes.key?('performance_bar_allowed_group_id') }
+
+  def self.create_from_defaults
+    transaction(requires_new: true) do
+      super
+    end
+  rescue ActiveRecord::RecordNotUnique
+    # We already have an ApplicationSetting record, so just return it.
+    current_without_cache
+  end
 end

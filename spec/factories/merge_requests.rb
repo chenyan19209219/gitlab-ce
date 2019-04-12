@@ -46,8 +46,24 @@ FactoryBot.define do
       target_branch "improve/awesome"
     end
 
+    trait :merged_last_month do
+      merged
+
+      after(:build) do |merge_request|
+        merge_request.build_metrics.merged_at = 1.month.ago
+      end
+    end
+
     trait :closed do
       state :closed
+    end
+
+    trait :closed_last_month do
+      closed
+
+      after(:build) do |merge_request|
+        merge_request.build_metrics.latest_closed_at = 1.month.ago
+      end
     end
 
     trait :opened do
@@ -101,9 +117,20 @@ FactoryBot.define do
       end
     end
 
+    trait :with_legacy_detached_merge_request_pipeline do
+      after(:create) do |merge_request|
+        merge_request.merge_request_pipelines << create(:ci_pipeline,
+          source: :merge_request_event,
+          merge_request: merge_request,
+          project: merge_request.source_project,
+          ref: merge_request.source_branch,
+          sha: merge_request.source_branch_sha)
+      end
+    end
+
     trait :with_detached_merge_request_pipeline do
-      after(:build) do |merge_request|
-        merge_request.merge_request_pipelines << build(:ci_pipeline,
+      after(:create) do |merge_request|
+        merge_request.merge_request_pipelines << create(:ci_pipeline,
           source: :merge_request_event,
           merge_request: merge_request,
           project: merge_request.source_project,
@@ -119,7 +146,7 @@ FactoryBot.define do
         target_sha { target_branch_sha }
       end
 
-      after(:build) do |merge_request, evaluator|
+      after(:create) do |merge_request, evaluator|
         merge_request.merge_request_pipelines << create(:ci_pipeline,
           source: :merge_request_event,
           merge_request: merge_request,

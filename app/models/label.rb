@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Label < ActiveRecord::Base
+class Label < ApplicationRecord
   include CacheMarkdownField
   include Referable
   include Subscribable
@@ -131,6 +131,10 @@ class Label < ActiveRecord::Base
   # index. That means we can have just one character in the LIKE.
   def self.min_chars_for_partial_matching
     1
+  end
+
+  def self.by_ids(ids)
+    where(id: ids)
   end
 
   def open_issues_count(user = nil)

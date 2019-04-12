@@ -20,6 +20,7 @@ module API
     def self.update_params_at_least_one_of
       %i[
         assignee_id
+        assignee_ids
         description
         labels
         milestone_id
@@ -111,6 +112,7 @@ module API
                          desc: 'Return merge requests for the given scope: `created_by_me`, `assigned_to_me` or `all`'
         optional :my_reaction_emoji, type: String, desc: 'Return issues reacted by the authenticated user by the given emoji'
         optional :source_branch, type: String, desc: 'Return merge requests with the given source branch'
+        optional :source_project_id, type: Integer, desc: 'Return merge requests with the given source project id'
         optional :target_branch, type: String, desc: 'Return merge requests with the given target branch'
         optional :search, type: String, desc: 'Search merge requests for text present in the title, description, or any combination of these'
         optional :in, type: String, desc: '`title`, `description`, or a string joining them with comma'
@@ -183,6 +185,7 @@ module API
         params :optional_params do
           optional :description, type: String, desc: 'The description of the merge request'
           optional :assignee_id, type: Integer, desc: 'The ID of a user to assign the merge request'
+          optional :assignee_ids, type: Array[Integer], desc: 'The array of user IDs to assign issue'
           optional :milestone_id, type: Integer, desc: 'The ID of a milestone to assign the merge request'
           optional :labels, type: Array[String], coerce_with: Validations::Types::LabelsList.coerce, desc: 'Comma-separated list of label names'
           optional :remove_source_branch, type: Boolean, desc: 'Remove source branch when merging'
@@ -230,6 +233,7 @@ module API
 
         mr_params = declared_params(include_missing: false)
         mr_params[:force_remove_source_branch] = mr_params.delete(:remove_source_branch)
+        mr_params = convert_parameters_from_legacy_format(mr_params)
 
         merge_request = ::MergeRequests::CreateService.new(user_project, current_user, mr_params).execute
 
@@ -333,6 +337,7 @@ module API
 
         mr_params = declared_params(include_missing: false)
         mr_params[:force_remove_source_branch] = mr_params.delete(:remove_source_branch) if mr_params[:remove_source_branch].present?
+        mr_params = convert_parameters_from_legacy_format(mr_params)
 
         merge_request = ::MergeRequests::UpdateService.new(user_project, current_user, mr_params).execute(merge_request)
 

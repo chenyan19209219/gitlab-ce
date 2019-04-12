@@ -7,7 +7,8 @@
 # * are being moved to ApplicationSetting model!                       #
 # If a setting requires an application restart say so in that screen.  #
 # If you change this file in a Merge Request, please also create       #
-# a MR on https://gitlab.com/gitlab-org/omnibus-gitlab/merge_requests  #
+# a MR on https://gitlab.com/gitlab-org/omnibus-gitlab/merge_requests. #
+# For more details see https://gitlab.com/gitlab-org/omnibus-gitlab/blob/0928cfb09f43993fd9454b0b14dbd1924b1407bc/doc/settings/gitlab.yml.md #
 ########################################################################
 #
 #
@@ -300,6 +301,10 @@ production: &base
     # Verify custom GitLab Pages domains
     pages_domain_verification_cron_worker:
       cron: "*/15 * * * *"
+
+    # Periodically migrate diffs from the database to external storage
+    schedule_migrate_external_diffs_worker:
+      cron: "15 * * * *"
 
   registry:
     # enabled: true
@@ -787,6 +792,10 @@ test:
     enabled: true
   external_diffs:
     enabled: false
+    # Diffs may be `always` external (the default), or they can be made external
+    # after they have become `outdated` (i.e., the MR is closed or a new version
+    # has been pushed).
+    # when: always
     # The location where external diffs are stored (default: shared/external-diffs).
     # storage_path: shared/external-diffs
     object_store:

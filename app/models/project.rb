@@ -2,7 +2,7 @@
 
 require 'carrierwave/orm/activerecord'
 
-class Project < ActiveRecord::Base
+class Project < ApplicationRecord
   include Gitlab::ConfigHelper
   include Gitlab::ShellAdapter
   include Gitlab::VisibilityLevel
@@ -146,6 +146,7 @@ class Project < ActiveRecord::Base
   has_one :pipelines_email_service
   has_one :irker_service
   has_one :pivotaltracker_service
+  has_one :hipchat_service
   has_one :flowdock_service
   has_one :assembla_service
   has_one :asana_service
@@ -327,7 +328,7 @@ class Project < ActiveRecord::Base
 
   validates :namespace, presence: true
   validates :name, uniqueness: { scope: :namespace_id }
-  validates :import_url, public_url: { protocols: ->(project) { project.persisted? ? VALID_MIRROR_PROTOCOLS : VALID_IMPORT_PROTOCOLS },
+  validates :import_url, public_url: { schemes: ->(project) { project.persisted? ? VALID_MIRROR_PROTOCOLS : VALID_IMPORT_PROTOCOLS },
                                        ports: ->(project) { project.persisted? ? VALID_MIRROR_PORTS : VALID_IMPORT_PORTS },
                                        enforce_user: true }, if: [:external_import?, :import_url_changed?]
   validates :star_count, numericality: { greater_than_or_equal_to: 0 }
@@ -645,6 +646,10 @@ class Project < ActiveRecord::Base
     return namespace.first_auto_devops_config if auto_devops&.enabled.nil?
 
     { scope: :project, status: auto_devops&.enabled || Feature.enabled?(:force_autodevops_on_by_default, self) }
+  end
+
+  def multiple_mr_assignees_enabled?
+    Feature.enabled?(:multiple_merge_request_assignees, self)
   end
 
   def daily_statistics_enabled?
@@ -2003,12 +2008,8 @@ class Project < ActiveRecord::Base
     @storage = nil if storage_version_changed?
   end
 
-  def gl_repository(is_wiki:)
-    Gitlab::GlRepository.gl_repository(self, is_wiki)
-  end
-
-  def reference_counter(wiki: false)
-    Gitlab::ReferenceCounter.new(gl_repository(is_wiki: wiki))
+  def reference_counter(type: Gitlab::GlRepository::PROJECT)
+    Gitlab::ReferenceCounter.new(type.identifier_for_subject(self))
   end
 
   def badges
@@ -2037,6 +2038,11 @@ class Project < ActiveRecord::Base
 
   def branch_allows_collaboration?(user, branch_name)
     fetch_branch_allows_collaboration(user, branch_name)
+  end
+
+  def external_authorization_classification_label
+    super || ::Gitlab::CurrentSettings.current_application_settings
+               .external_authorization_service_default_label
   end
 
   def licensed_features
@@ -2105,7 +2111,7 @@ class Project < ActiveRecord::Base
   end
 
   def leave_pool_repository
-    pool_repository&.unlink_repository(repository) && update_column(:pool_repository_id, nil)
+    pool_repository&.mark_obsolete_if_last(repository) && update_column(:pool_repository_id, nil)
   end
 
   def link_pool_repository
@@ -2152,7 +2158,7 @@ class Project < ActiveRecord::Base
   end
 
   def wiki_reference_count
-    reference_counter(wiki: true).value
+    reference_counter(type: Gitlab::GlRepository::WIKI).value
   end
 
   def check_repository_absence!

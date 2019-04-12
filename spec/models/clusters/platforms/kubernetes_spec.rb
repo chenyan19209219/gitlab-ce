@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Clusters::Platforms::Kubernetes, :use_clean_rails_memory_store_caching do
@@ -15,7 +17,7 @@ describe Clusters::Platforms::Kubernetes, :use_clean_rails_memory_store_caching 
 
   it { is_expected.to delegate_method(:project).to(:cluster) }
   it { is_expected.to delegate_method(:enabled?).to(:cluster) }
-  it { is_expected.to delegate_method(:managed?).to(:cluster) }
+  it { is_expected.to delegate_method(:provided_by_user?).to(:cluster) }
   it { is_expected.to delegate_method(:kubernetes_namespace).to(:cluster) }
 
   it_behaves_like 'having unique enum values'
@@ -445,7 +447,7 @@ describe Clusters::Platforms::Kubernetes, :use_clean_rails_memory_store_caching 
     let(:platform) { cluster.platform }
 
     context 'when namespace is updated' do
-      it 'should call ConfigureWorker' do
+      it 'calls ConfigureWorker' do
         expect(ClusterConfigureWorker).to receive(:perform_async).with(cluster.id).once
 
         platform.namespace = 'new-namespace'
@@ -454,7 +456,7 @@ describe Clusters::Platforms::Kubernetes, :use_clean_rails_memory_store_caching 
     end
 
     context 'when namespace is not updated' do
-      it 'should not call ConfigureWorker' do
+      it 'does not call ConfigureWorker' do
         expect(ClusterConfigureWorker).not_to receive(:perform_async)
 
         platform.username = "new-username"

@@ -1,12 +1,19 @@
 import Vue from 'vue';
+import * as jqueryMatchers from 'custom-jquery-matchers';
 import Translate from '~/vue_shared/translate';
 import axios from '~/lib/utils/axios_utils';
 import { initializeTestTimeout } from './helpers/timeout';
+import { getJSONFixture, loadHTMLFixture, setHTMLFixture } from './helpers/fixtures';
 
-// wait for pending setTimeout()s
-afterEach(() => {
-  jest.runAllTimers();
-});
+process.on('unhandledRejection', global.promiseRejectionHandler);
+
+afterEach(() =>
+  // give Promises a bit more time so they fail the right test
+  new Promise(setImmediate).then(() => {
+    // wait for pending setTimeout()s
+    jest.runAllTimers();
+  }),
+);
 
 initializeTestTimeout(300);
 
@@ -22,4 +29,31 @@ beforeEach(done => {
   done();
 });
 
+Vue.config.devtools = false;
+Vue.config.productionTip = false;
+
 Vue.use(Translate);
+
+// workaround for JSDOM not supporting innerText
+// see https://github.com/jsdom/jsdom/issues/1245
+Object.defineProperty(global.Element.prototype, 'innerText', {
+  get() {
+    return this.textContent;
+  },
+  configurable: true, // make it so that it doesn't blow chunks on re-running tests with things like --watch
+});
+
+// convenience wrapper for migration from Karma
+Object.assign(global, {
+  loadFixtures: loadHTMLFixture,
+  loadJSONFixtures: getJSONFixture,
+  preloadFixtures() {},
+  setFixtures: setHTMLFixture,
+});
+
+// custom-jquery-matchers was written for an old Jest version, we need to make it compatible
+Object.entries(jqueryMatchers).forEach(([matcherName, matcherFactory]) => {
+  expect.extend({
+    [matcherName]: matcherFactory().compare,
+  });
+});

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Release < ActiveRecord::Base
+class Release < ApplicationRecord
   include CacheMarkdownField
   include Gitlab::Utils::StrongMemoize
 
@@ -15,6 +15,7 @@ class Release < ActiveRecord::Base
   accepts_nested_attributes_for :links, allow_destroy: true
 
   validates :description, :project, :tag, presence: true
+  validates :name, presence: true, on: :create
 
   scope :sorted, -> { order(created_at: :desc) }
 

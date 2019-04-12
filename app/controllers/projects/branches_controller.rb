@@ -25,7 +25,7 @@ class Projects::BranchesController < Projects::ApplicationController
         @refs_pipelines = @project.ci_pipelines.latest_successful_for_refs(@branches.map(&:name))
         @merged_branch_names = repository.merged_branch_names(@branches.map(&:name))
 
-        # n+1: https://gitlab.com/gitlab-org/gitaly/issues/992
+        # n+1: https://gitlab.com/gitlab-org/gitlab-ce/issues/48097
         Gitlab::GitalyClient.allow_n_plus_1_calls do
           @max_commits = @branches.reduce(0) do |memo, branch|
             diverging_commit_counts = repository.diverging_commit_counts(branch)
@@ -115,7 +115,7 @@ class Projects::BranchesController < Projects::ApplicationController
     DeleteMergedBranchesService.new(@project, current_user).async_execute
 
     redirect_to project_branches_path(@project),
-      notice: 'Merged branches are being deleted. This can take some time depending on the number of branches. Please refresh the page to see changes.'
+      notice: _('Merged branches are being deleted. This can take some time depending on the number of branches. Please refresh the page to see changes.')
   end
 
   private
@@ -143,7 +143,7 @@ class Projects::BranchesController < Projects::ApplicationController
   def redirect_for_legacy_index_sort_or_search
     # Normalize a legacy URL with redirect
     if request.format != :json && !params[:state].presence && [:sort, :search, :page].any? { |key| params[key].presence }
-      redirect_to project_branches_filtered_path(@project, state: 'all'), notice: 'Update your bookmarked URLs as filtered/sorted branches URL has been changed.'
+      redirect_to project_branches_filtered_path(@project, state: 'all'), notice: _('Update your bookmarked URLs as filtered/sorted branches URL has been changed.')
     end
   end
 

@@ -39,6 +39,7 @@ class Projects::IssuesController < Projects::ApplicationController
   before_action :authorize_create_merge_request_from!, only: [:create_merge_request]
 
   before_action :authorize_import_issues!, only: [:import_csv]
+  before_action :authorize_download_code!, only: [:related_branches]
 
   before_action :set_suggested_issues_feature_flags, only: [:new]
 
@@ -97,9 +98,9 @@ class Projects::IssuesController < Projects::ApplicationController
 
     if service.discussions_to_resolve.count(&:resolved?) > 0
       flash[:notice] = if service.discussion_to_resolve_id
-                         "Resolved 1 discussion."
+                         _("Resolved 1 discussion.")
                        else
-                         "Resolved all discussions."
+                         _("Resolved all discussions.")
                        end
     end
 

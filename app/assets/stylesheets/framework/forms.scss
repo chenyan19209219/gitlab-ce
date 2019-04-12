@@ -128,7 +128,7 @@ label {
 
 .form-control {
   @include box-shadow(none);
-  border-radius: 2px;
+  border-radius: $border-radius-default;
   padding: $gl-vert-padding $gl-input-padding;
 
   &.input-short {
@@ -157,6 +157,10 @@ label {
   padding-left: 10px;
   padding-right: 10px;
   appearance: none;
+  /* stylelint-disable property-no-vendor-prefix */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* stylelint-enable property-no-vendor-prefix */
 
   &::-ms-expand {
     display: none;
@@ -204,8 +208,10 @@ label {
   margin-top: #{$grid-size / 2};
 }
 
-.gl-field-error {
+.gl-field-error,
+.invalid-feedback {
   color: $red-500;
+  font-size: $gl-font-size;
 }
 
 .gl-show-field-errors {

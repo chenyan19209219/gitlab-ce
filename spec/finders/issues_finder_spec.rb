@@ -13,60 +13,32 @@ describe IssuesFinder do
         expect(issues).to contain_exactly(issue1, issue2, issue3, issue4)
       end
 
-      context 'filtering by assignee ID' do
-        let(:params) { { assignee_id: user.id } }
+      context 'assignee filtering' do
+        let(:issuables) { issues }
 
-        it 'returns issues assigned to that user' do
-          expect(issues).to contain_exactly(issue1, issue2)
-        end
-      end
-
-      context 'filtering by assignee usernames' do
-        set(:user3) { create(:user) }
-        let(:params) { { assignee_username: [user2.username, user3.username] } }
-
-        before do
-          project2.add_developer(user3)
-
-          issue3.assignees = [user2, user3]
+        it_behaves_like 'assignee ID filter' do
+          let(:params) { { assignee_id: user.id } }
+          let(:expected_issuables) { [issue1, issue2] }
         end
 
-        it 'returns issues assigned to those users' do
-          expect(issues).to contain_exactly(issue3)
-        end
-      end
+        it_behaves_like 'assignee username filter' do
+          before do
+            project2.add_developer(user3)
+            issue3.assignees = [user2, user3]
+          end
 
-      context 'filtering by no assignee' do
-        let(:params) { { assignee_id: 'None' } }
-
-        it 'returns issues not assigned to any assignee' do
-          expect(issues).to contain_exactly(issue4)
-        end
-
-        it 'returns issues not assigned to any assignee' do
-          params[:assignee_id] = 0
-
-          expect(issues).to contain_exactly(issue4)
+          set(:user3) { create(:user) }
+          let(:params) { { assignee_username: [user2.username, user3.username] } }
+          let(:expected_issuables) { [issue3] }
         end
 
-        it 'returns issues not assigned to any assignee' do
-          params[:assignee_id] = 'none'
-
-          expect(issues).to contain_exactly(issue4)
-        end
-      end
-
-      context 'filtering by any assignee' do
-        let(:params) { { assignee_id: 'Any' } }
-
-        it 'returns issues assigned to any assignee' do
-          expect(issues).to contain_exactly(issue1, issue2, issue3)
+        it_behaves_like 'no assignee filter' do
+          set(:user3) { create(:user) }
+          let(:expected_issuables) { [issue4] }
         end
 
-        it 'returns issues assigned to any assignee' do
-          params[:assignee_id] = 'any'
-
-          expect(issues).to contain_exactly(issue1, issue2, issue3)
+        it_behaves_like 'any assignee filter' do
+          let(:expected_issuables) { [issue1, issue2, issue3] }
         end
       end
 
@@ -559,6 +531,13 @@ describe IssuesFinder do
         expect(issues.count).to eq 0
       end
     end
+
+    context 'external authorization' do
+      it_behaves_like 'a finder with external authorization service' do
+        let!(:subject) { create(:issue, project: project) }
+        let(:project_params) { { project_id: project.id } }
+      end
+    end
   end
 
   describe '#row_count', :request_store do
@@ -719,7 +698,7 @@ describe IssuesFinder do
     end
   end
 
-  describe '#use_subquery_for_search?' do
+  describe '#use_cte_for_search?' do
     let(:finder) { described_class.new(nil, params) }
 
     before do
@@ -731,7 +710,7 @@ describe IssuesFinder do
       let(:params) { { attempt_group_search_optimizations: true } }
 
       it 'returns false' do
-        expect(finder.use_subquery_for_search?).to be_falsey
+        expect(finder.use_cte_for_search?).to be_falsey
       end
     end
 
@@ -743,72 +722,7 @@ describe IssuesFinder do
       end
 
       it 'returns false' do
-        expect(finder.use_subquery_for_search?).to be_falsey
-      end
-    end
-
-    context 'when the attempt_group_search_optimizations param is falsey' do
-      let(:params) { { search: 'foo' } }
-
-      it 'returns false' do
-        expect(finder.use_subquery_for_search?).to be_falsey
-      end
-    end
-
-    context 'when the attempt_group_search_optimizations flag is disabled' do
-      let(:params) { { search: 'foo', attempt_group_search_optimizations: true } }
-
-      before do
-        stub_feature_flags(attempt_group_search_optimizations: false)
-      end
-
-      it 'returns false' do
-        expect(finder.use_subquery_for_search?).to be_falsey
-      end
-    end
-
-    context 'when force_cte? is true' do
-      let(:params) { { search: 'foo', attempt_group_search_optimizations: true, force_cte: true } }
-
-      it 'returns false' do
-        expect(finder.use_subquery_for_search?).to be_falsey
-      end
-    end
-
-    context 'when all conditions are met' do
-      let(:params) { { search: 'foo', attempt_group_search_optimizations: true } }
-
-      it 'returns true' do
-        expect(finder.use_subquery_for_search?).to be_truthy
-      end
-    end
-  end
-
-  describe '#use_cte_for_count?' do
-    let(:finder) { described_class.new(nil, params) }
-
-    before do
-      allow(Gitlab::Database).to receive(:postgresql?).and_return(true)
-      stub_feature_flags(attempt_group_search_optimizations: true)
-    end
-
-    context 'when there is no search param' do
-      let(:params) { { attempt_group_search_optimizations: true, force_cte: true } }
-
-      it 'returns false' do
-        expect(finder.use_cte_for_count?).to be_falsey
-      end
-    end
-
-    context 'when the database is not Postgres' do
-      let(:params) { { search: 'foo', force_cte: true, attempt_group_search_optimizations: true } }
-
-      before do
-        allow(Gitlab::Database).to receive(:postgresql?).and_return(false)
-      end
-
-      it 'returns false' do
-        expect(finder.use_cte_for_count?).to be_falsey
+        expect(finder.use_cte_for_search?).to be_falsey
       end
     end
 
@@ -816,27 +730,51 @@ describe IssuesFinder do
       let(:params) { { search: 'foo' } }
 
       it 'returns false' do
-        expect(finder.use_cte_for_count?).to be_falsey
+        expect(finder.use_cte_for_search?).to be_falsey
       end
     end
 
     context 'when the attempt_group_search_optimizations flag is disabled' do
-      let(:params) { { search: 'foo', force_cte: true, attempt_group_search_optimizations: true } }
+      let(:params) { { search: 'foo', attempt_group_search_optimizations: true } }
 
       before do
         stub_feature_flags(attempt_group_search_optimizations: false)
       end
 
       it 'returns false' do
-        expect(finder.use_cte_for_count?).to be_falsey
+        expect(finder.use_cte_for_search?).to be_falsey
+      end
+    end
+
+    context 'when attempt_group_search_optimizations is unset and attempt_project_search_optimizations is set' do
+      let(:params) { { search: 'foo', attempt_project_search_optimizations: true } }
+
+      context 'and the corresponding feature flag is disabled' do
+        before do
+          stub_feature_flags(attempt_project_search_optimizations: false)
+        end
+
+        it 'returns false' do
+          expect(finder.use_cte_for_search?).to be_falsey
+        end
+      end
+
+      context 'and the corresponding feature flag is enabled' do
+        before do
+          stub_feature_flags(attempt_project_search_optimizations: true)
+        end
+
+        it 'returns true' do
+          expect(finder.use_cte_for_search?).to be_truthy
+        end
       end
     end
 
     context 'when all conditions are met' do
-      let(:params) { { search: 'foo', force_cte: true, attempt_group_search_optimizations: true } }
+      let(:params) { { search: 'foo', attempt_group_search_optimizations: true } }
 
       it 'returns true' do
-        expect(finder.use_cte_for_count?).to be_truthy
+        expect(finder.use_cte_for_search?).to be_truthy
       end
     end
   end

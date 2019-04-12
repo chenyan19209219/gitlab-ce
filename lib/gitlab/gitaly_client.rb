@@ -33,12 +33,6 @@ module Gitlab
 
     MUTEX = Mutex.new
 
-    class << self
-      attr_accessor :query_time
-    end
-
-    self.query_time = 0
-
     define_histogram :gitaly_controller_action_duration_seconds do
       docstring "Gitaly endpoint histogram by controller and action combination"
       base_labels Gitlab::Metrics::Transaction::BASE_LABELS.merge(gitaly_service: nil, rpc: nil)
@@ -174,6 +168,18 @@ module Gitlab
       add_call_details(feature: "#{service}##{rpc}", duration: duration, request: request_hash, rpc: rpc)
     end
 
+    def self.query_time
+      SafeRequestStore[:gitaly_query_time] ||= 0
+    end
+
+    def self.query_time=(duration)
+      SafeRequestStore[:gitaly_query_time] = duration
+    end
+
+    def self.query_time_ms
+      (self.query_time * 1000).round(2)
+    end
+
     def self.current_transaction_labels
       Gitlab::Metrics::Transaction.current&.labels || {}
     end
@@ -226,7 +232,7 @@ module Gitlab
       result
     end
 
-    SERVER_FEATURE_FLAGS = %w[go-find-all-tags].freeze
+    SERVER_FEATURE_FLAGS = %w[].freeze
 
     def self.server_feature_flags
       SERVER_FEATURE_FLAGS.map do |f|
@@ -294,6 +300,26 @@ module Gitlab
       ensure
         decrement_call_count(:gitaly_call_count_exception_block_depth)
       end
+    end
+
+    # Normally a FindCommit RPC will cache the commit with its SHA
+    # instead of a ref name, since it's possible the branch is mutated
+    # afterwards. However, for read-only requests that never mutate the
+    # branch, this method allows caching of the ref name directly.
+    def self.allow_ref_name_caching
+      return yield unless Gitlab::SafeRequestStore.active?
+      return yield if ref_name_caching_allowed?
+
+      begin
+        Gitlab::SafeRequestStore[:allow_ref_name_caching] = true
+        yield
+      ensure
+        Gitlab::SafeRequestStore[:allow_ref_name_caching] = false
+      end
+    end
+
+    def self.ref_name_caching_allowed?
+      Gitlab::SafeRequestStore[:allow_ref_name_caching]
     end
 
     def self.get_call_count(key)

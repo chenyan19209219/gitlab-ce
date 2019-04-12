@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Namespace do
@@ -738,14 +740,14 @@ describe Namespace do
 
   describe '#full_path_was' do
     context 'when the group has no parent' do
-      it 'should return the path was' do
+      it 'returns the path was' do
         group = create(:group, parent: nil)
         expect(group.full_path_was).to eq(group.path_was)
       end
     end
 
     context 'when a parent is assigned to a group with no previous parent' do
-      it 'should return the path was' do
+      it 'returns the path was' do
         group = create(:group, parent: nil)
 
         parent = create(:group)
@@ -756,7 +758,7 @@ describe Namespace do
     end
 
     context 'when a parent is removed from the group' do
-      it 'should return the parent full path' do
+      it 'returns the parent full path' do
         parent = create(:group)
         group = create(:group, parent: parent)
         group.parent = nil
@@ -766,7 +768,7 @@ describe Namespace do
     end
 
     context 'when changing parents' do
-      it 'should return the previous parent full path' do
+      it 'returns the previous parent full path' do
         parent = create(:group)
         group = create(:group, parent: parent)
         new_parent = create(:group)

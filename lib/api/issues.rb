@@ -8,15 +8,6 @@ module API
 
     helpers ::Gitlab::IssuableMetadata
 
-    # EE::API::Issues would override the following helpers
-    helpers do
-      params :issues_params_ee do
-      end
-
-      params :issue_params_ee do
-      end
-    end
-
     helpers do
       # rubocop: disable CodeReuse/ActiveRecord
       def find_issues(args = {})
@@ -34,6 +25,16 @@ module API
         issues
       end
       # rubocop: enable CodeReuse/ActiveRecord
+
+      if Gitlab.ee?
+        params :issues_params_ee do
+          optional :weight, types: [Integer, String], integer_none_any: true, desc: 'The weight of the issue'
+        end
+
+        params :issue_params_ee do
+          optional :weight, type: Integer, desc: 'The weight of the issue'
+        end
+      end
 
       params :issues_params do
         optional :labels, :label_name, type: Array[String], coerce_with: Validations::Types::LabelsList.coerce, desc: 'Comma-separated list of label names'
@@ -62,7 +63,7 @@ module API
         optional :confidential, type: Boolean, desc: 'Filter confidential or public issues'
         use :pagination
 
-        use :issues_params_ee
+        use :issues_params_ee if Gitlab.ee?
       end
 
       params :issue_params do
@@ -75,7 +76,7 @@ module API
         optional :confidential, type: Boolean, desc: 'Boolean parameter if the issue should be confidential'
         optional :discussion_locked, type: Boolean, desc: " Boolean parameter indicating if the issue's discussion is locked"
 
-        use :issue_params_ee
+        use :issue_params_ee if Gitlab.ee?
       end
     end
 
@@ -224,8 +225,8 @@ module API
                               desc: 'Date time when the issue was updated. Available only for admins and project owners.'
         optional :state_event, type: String, values: %w[reopen close], desc: 'State of the issue'
         use :issue_params
-        at_least_one_of :title, :description, :assignee_ids, :assignee_id, :milestone_id, :discussion_locked,
-                        :labels, :created_at, :due_date, :confidential, :state_event
+
+        at_least_one_of(*Helpers::IssuesHelpers.update_params_at_least_one_of)
       end
       # rubocop: disable CodeReuse/ActiveRecord
       put ':id/issues/:issue_iid' do
@@ -234,9 +235,13 @@ module API
         issue = user_project.issues.find_by!(iid: params.delete(:issue_iid))
         authorize! :update_issue, issue
 
-        # Setting created_at time only allowed for admins and project/group owners
-        unless current_user.admin? || user_project.owner == current_user || current_user.owned_groups.include?(user_project.owner)
-          params.delete(:updated_at)
+        # Setting updated_at only allowed for admins and owners as well
+        if params[:updated_at].present?
+          if current_user.admin? || user_project.owner == current_user || current_user.owned_groups.include?(user_project.owner)
+            issue.system_note_timestamp = params[:updated_at]
+          else
+            params.delete(:updated_at)
+          end
         end
 
         update_params = declared_params(include_missing: false).merge(request: request, api: true)
@@ -311,10 +316,10 @@ module API
 
         merge_requests = ::Issues::ReferencedMergeRequestsService.new(user_project, current_user)
           .execute(issue)
-          .flatten
+          .first
 
         present paginate(::Kaminari.paginate_array(merge_requests)),
-          with: Entities::MergeRequestBasic,
+          with: Entities::MergeRequest,
           current_user: current_user,
           project: user_project
       end

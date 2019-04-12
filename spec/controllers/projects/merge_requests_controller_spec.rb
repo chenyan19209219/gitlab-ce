@@ -60,6 +60,8 @@ describe Projects::MergeRequestsController do
       end
 
       it "renders merge request page" do
+        expect(::Gitlab::GitalyClient).to receive(:allow_ref_name_caching).and_call_original
+
         go(format: :html)
 
         expect(response).to be_success
@@ -86,6 +88,10 @@ describe Projects::MergeRequestsController do
     end
 
     describe 'as json' do
+      before do
+        expect(::Gitlab::GitalyClient).to receive(:allow_ref_name_caching).and_call_original
+      end
+
       context 'with basic serializer param' do
         it 'renders basic MR entity as json' do
           go(serializer: 'basic', format: :json)
@@ -232,11 +238,11 @@ describe Projects::MergeRequestsController do
         assignee = create(:user)
         project.add_developer(assignee)
 
-        update_merge_request({ assignee_id: assignee.id }, format: :json)
+        update_merge_request({ assignee_ids: [assignee.id] }, format: :json)
+
         body = JSON.parse(response.body)
 
-        expect(body['assignee'].keys)
-          .to match_array(%w(name username avatar_url id state web_url))
+        expect(body['assignees']).to all(include(*%w(name username avatar_url id state web_url)))
       end
     end
 

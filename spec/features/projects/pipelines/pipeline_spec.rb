@@ -59,11 +59,11 @@ describe 'Pipeline', :js do
     let(:project) { create(:project, :repository) }
     let(:pipeline) { create(:ci_pipeline, project: project, ref: 'master', sha: project.commit.id, user: user) }
 
-    before do
-      visit project_pipeline_path(project, pipeline)
-    end
+    subject(:visit_pipeline) { visit project_pipeline_path(project, pipeline) }
 
     it 'shows the pipeline graph' do
+      visit_pipeline
+
       expect(page).to have_selector('.pipeline-visualization')
       expect(page).to have_content('Build')
       expect(page).to have_content('Test')
@@ -73,14 +73,20 @@ describe 'Pipeline', :js do
     end
 
     it 'shows Pipeline tab pane as active' do
+      visit_pipeline
+
       expect(page).to have_css('#js-tab-pipeline.active')
     end
 
     it 'shows link to the pipeline ref' do
+      visit_pipeline
+
       expect(page).to have_link(pipeline.ref)
     end
 
     it 'shows the pipeline information' do
+      visit_pipeline
+
       within '.pipeline-info' do
         expect(page).to have_content("#{pipeline.statuses.count} jobs " \
                                       "for #{pipeline.ref} ")
@@ -96,6 +102,10 @@ describe 'Pipeline', :js do
     end
 
     describe 'pipeline graph' do
+      before do
+        visit_pipeline
+      end
+
       context 'when pipeline has running builds' do
         it 'shows a running icon and a cancel action for the running build' do
           page.within('#ci-badge-deploy') do
@@ -144,7 +154,7 @@ describe 'Pipeline', :js do
           end
         end
 
-        it 'should be possible to retry the success job' do
+        it 'is possible to retry the success job' do
           find('#ci-badge-build .ci-action-icon-container').click
 
           expect(page).not_to have_content('Retry job')
@@ -184,13 +194,13 @@ describe 'Pipeline', :js do
           end
         end
 
-        it 'should be possible to retry the failed build' do
+        it 'is possible to retry the failed build' do
           find('#ci-badge-test .ci-action-icon-container').click
 
           expect(page).not_to have_content('Retry job')
         end
 
-        it 'should include the failure reason' do
+        it 'includes the failure reason' do
           page.within('#ci-badge-test') do
             build_link = page.find('.js-pipeline-graph-job-link')
             expect(build_link['data-original-title']).to eq('test - failed - (unknown failure)')
@@ -210,7 +220,7 @@ describe 'Pipeline', :js do
           end
         end
 
-        it 'should be possible to play the manual job' do
+        it 'is possible to play the manual job' do
           find('#ci-badge-manual-build .ci-action-icon-container').click
 
           expect(page).not_to have_content('Play job')
@@ -227,6 +237,10 @@ describe 'Pipeline', :js do
     end
 
     context 'page tabs' do
+      before do
+        visit_pipeline
+      end
+
       it 'shows Pipeline, Jobs and Failed Jobs tabs with link' do
         expect(page).to have_link('Pipeline')
         expect(page).to have_link('Jobs')
@@ -253,6 +267,10 @@ describe 'Pipeline', :js do
     end
 
     context 'retrying jobs' do
+      before do
+        visit_pipeline
+      end
+
       it { expect(page).not_to have_content('retried') }
 
       context 'when retrying' do
@@ -265,6 +283,10 @@ describe 'Pipeline', :js do
     end
 
     context 'canceling jobs' do
+      before do
+        visit_pipeline
+      end
+
       it { expect(page).not_to have_selector('.ci-canceled') }
 
       context 'when canceling' do
@@ -282,6 +304,10 @@ describe 'Pipeline', :js do
                                    ref: 'non-existent',
                                    sha: project.commit.id,
                                    user: user)
+      end
+
+      before do
+        visit_pipeline
       end
 
       it 'does not render link to the pipeline ref' do
@@ -303,6 +329,10 @@ describe 'Pipeline', :js do
 
       let(:pipeline) do
         merge_request.all_pipelines.last
+      end
+
+      before do
+        visit_pipeline
       end
 
       it 'shows the pipeline information' do
@@ -356,6 +386,8 @@ describe 'Pipeline', :js do
 
       before do
         pipeline.update(user: user)
+
+        visit_pipeline
       end
 
       it 'shows the pipeline information' do
@@ -422,7 +454,7 @@ describe 'Pipeline', :js do
         expect(page).to have_content('Cancel running')
       end
 
-      it 'should not link to job' do
+      it 'does not link to job' do
         expect(page).not_to have_selector('.js-pipeline-graph-job-link')
       end
     end

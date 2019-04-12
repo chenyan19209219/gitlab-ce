@@ -64,6 +64,11 @@
         },
         "additionalProperties": false
       },
+      "assignees": {
+        "items": {
+          "$ref": "./merge_request.json"
+        }
+      },
       "source_project_id": { "type": "integer" },
       "target_project_id": { "type": "integer" },
       "labels": {
@@ -119,6 +124,12 @@
       "merge_status", "sha", "merge_commit_sha", "user_notes_count",
       "should_remove_source_branch", "force_remove_source_branch",
       "web_url", "squash"
-    ]
+    ],
+    "head_pipeline": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "pipeline/detail.json" }
+      ]
+    }
   }
 }

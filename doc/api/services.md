@@ -449,6 +449,45 @@ Get Hangouts Chat service settings for a project.
 GET /projects/:id/services/hangouts-chat
 ```
 
+## HipChat
+
+Private group chat and IM
+
+### Create/Edit HipChat service
+
+Set HipChat service for a project.
+
+```
+PUT /projects/:id/services/hipchat
+```
+
+Parameters:
+
+| Parameter | Type | Required | Description |
+| --------- | ---- | -------- | ----------- |
+| `token` | string | true | Room token |
+| `color` | string | false | The room color |
+| `notify` | boolean | false | Enable notifications |
+| `room` | string | false |Room name or ID |
+| `api_version` | string | false | Leave blank for default (v2) |
+| `server` | string | false | Leave blank for default. For example, `https://hipchat.example.com`. |
+
+### Delete HipChat service
+
+Delete HipChat service for a project.
+
+```
+DELETE /projects/:id/services/hipchat
+```
+
+### Get HipChat service settings
+
+Get HipChat service settings for a project.
+
+```
+GET /projects/:id/services/hipchat
+```
+
 ## Irker (IRC gateway)
 
 Send IRC messages, on update, to a list of recipients through an Irker gateway.
@@ -522,7 +561,7 @@ Parameters:
 | `username`      | string | yes  | The username of the user created to be used with GitLab/JIRA. |
 | `password`      | string | yes  | The password of the user created to be used with GitLab/JIRA. |
 | `active`        | boolean | no  | Activates or deactivates the service. Defaults to false (deactivated). |
-| `jira_issue_transition_id` | integer | no | The ID of a transition that moves issues to a closed state. You can find this number under the JIRA workflow administration (**Administration > Issues > Workflows**) by selecting **View** under **Operations** of the desired workflow of your project. The ID of each state can be found inside the parenthesis of each transition name under the **Transitions (id)** column ([see screenshot][trans]). By default, this ID is set to `2`. |
+| `jira_issue_transition_id` | string | no | The ID of a transition that moves issues to a closed state. You can find this number under the JIRA workflow administration (**Administration > Issues > Workflows**) by selecting **View** under **Operations** of the desired workflow of your project. The ID of each state can be found inside the parenthesis of each transition name under the **Transitions (id)** column ([see screenshot][trans]). By default, this ID is set to `2`. |
 
 ### Delete JIRA service
 
