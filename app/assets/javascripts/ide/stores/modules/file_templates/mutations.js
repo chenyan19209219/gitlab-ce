@@ -9,7 +9,10 @@ export default {
   },
   [types.RECEIVE_TEMPLATE_TYPES_SUCCESS](state, templates) {
     state.isLoading = false;
-    state.templates = state.templates.length ? templates : state.templates.concat(templates);
+    const newTemplates = templates.filter(
+      template => !state.templates.find(item => item.key === template.key),
+    );
+    state.templates = state.templates.concat(newTemplates);
   },
   [types.SET_SELECTED_TEMPLATE_TYPE](state, type) {
     state.selectedTemplateType = type;
