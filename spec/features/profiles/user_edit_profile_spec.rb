@@ -344,11 +344,13 @@ describe 'User edit profile' do
         expect(page.find('.user-time-preferences .dropdown')).not_to have_css('.show')
 
         page.find('.user-time-preferences .js-timezone-dropdown').click
+
         expect(page.find('.user-time-preferences .dropdown')).to have_css('.show')
 
         page.find("a", text: "Nuku'alofa").click
 
         tz = page.find('.user-time-preferences #user_timezone', visible: false)
+
         expect(tz.value).to eq('Pacific/Tongatapu')
       end
 
