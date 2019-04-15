@@ -10,15 +10,23 @@ describe 'User edit preferences profile' do
     visit(profile_preferences_path)
   end
 
-  it 'allows the user to toggle their time format and display preferences' do
-    %w[time_format_in_24h time_display_relative].each do |field_selector|
-      field = page.find_field("user[#{field_selector}]")
+  it 'allows the user to toggle their time format preference' do
+    field = page.find_field("user[time_format_in_24h]")
 
-      expect(field).not_to be_checked
+    expect(field).not_to be_checked
 
-      field.click
+    field.click
 
-      expect(field).to be_checked
-    end
+    expect(field).to be_checked
+  end
+
+  it 'allows the user to toggle their time display preference' do
+    field = page.find_field("user[time_display_relative]")
+
+    expect(field).to be_checked
+
+    field.click
+
+    expect(field).not_to be_checked
   end
 end
