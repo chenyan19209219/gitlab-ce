@@ -146,10 +146,6 @@ describe('IDE file templates actions', () => {
                 },
               ],
             },
-            {
-              type: 'fetchTemplateTypes',
-              payload: 2,
-            },
           ],
           done,
         );
