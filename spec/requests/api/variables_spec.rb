@@ -15,8 +15,6 @@ describe API::Variables do
 
         expect(response).to have_gitlab_http_status(200)
         expect(json_response).to be_a(Array)
-        # byebug
-        # expect(response).to match_response_schema('variables')
       end
     end
 
