@@ -75,6 +75,8 @@ export default class Clusters {
     this.successContainer = document.querySelector('.js-cluster-success');
     this.creatingContainer = document.querySelector('.js-cluster-creating');
     this.unreachableContainer = document.querySelector('.js-cluster-api-unreachable');
+    this.serviceAccountFailureContainer = document.querySelector('.js-cluster-service-account-failure');
+    this.authenticationFailureContainer = document.querySelector('.js-cluster-authentication-failure');
     this.errorReasonContainer = this.errorContainer.querySelector('.js-error-reason');
     this.successApplicationContainer = document.querySelector('.js-cluster-application-notice');
     this.showTokenButton = document.querySelector('.js-show-cluster-token');
@@ -131,6 +133,11 @@ export default class Clusters {
     PersistentUserCallout.factory(callout);
   }
 
+  addCloseHandler(el) {
+    // TODO - find a better way to do this, (perhaps add onClick handler to haml)
+    el.querySelector('.js-close-banner').addEventListener('click', () => el.classList.add('hidden'));
+  }
+
   addListeners() {
     if (this.showTokenButton) this.showTokenButton.addEventListener('click', this.showToken);
     eventHub.$on('installApplication', this.installApplication);
@@ -140,11 +147,9 @@ export default class Clusters {
     eventHub.$on('saveKnativeDomain', data => this.saveKnativeDomain(data));
     eventHub.$on('setKnativeHostname', data => this.setKnativeHostname(data));
     // Add event listener to all the banner close buttons
-    document
-      .querySelectorAll('.js-close-banner')
-      .forEach(el =>
-        el.addEventListener('click', e => e.target.parentElement.classList.add('hidden')),
-      );
+    this.addCloseHandler(this.unreachableContainer);
+    this.addCloseHandler(this.serviceAccountFailureContainer);
+    this.addCloseHandler(this.authenticationFailureContainer);
   }
 
   removeListeners() {
