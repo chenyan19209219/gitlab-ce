@@ -74,6 +74,7 @@ export default class Clusters {
     this.errorContainer = document.querySelector('.js-cluster-error');
     this.successContainer = document.querySelector('.js-cluster-success');
     this.creatingContainer = document.querySelector('.js-cluster-creating');
+    this.unreachableContainer = document.querySelector('.js-cluster-api-unreachable');
     this.errorReasonContainer = this.errorContainer.querySelector('.js-error-reason');
     this.successApplicationContainer = document.querySelector('.js-cluster-application-notice');
     this.showTokenButton = document.querySelector('.js-show-cluster-token');
@@ -138,6 +139,12 @@ export default class Clusters {
     eventHub.$on('dismissUpgradeSuccess', appId => this.dismissUpgradeSuccess(appId));
     eventHub.$on('saveKnativeDomain', data => this.saveKnativeDomain(data));
     eventHub.$on('setKnativeHostname', data => this.setKnativeHostname(data));
+    // Add event listener to all the banner close buttons
+    document
+      .querySelectorAll('.js-close-banner')
+      .forEach(el =>
+        el.addEventListener('click', e => e.target.parentElement.classList.add('hidden')),
+      );
   }
 
   removeListeners() {
@@ -210,6 +217,7 @@ export default class Clusters {
     this.errorContainer.classList.add('hidden');
     this.successContainer.classList.add('hidden');
     this.creatingContainer.classList.add('hidden');
+    this.unreachableContainer.classList.add('hidden');
   }
 
   checkForNewInstalls(prevApplicationMap, newApplicationMap) {
@@ -245,6 +253,9 @@ export default class Clusters {
         case 'errored':
           this.errorContainer.classList.remove('hidden');
           this.errorReasonContainer.textContent = error;
+          break;
+        case 'unreachable':
+          this.unreachableContainer.classList.remove('hidden');
           break;
         case 'scheduled':
         case 'creating':
