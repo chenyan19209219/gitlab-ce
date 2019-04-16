@@ -33,7 +33,7 @@ export const fetchTemplateTypes = ({ dispatch, state, rootState }) => {
       page,
     })
       .then(({ data, headers }) => {
-        const nextPage = parseInt(normalizeHeaders(headers)['X-NEXT-PAGE'], 10);
+        const nextPage = parseInt(normalizeHeaders(headers)['X-NEXT-PAGE'], 100);
         const nextData = prev.concat(data);
 
         dispatch('receiveTemplateTypesSuccess', nextData);
