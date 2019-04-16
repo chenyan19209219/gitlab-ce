@@ -9,7 +9,11 @@ shared_examples_for 'CI variable' do
     end
 
     it "defaults variable type to env_var" do
-      expect(subject.variable_type).to eq("env_var")
+      variable = create(described_class.table_name.singularize)
+      file_variable = create(described_class.table_name.singularize, variable_type: 'file')
+
+      expect(variable.reload.variable_type_before_type_cast).to eq(1)
+      expect(file_variable.reload.variable_type_before_type_cast).to eq(2)
     end
 
     it "supports variable type file" do

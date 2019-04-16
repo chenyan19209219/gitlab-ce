@@ -18,6 +18,13 @@ module HasVariable
       file: 2
     }
 
+    before_validation(on: :create) do
+      self.variable_type = 'env_var' unless variable_type?
+    end
+
+    validates :variable_type,
+      presence: true
+
     validates :key,
       presence: true,
       length: { maximum: 255 },
@@ -34,6 +41,10 @@ module HasVariable
 
     def key=(new_key)
       super(new_key.to_s.strip)
+    end
+
+    def variable_type
+      super.presence || 'env_var'
     end
   end
 
