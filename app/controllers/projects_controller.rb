@@ -28,6 +28,8 @@ class ProjectsController < Projects::ApplicationController
   before_action :authorize_admin_project!, only: [:edit, :update, :housekeeping, :download_export, :export, :remove_export, :generate_new_export]
   before_action :event_filter, only: [:show, :activity]
 
+  before_action :set_forks_feature_flag
+
   layout :determine_layout
 
   def index
@@ -458,5 +460,9 @@ class ProjectsController < Projects::ApplicationController
     else
       render_404
     end
+  end
+
+  def set_forks_feature_flag
+    push_frontend_feature_flag(:show_forking_access_level)
   end
 end

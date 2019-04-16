@@ -1,8 +1,14 @@
 <script>
+import { __ } from '~/locale';
 import projectFeatureSetting from './project_feature_setting.vue';
 import projectFeatureToggle from '../../../../../vue_shared/components/toggle_button.vue';
 import projectSettingRow from './project_setting_row.vue';
-import { visibilityOptions, visibilityLevelDescriptions } from '../constants';
+import {
+  visibilityOptions,
+  forkingAccessLevelOptions,
+  visibilityLevelDescriptions,
+  forkingAccessLevelDescriptions,
+} from '../constants';
 import { toggleHiddenClassBySelector } from '../external';
 
 export default {
@@ -80,6 +86,7 @@ export default {
       wikiAccessLevel: 20,
       snippetsAccessLevel: 20,
       pagesAccessLevel: 20,
+      forkingAccessLevel: forkingAccessLevelOptions.PRIVATE_FORKS_ONLY,
       containerRegistryEnabled: true,
       lfsEnabled: true,
       requestAccessEnabled: true,
@@ -91,9 +98,9 @@ export default {
 
   computed: {
     featureAccessLevelOptions() {
-      const options = [[10, 'Only Project Members']];
+      const options = [[10, __('Only Project Members')]];
       if (this.visibilityLevel !== visibilityOptions.PRIVATE) {
-        options.push([20, 'Everyone With Access']);
+        options.push([20, __('Everyone With Access')]);
       }
       return options;
     },
@@ -106,9 +113,22 @@ export default {
 
     pagesFeatureAccessLevelOptions() {
       if (this.visibilityLevel !== visibilityOptions.PUBLIC) {
-        return this.featureAccessLevelOptions.concat([[30, 'Everyone']]);
+        return this.featureAccessLevelOptions.concat([[30, __('Everyone')]]);
       }
       return this.featureAccessLevelOptions;
+    },
+
+    forkingLevelOptions() {
+      return [
+        [
+          forkingAccessLevelOptions.ALLOW_FORKS,
+          forkingAccessLevelDescriptions[forkingAccessLevelOptions.ALLOW_FORKS],
+        ],
+        [
+          forkingAccessLevelOptions.PRIVATE_FORKS_ONLY,
+          forkingAccessLevelDescriptions[forkingAccessLevelOptions.PRIVATE_FORKS_ONLY],
+        ],
+      ];
     },
 
     repositoryEnabled() {
@@ -117,6 +137,22 @@ export default {
 
     visibilityLevelDescription() {
       return visibilityLevelDescriptions[this.visibilityLevel];
+    },
+
+    isPrivateProject() {
+      return this.visibilityLevel === visibilityOptions.PRIVATE;
+    },
+
+    isInternalProject() {
+      return this.visibilityLevel === visibilityOptions.INTERNAL;
+    },
+
+    showForkingAccessLevel() {
+      return (
+        gon.features &&
+        gon.features.showForkingAccessLevel &&
+        (this.isPrivateProject || this.isInternalProject)
+      );
     },
   },
 
@@ -134,6 +170,7 @@ export default {
           // When from Internal->Private narrow access for only members
           this.pagesAccessLevel = 10;
         }
+        this.forkingAccessLevel = forkingAccessLevelOptions.PRIVATE_FORKS_ONLY;
         this.highlightChanges();
       } else if (oldValue === visibilityOptions.PRIVATE) {
         // if changing away from private, make enabled features more permissive
@@ -200,7 +237,7 @@ export default {
 <template>
   <div>
     <div class="project-visibility-setting">
-      <project-setting-row :help-path="visibilityHelpPath" label="Project visibility">
+      <project-setting-row :help-path="visibilityHelpPath" :label="__('Project visibility')">
         <div class="project-feature-controls">
           <div class="select-wrapper">
             <select
@@ -213,39 +250,40 @@ export default {
                 :value="visibilityOptions.PRIVATE"
                 :disabled="!visibilityAllowed(visibilityOptions.PRIVATE)"
               >
-                Private
+                {{ __('Private') }}
               </option>
               <option
                 :value="visibilityOptions.INTERNAL"
                 :disabled="!visibilityAllowed(visibilityOptions.INTERNAL)"
               >
-                Internal
+                {{ __('Internal') }}
               </option>
               <option
                 :value="visibilityOptions.PUBLIC"
                 :disabled="!visibilityAllowed(visibilityOptions.PUBLIC)"
               >
-                Public
+                {{ __('Public') }}
               </option>
             </select>
             <i aria-hidden="true" data-hidden="true" class="fa fa-chevron-down"> </i>
           </div>
         </div>
         <span class="form-text text-muted">{{ visibilityLevelDescription }}</span>
-        <label v-if="visibilityLevel !== visibilityOptions.PRIVATE" class="request-access">
+        <label v-if="!isPrivateProject" class="request-access">
           <input
             :value="requestAccessEnabled"
             type="hidden"
             name="project[request_access_enabled]"
           />
-          <input v-model="requestAccessEnabled" type="checkbox" /> Allow users to request access
+          <input v-model="requestAccessEnabled" type="checkbox" />
+          {{ __('Allow users to request access') }}
         </label>
       </project-setting-row>
     </div>
     <div :class="{ 'highlight-changes': highlightChangesClass }" class="project-feature-settings">
       <project-setting-row
-        label="Issues"
-        help-text="Lightweight issue tracking system for this project"
+        :label="__('Issues')"
+        :help-text="__('Lightweight issue tracking system for this project')"
       >
         <project-feature-setting
           v-model="issuesAccessLevel"
@@ -253,7 +291,10 @@ export default {
           name="project[project_feature_attributes][issues_access_level]"
         />
       </project-setting-row>
-      <project-setting-row label="Repository" help-text="View and edit files in this project">
+      <project-setting-row
+        :label="__('Repository')"
+        :help-text="__('View and edit files in this project')"
+      >
         <project-feature-setting
           v-model="repositoryAccessLevel"
           :options="featureAccessLevelOptions"
@@ -262,8 +303,8 @@ export default {
       </project-setting-row>
       <div class="project-feature-setting-group">
         <project-setting-row
-          label="Merge requests"
-          help-text="Submit changes to be merged upstream"
+          :label="__('Merge requests')"
+          :help-text="__('Submit changes to be merged upstream')"
         >
           <project-feature-setting
             v-model="mergeRequestsAccessLevel"
@@ -272,7 +313,10 @@ export default {
             name="project[project_feature_attributes][merge_requests_access_level]"
           />
         </project-setting-row>
-        <project-setting-row label="Pipelines" help-text="Build, test, and deploy your changes">
+        <project-setting-row
+          :label="__('Pipelines')"
+          :help-text="__('Build, test, and deploy your changes')"
+        >
           <project-feature-setting
             v-model="buildsAccessLevel"
             :options="repoFeatureAccessLevelOptions"
@@ -281,10 +325,27 @@ export default {
           />
         </project-setting-row>
         <project-setting-row
+          v-if="showForkingAccessLevel"
+          :help-tooltip-text="
+            __(
+              'Allowing only private forks will force the visibility of new forks to Private. Existing forks will not be affected.',
+            )
+          "
+          :label="__('Forks')"
+          :help-text="__('Allow users to make copies of your repository to a new project')"
+        >
+          <project-feature-setting
+            v-model="forkingAccessLevel"
+            :options="forkingLevelOptions"
+            :disabled-input="!repositoryEnabled"
+            name="project[project_setting][forking_access_level]"
+          />
+        </project-setting-row>
+        <project-setting-row
           v-if="registryAvailable"
           :help-path="registryHelpPath"
-          label="Container registry"
-          help-text="Every project can have its own space to store its Docker images"
+          :label="__('Container registry')"
+          :help-text="__('Every project can have its own space to store its Docker images')"
         >
           <project-feature-toggle
             v-model="containerRegistryEnabled"
@@ -295,8 +356,8 @@ export default {
         <project-setting-row
           v-if="lfsAvailable"
           :help-path="lfsHelpPath"
-          label="Git Large File Storage"
-          help-text="Manages large files such as audio, video, and graphics files"
+          :label="__('Git Large File Storage')"
+          :help-text="__('Manages large files such as audio, video, and graphics files')"
         >
           <project-feature-toggle
             v-model="lfsEnabled"
@@ -305,7 +366,7 @@ export default {
           />
         </project-setting-row>
       </div>
-      <project-setting-row label="Wiki" help-text="Pages for project documentation">
+      <project-setting-row :label="__('Wiki')" :help-text="__('Pages for project documentation')">
         <project-feature-setting
           v-model="wikiAccessLevel"
           :options="featureAccessLevelOptions"
@@ -313,8 +374,8 @@ export default {
         />
       </project-setting-row>
       <project-setting-row
-        label="Snippets"
-        help-text="Share code pastes with others out of Git repository"
+        :label="__('Snippets')"
+        :help-text="__('Share code pastes with others out of Git repository')"
       >
         <project-feature-setting
           v-model="snippetsAccessLevel"
@@ -325,8 +386,8 @@ export default {
       <project-setting-row
         v-if="pagesAvailable && pagesAccessControlEnabled"
         :help-path="pagesHelpPath"
-        label="Pages access control"
-        help-text="Access control for the project's static website"
+        :label="__('Pages access control')"
+        :help-text="__('Access control for the project\'s static website')"
       >
         <project-feature-setting
           v-model="pagesAccessLevel"

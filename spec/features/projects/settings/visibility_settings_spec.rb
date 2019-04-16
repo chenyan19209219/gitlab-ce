@@ -57,6 +57,49 @@ describe 'Projects > Settings > Visibility settings', :js do
         end
       end
     end
+
+    context 'fork level access' do
+      context 'when the feature flag is enabled' do
+        before do
+          stub_feature_flags(show_forking_access_level: true)
+        end
+
+        enabled = %w[Private Internal]
+
+        enabled.each do |item|
+          it "shows the 'forks' settings panel for '#{item}' projects" do
+            visit edit_project_path(project)
+            select_project_visibility("#{item}")
+
+            expect(page).to have_selector('.project-feature-controls[data-for="project[project_setting][forking_access_level]"]', visible: true)
+          end
+        end
+
+        it 'does not show the "forks" settings panel for "Public" projects' do
+          visit edit_project_path(project)
+          select_project_visibility('Public')
+
+          expect(page).not_to have_selector('.project-feature-controls[data-for="project[project_setting][forking_access_level]"]')
+        end
+      end
+
+      context 'when the feature flag is disabled' do
+        before do
+          stub_feature_flags(show_forking_access_level: false)
+        end
+
+        disabled = %w[Public Private Internal]
+
+        disabled.each do |item|
+          it "does not show the 'forks' settings panel for '#{item}' projects" do
+            visit edit_project_path(project)
+            select_project_visibility("#{item}")
+
+            expect(page).not_to have_selector('.project-feature-controls[data-for="project[project_setting][forking_access_level]"]')
+          end
+        end
+      end
+    end
   end
 
   context 'as maintainer' do
@@ -74,5 +117,11 @@ describe 'Projects > Settings > Visibility settings', :js do
       expect(visibility_select_container).to have_selector 'select[name="project[visibility_level]"]:disabled'
       expect(visibility_select_container).to have_content 'The project can be accessed by anyone, regardless of authentication.'
     end
+  end
+
+  def select_project_visibility(visibility)
+    visibility_select_container = find('.project-visibility-setting')
+    visibility_select = visibility_select_container.find('select')
+    visibility_select.select(visibility)
   end
 end
