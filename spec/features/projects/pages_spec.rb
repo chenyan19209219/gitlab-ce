@@ -138,6 +138,47 @@ describe 'Pages' do
           expect(page).to have_content('my.test.domain.com')
         end
 
+        context 'when the auto SSL management is initially disabled' do
+          let(:domain) do
+            create(:pages_domain, auto_ssl_enabled: false, project: project)
+          end
+
+          it 'enables auto SSL and dynamically updates the form accordingly', :js do
+            visit edit_project_pages_domain_path(project, domain)
+
+            expect(find("#pages_domain_auto_ssl_enabled", visible: false).value).to eq 'false'
+            expect(page).to have_field 'Certificate (PEM)', type: 'textarea'
+            expect(page).to have_field 'Key (PEM)', type: 'textarea'
+
+            find('.js-auto-ssl-toggle-container .project-feature-toggle').click
+
+            expect(find("#pages_domain_auto_ssl_enabled", visible: false).value).to eq 'true'
+            expect(page).not_to have_field 'Certificate (PEM)', type: 'textarea'
+            expect(page).not_to have_field 'Key (PEM)', type: 'textarea'
+            expect(page).to have_content "The certificate will be shown here once it has been obtained from Let's Encrypt. This process may take up to an hour to complete."
+          end
+        end
+
+        context 'when the auto SSL management is initially enabled' do
+          let(:domain) do
+            create(:pages_domain, auto_ssl_enabled: true, project: project)
+          end
+
+          it 'disables auto SSL and dynamically updates the form accordingly', :js do
+            visit edit_project_pages_domain_path(project, domain)
+
+            expect(find("#pages_domain_auto_ssl_enabled", visible: false).value).to eq 'true'
+            expect(page).to have_field 'Certificate (PEM)', type: 'textarea', disabled: true
+            expect(page).not_to have_field 'Key (PEM)', type: 'textarea'
+
+            find('.js-auto-ssl-toggle-container .project-feature-toggle').click
+
+            expect(find("#pages_domain_auto_ssl_enabled", visible: false).value).to eq 'false'
+            expect(page).to have_field 'Certificate (PEM)', type: 'textarea'
+            expect(page).to have_field 'Key (PEM)', type: 'textarea'
+          end
+        end
+
         describe 'updating the certificate for an existing domain' do
           let!(:domain) do
             create(:pages_domain, project: project)

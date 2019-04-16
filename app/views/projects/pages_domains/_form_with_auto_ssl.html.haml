@@ -1,0 +1,72 @@
+- if Gitlab.config.pages.external_https
+  .form-group.row
+    = f.label :domain, class: 'col-form-label col-sm-2' do
+      = _("Domain")
+    .col-sm-10
+      = f.text_field :domain, required: true, autocomplete: 'off', class: 'form-control', disabled: @domain.persisted?
+  .form-group.row
+    = f.label :something, class: 'col-form-label col-sm-2' do
+      = _("Automatic certificate management")
+      %br
+      (via
+      = link_to "Let's Encrypt", "https://letsencrypt.org/", target: "_blank", rel: 'noopener noreferrer'
+      %span> )
+
+    .col-sm-10.js-auto-ssl-toggle-container
+      %button{ type: 'button',
+        class: "js-project-feature-toggle project-feature-toggle mt-2 #{'is-checked' if @domain.auto_ssl_enabled?}",
+        'aria-label': _("Automatic certificate management via Let's Encrypt") }
+        = f.hidden_field :auto_ssl_enabled?, class: 'js-project-feature-toggle-input'
+        %span.toggle-icon
+          = sprite_icon('status_success_borderless', size: 16, css_class: 'toggle-icon-svg toggle-status-checked')
+          = sprite_icon('status_failed_borderless', size: 16, css_class: 'toggle-icon-svg toggle-status-unchecked')
+
+  .js-shown-if-auto-ssl{ class: ('d-none' unless @domain.auto_ssl_enabled?) }
+    .form-group.row
+      = f.label :certificate, class: 'col-form-label col-sm-2' do
+        = _("Certificate (PEM)")
+      .col-sm-10
+        - if @domain.auto_ssl_enabled? && @domain.certificate
+          = f.text_area :certificate,
+            rows: 5,
+            class: 'form-control js-enabled-if-auto-ssl',
+            disabled: true
+          %span.help-inline= _("This certificate is automatically managed by Let's Encrypt")
+        - else
+          %p.text-secondary.form-control-plaintext= _("The certificate will be shown here once it has been obtained from Let's Encrypt. This process may take up to an hour to complete.")
+
+  .js-shown-unless-auto-ssl{ class: ('d-none' if @domain.auto_ssl_enabled?) }
+    .form-group.row
+      = f.label :certificate, class: 'col-form-label col-sm-2' do
+        = _("Certificate (PEM)")
+      .col-sm-10
+        = f.text_area :certificate,
+          rows: 5,
+          class: 'form-control js-enabled-unless-auto-ssl',
+          value: (@domain.certificate unless @domain.auto_ssl_enabled?),
+          disabled: @domain.auto_ssl_enabled?
+        %span.help-inline= _("Upload a certificate for your domain with all intermediates")
+
+    .form-group.row
+      = f.label :key, class: 'col-form-label col-sm-2' do
+        = _("Key (PEM)")
+      .col-sm-10
+        = f.text_area :key,
+          rows: 5,
+          class: 'form-control js-enabled-unless-auto-ssl',
+          value: (@domain.key unless @domain.auto_ssl_enabled?),
+          disabled: @domain.auto_ssl_enabled?
+        %span.help-inline= _("Upload a private key for your certificate")
+
+  .form-group.row
+    .col-sm-10.offset-sm-2.text-secondary
+      = _("Learn more about adding certificates to your project by following the documentation on ")
+      = link_to _("GitLab Pages"),
+        help_page_path('user/project/pages/getting_started_part_three.md', anchor: 'adding-certificates-to-your-project'),
+        target: "_blank",
+        rel: "noopener noreferrer"
+      %span> .
+
+- else
+  .nothing-here-block
+    = _("Support for custom certificates is disabled. Ask your system's administrator to enable it.")

@@ -6,6 +6,8 @@ class PagesDomain < ApplicationRecord
 
   belongs_to :project
 
+  before_validation :cleanup_ssl_cert, if: -> { auto_ssl_enabled_changed? }, on: :update
+
   validates :domain, hostname: { allow_numeric_hostname: true }
   validates :domain, uniqueness: { case_sensitive: false }
   validates :certificate, presence: { message: 'must be present if HTTPS-only is enabled' }, if: ->(domain) { domain.project&.pages_https_only? }
@@ -140,11 +142,9 @@ class PagesDomain < ApplicationRecord
     self.verification_code = SecureRandom.hex(16)
   end
 
-  # rubocop: disable CodeReuse/ServiceClass
   def update_daemon
     ::Projects::UpdatePagesConfigurationService.new(project).execute
   end
-  # rubocop: enable CodeReuse/ServiceClass
 
   def pages_config_changed?
     project_id_changed? ||
@@ -197,5 +197,12 @@ class PagesDomain < ApplicationRecord
     @pkey ||= OpenSSL::PKey::RSA.new(key)
   rescue OpenSSL::PKey::PKeyError, OpenSSL::Cipher::CipherError
     nil
+  end
+
+  def cleanup_ssl_cert
+    return if key_changed? && certificate_changed?
+
+    self.certificate = nil
+    self.key = nil
   end
 end
