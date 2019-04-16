@@ -2358,6 +2358,9 @@ msgstr ""
 msgid "ClusterIntegration|Your account must have %{link_to_kubernetes_engine}"
 msgstr ""
 
+msgid "ClusterIntegration|Your cluster API is unreachable. Please ensure your API URL is correct."
+msgstr ""
+
 msgid "ClusterIntegration|Zone"
 msgstr ""
 
