@@ -16,10 +16,6 @@ shared_examples_for 'CI variable' do
       variable = described_class.new(variable_type: :file)
       expect(variable).to be_file
     end
-
-    it 'provides variable type options' do
-      expect(described_class.variable_type_options).to eq([%w(Variable env_var), %w(File file)])
-    end
   end
 
   it 'strips whitespaces when assigning key' do

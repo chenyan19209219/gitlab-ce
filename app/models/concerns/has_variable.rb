@@ -3,15 +3,6 @@
 module HasVariable
   extend ActiveSupport::Concern
 
-  class_methods do
-    def variable_type_options
-      [
-        %w(Variable env_var),
-        %w(File file)
-      ]
-    end
-  end
-
   included do
     enum variable_type: {
       env_var: 1,
