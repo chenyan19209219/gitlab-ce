@@ -134,6 +134,7 @@ export default class Clusters {
   }
 
   addBannerCloseHandler(el) {
+    // eslint-disable-next-line class-methods-use-this
     el.querySelector('.js-close-banner').addEventListener('click', () => el.classList.add('hidden'));
   }
 
