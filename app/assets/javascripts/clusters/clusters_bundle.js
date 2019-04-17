@@ -75,8 +75,12 @@ export default class Clusters {
     this.successContainer = document.querySelector('.js-cluster-success');
     this.creatingContainer = document.querySelector('.js-cluster-creating');
     this.unreachableContainer = document.querySelector('.js-cluster-api-unreachable');
-    this.serviceAccountFailureContainer = document.querySelector('.js-cluster-service-account-failure');
-    this.authenticationFailureContainer = document.querySelector('.js-cluster-authentication-failure');
+    this.serviceAccountFailureContainer = document.querySelector(
+      '.js-cluster-service-account-failure',
+    );
+    this.authenticationFailureContainer = document.querySelector(
+      '.js-cluster-authentication-failure',
+    );
     this.errorReasonContainer = this.errorContainer.querySelector('.js-error-reason');
     this.successApplicationContainer = document.querySelector('.js-cluster-application-notice');
     this.showTokenButton = document.querySelector('.js-show-cluster-token');
@@ -135,7 +139,9 @@ export default class Clusters {
 
   // eslint-disable-next-line class-methods-use-this
   addBannerCloseHandler(el) {
-    el.querySelector('.js-close-banner').addEventListener('click', () => el.classList.add('hidden'));
+    el.querySelector('.js-close-banner').addEventListener('click', () =>
+      el.classList.add('hidden'),
+    );
   }
 
   addListeners() {
@@ -252,7 +258,10 @@ export default class Clusters {
     this.hideAll();
 
     // We poll all the time but only want the `created` banner to show when newly created
-    if (this.store.state.status !== APPLICATION_STATUS.CREATED || prevStatus !== this.store.state.status) {
+    if (
+      this.store.state.status !== APPLICATION_STATUS.CREATED ||
+      prevStatus !== this.store.state.status
+    ) {
       switch (status) {
         case APPLICATION_STATUS.CREATED:
           this.successContainer.classList.remove('hidden');
