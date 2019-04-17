@@ -133,8 +133,7 @@ export default class Clusters {
     PersistentUserCallout.factory(callout);
   }
 
-  addCloseHandler(el) {
-    // TODO - find a better way to do this, (perhaps add onClick handler to haml)
+  addBannerCloseHandler(el) {
     el.querySelector('.js-close-banner').addEventListener('click', () => el.classList.add('hidden'));
   }
 
@@ -147,9 +146,9 @@ export default class Clusters {
     eventHub.$on('saveKnativeDomain', data => this.saveKnativeDomain(data));
     eventHub.$on('setKnativeHostname', data => this.setKnativeHostname(data));
     // Add event listener to all the banner close buttons
-    this.addCloseHandler(this.unreachableContainer);
-    this.addCloseHandler(this.serviceAccountFailureContainer);
-    this.addCloseHandler(this.authenticationFailureContainer);
+    this.addBannerCloseHandler(this.unreachableContainer);
+    this.addBannerCloseHandler(this.serviceAccountFailureContainer);
+    this.addBannerCloseHandler(this.authenticationFailureContainer);
   }
 
   removeListeners() {
@@ -223,6 +222,8 @@ export default class Clusters {
     this.successContainer.classList.add('hidden');
     this.creatingContainer.classList.add('hidden');
     this.unreachableContainer.classList.add('hidden');
+    this.serviceAccountFailureContainer.classList.add('hidden');
+    this.authenticationFailureContainer.classList.add('hidden');
   }
 
   checkForNewInstalls(prevApplicationMap, newApplicationMap) {
@@ -250,20 +251,26 @@ export default class Clusters {
     this.hideAll();
 
     // We poll all the time but only want the `created` banner to show when newly created
-    if (this.store.state.status !== 'created' || prevStatus !== this.store.state.status) {
+    if (this.store.state.status !== APPLICATION_STATUS.CREATED || prevStatus !== this.store.state.status) {
       switch (status) {
-        case 'created':
+        case APPLICATION_STATUS.CREATED:
           this.successContainer.classList.remove('hidden');
           break;
-        case 'errored':
+        case APPLICATION_STATUS.ERROR:
           this.errorContainer.classList.remove('hidden');
           this.errorReasonContainer.textContent = error;
           break;
-        case 'unreachable':
+        case APPLICATION_STATUS.UNREACHABLE:
           this.unreachableContainer.classList.remove('hidden');
           break;
-        case 'scheduled':
-        case 'creating':
+        case APPLICATION_STATUS.SERVICE_ACCOUNT_FAILURE:
+          this.serviceAccountFailureContainer.classList.remove('hidden');
+          break;
+        case APPLICATION_STATUS.AUTHENTICATION_FAILURE:
+          this.authenticationFailureContainer.classList.remove('hidden');
+          break;
+        case APPLICATION_STATUS.SCHEDULED:
+        case APPLICATION_STATUS.CREATING:
           this.creatingContainer.classList.remove('hidden');
           break;
         default:

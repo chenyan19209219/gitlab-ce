@@ -7,6 +7,8 @@ export const CLUSTER_TYPE = {
 
 // These need to match what is returned from the server
 export const APPLICATION_STATUS = {
+  CREATING: 'creating',
+  CREATED: 'created',
   NOT_INSTALLABLE: 'not_installable',
   INSTALLABLE: 'installable',
   SCHEDULED: 'scheduled',
@@ -16,6 +18,9 @@ export const APPLICATION_STATUS = {
   UPDATED: 'updated',
   UPDATE_ERRORED: 'update_errored',
   ERROR: 'errored',
+  UNREACHABLE: 'unreachable',
+  SERVICE_ACCOUNT_FAILURE: 'service_account_failure',
+  AUTHENTICATION_FAILURE: 'authentication_failure',
 };
 
 // These are only used client-side
