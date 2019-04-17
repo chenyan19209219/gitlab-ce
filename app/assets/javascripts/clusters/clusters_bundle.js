@@ -133,8 +133,8 @@ export default class Clusters {
     PersistentUserCallout.factory(callout);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   addBannerCloseHandler(el) {
-    // eslint-disable-next-line class-methods-use-this
     el.querySelector('.js-close-banner').addEventListener('click', () => el.classList.add('hidden'));
   }
 
