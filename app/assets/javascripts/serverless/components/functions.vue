@@ -4,6 +4,7 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import FunctionRow from './function_row.vue';
 import EnvironmentRow from './environment_row.vue';
 import EmptyState from './empty_state.vue';
+import { CHECKING_INSTALLED } from '../constants';
 
 export default {
   components: {
@@ -13,10 +14,6 @@ export default {
     GlLoadingIcon,
   },
   props: {
-    installed: {
-      type: Boolean,
-      required: true,
-    },
     clustersPath: {
       type: String,
       required: true,
@@ -31,8 +28,12 @@ export default {
     },
   },
   computed: {
-    ...mapState(['isLoading', 'hasFunctionData']),
+    ...mapState(['installed', 'isLoading', 'hasFunctionData']),
     ...mapGetters(['getFunctions']),
+
+    checkingInstalled() {
+      return this.installed === CHECKING_INSTALLED;
+    },
   },
   created() {
     this.fetchFunctions({
@@ -47,7 +48,13 @@ export default {
 
 <template>
   <section id="serverless-functions">
-    <div v-if="installed">
+    <gl-loading-icon
+      v-if="checkingInstalled"
+      :size="2"
+      class="prepend-top-default append-bottom-default"
+    />
+
+    <div v-else-if="installed === true">
       <div v-if="hasFunctionData">
         <gl-loading-icon
           v-if="isLoading"

@@ -3,13 +3,13 @@ import axios from '~/lib/utils/axios_utils';
 import statusCodes from '~/lib/utils/http_status';
 import { backOff } from '~/lib/utils/common_utils';
 import createFlash from '~/flash';
-import { MAX_REQUESTS } from '../constants';
+import { MAX_REQUESTS, CHECKING_INSTALLED } from '../constants';
 
 export const requestFunctionsLoading = ({ commit }) => commit(types.REQUEST_FUNCTIONS_LOADING);
 export const receiveFunctionsSuccess = ({ commit }, data) =>
   commit(types.RECEIVE_FUNCTIONS_SUCCESS, data);
-export const receiveFunctionsNoDataSuccess = ({ commit }) =>
-  commit(types.RECEIVE_FUNCTIONS_NODATA_SUCCESS);
+export const receiveFunctionsNoDataSuccess = ({ commit }, data) =>
+  commit(types.RECEIVE_FUNCTIONS_NODATA_SUCCESS, data);
 export const receiveFunctionsError = ({ commit }, error) =>
   commit(types.RECEIVE_FUNCTIONS_ERROR, error);
 
@@ -31,12 +31,12 @@ export const fetchFunctions = ({ dispatch }, { functionsPath }) => {
     axios
       .get(functionsPath)
       .then(response => {
-        if (response.status === statusCodes.NO_CONTENT) {
+        if (response.data.knative_installed === CHECKING_INSTALLED) {
           retryCount += 1;
           if (retryCount < MAX_REQUESTS) {
             next();
           } else {
-            stop(null);
+            stop(response.data);
           }
         } else {
           stop(response.data);
@@ -45,10 +45,10 @@ export const fetchFunctions = ({ dispatch }, { functionsPath }) => {
       .catch(stop);
   })
     .then(data => {
-      if (data !== null) {
+      if (data.functions !== null) {
         dispatch('receiveFunctionsSuccess', data);
       } else {
-        dispatch('receiveFunctionsNoDataSuccess');
+        dispatch('receiveFunctionsNoDataSuccess', data);
       }
     })
     .catch(error => {
