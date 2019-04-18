@@ -13,6 +13,7 @@ class Projects::EnvironmentsController < Projects::ApplicationController
   before_action only: [:metrics, :additional_metrics, :metrics_dashboard] do
     push_frontend_feature_flag(:metrics_time_window)
     push_frontend_feature_flag(:environment_metrics_use_prometheus_endpoint)
+    push_frontend_feature_flag(:environment_metrics_show_multiple_dashboards)
   end
 
   def index
@@ -139,10 +140,22 @@ class Projects::EnvironmentsController < Projects::ApplicationController
     # if they aren't there already
     @metrics = environment.metrics || {}
 
+    p dashboard_service.all_dashboards
+
+    if Feature.enabled?(:environment_metrics_show_multiple_dashboards, @project)
+      json = {
+        metrics: @mertrics,
+        dashboards: dashboard_service.all_dashboards
+      }
+    end
+
     respond_to do |format|
       format.html
       format.json do
-        render json: @metrics, status: @metrics.any? ? :ok : :no_content
+        render(
+          json: json || @metrics,
+          status: @metrics.any? ? :ok : :no_content
+        )
       end
     end
   end
@@ -160,7 +173,8 @@ class Projects::EnvironmentsController < Projects::ApplicationController
   def metrics_dashboard
     return render_403 unless Feature.enabled?(:environment_metrics_use_prometheus_endpoint, @project)
 
-    result = Gitlab::MetricsDashboard::Service.new(@project, @current_user, environment: environment).get_dashboard
+    dashboard = params[:dashboard] if Feature.enabled?(:environment_metrics_show_multiple_dashboards, @project)
+    result = dashboard_service.get_dashboard(dashboard)
 
     respond_to do |format|
       if result[:status] == :success
@@ -209,6 +223,10 @@ class Projects::EnvironmentsController < Projects::ApplicationController
     return unless params[:start].present? || params[:end].present?
 
     params.require([:start, :end])
+  end
+
+  def dashboard_service
+    Gitlab::MetricsDashboard::Service.new(@project, @current_user, environment: environment)
   end
 
   def search_environment_names
