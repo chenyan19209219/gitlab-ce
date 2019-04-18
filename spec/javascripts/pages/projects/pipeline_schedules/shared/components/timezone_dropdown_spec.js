@@ -96,8 +96,8 @@ describe('Timezone Dropdown', function() {
         expect(onSelectTimezone).toHaveBeenCalled();
       });
 
-      it('will correctly set the dropdown label if a default timezone is set on the inputEl', () => {
-        $inputEl.val('Newfoundland');
+      it('will correctly set the dropdown label if a timezone identifier is set on the inputEl', () => {
+        $inputEl.val('America/St_Johns');
 
         // eslint-disable-next-line no-new
         new TimezoneDropdown({

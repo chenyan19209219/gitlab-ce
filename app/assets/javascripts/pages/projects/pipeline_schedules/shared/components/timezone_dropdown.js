@@ -11,9 +11,9 @@ export const formatUtcOffset = offset => {
 
 export const formatTimezone = item => `[UTC ${formatUtcOffset(item.offset)}] ${item.name}`;
 
-const findTimezoneByName = (tzList = [], name = null) => {
-  if (tzList.length && name && name.length) {
-    return tzList.find(tz => tz.name === name);
+const findTimezoneByIdentifier = (tzList = [], identifier = null) => {
+  if (tzList.length && identifier && identifier.length) {
+    return tzList.find(tz => tz.identifier === identifier);
   }
   return null;
 };
@@ -40,7 +40,7 @@ export default class TimezoneDropdown {
     this.displayFormat = displayFormat;
 
     this.initialTimezone =
-      findTimezoneByName(this.timezoneData, this.$input.val()) || defaultTimezone;
+      findTimezoneByIdentifier(this.timezoneData, this.$input.val()) || defaultTimezone;
 
     this.initDefaultTimezone(); // TODO: this should look through the list of tz's provided and find the corresponding one
     this.initDropdown();
