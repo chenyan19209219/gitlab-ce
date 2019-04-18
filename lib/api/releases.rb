@@ -23,7 +23,7 @@ module API
       get ':id/releases' do
         releases = ::ReleasesFinder.new(user_project, current_user).execute
 
-        present paginate(releases), with: Entities::Release, except: sensitive_info
+        present paginate(releases), with: Entities::Release, current_user: current_user
       end
 
       desc 'Get a single project release' do
@@ -39,7 +39,7 @@ module API
         forbidden! if guest_user && non_public_project
         authorize_read_release!
 
-        present release, with: Entities::Release, except: sensitive_info
+        present release, with: Entities::Release, current_user: current_user
       end
 
       desc 'Create a new release' do
@@ -66,7 +66,7 @@ module API
           .execute
 
         if result[:status] == :success
-          present result[:release], with: Entities::Release
+          present result[:release], with: Entities::Release, current_user: current_user
         else
           render_api_error!(result[:message], result[:http_status])
         end
@@ -89,7 +89,7 @@ module API
           .execute
 
         if result[:status] == :success
-          present result[:release], with: Entities::Release
+          present result[:release], with: Entities::Release, current_user: current_user
         else
           render_api_error!(result[:message], result[:http_status])
         end
@@ -110,7 +110,7 @@ module API
           .execute
 
         if result[:status] == :success
-          present result[:release], with: Entities::Release
+          present result[:release], with: Entities::Release, current_user: current_user
         else
           render_api_error!(result[:message], result[:http_status])
         end
@@ -136,13 +136,6 @@ module API
 
       def authorize_destroy_release!
         authorize! :destroy_release, release
-      end
-
-      def sensitive_info
-        [].tap do |except|
-          except.concat([:tag_name, :commit]) unless can?(current_user, :read_commit_status, user_project)
-          except.concat([{ assets: [:sources] }]) unless can?(current_user, :download_code, user_project)
-        end
       end
 
       def release
