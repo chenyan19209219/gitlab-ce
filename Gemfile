@@ -416,7 +416,8 @@ group :ed25519 do
 end
 
 # Gitaly GRPC client
-gem 'gitaly-proto', '~> 1.19.0', require: 'gitaly'
+# gem 'gitaly-proto', '~> 1.19.0', require: 'gitaly'
+gem 'gitaly-proto', git: 'https://gitlab.com/gitlab-org/gitaly-proto.git', ref: '1c52a4f'
 
 gem 'grpc', '~> 1.15.0'
 
