@@ -135,6 +135,12 @@ function deferredInitialisation() {
   });
 
   loadAwardsHandler();
+
+  // Toggle Canary Badge
+  if (document.cookie.indexOf('gitlab_canary=true') >= 0) {
+    document.querySelector('.js-canary-badge').classList.remove('hidden');
+    document.querySelector('.js-canary-link').classList.add('hidden');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
