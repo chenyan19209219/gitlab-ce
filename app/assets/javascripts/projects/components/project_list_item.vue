@@ -123,7 +123,8 @@ export default {
       owner: {
         avatar_url: {
           type: String,
-          required: true,
+          required: false,
+          default: null,
         },
         name: {
           type: String,
@@ -164,11 +165,12 @@ export default {
       return this.project && this.project.description;
     },
     projectNamespace() {
+      // console.log('projectList::projectNamespace::project', this.project);
       const {
-        namespace: { name = '' },
-        owner,
+        namespace: { name: nameSpaceName = '' },
+        owner: { name: ownerName = null } = {},
       } = this.project;
-      return name.length && name.toLowerCase() !== 'root' ? name : owner.name;
+      return ownerName ? ownerName : nameSpaceName;
     },
     classes() {
       const base = 'd-flex project-row';
@@ -216,7 +218,8 @@ export default {
           :merge-requests-count="totals.mergeRequestsCount"
         />
         <div class="updated-note">
-          <span>Updated
+          <span>
+            Updated
             <time-ago-tooltip :time="project.last_activity_at"/>
           </span>
         </div>

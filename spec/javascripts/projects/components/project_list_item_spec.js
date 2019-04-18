@@ -1,11 +1,11 @@
 import Vue from 'vue';
-
 import ProjectListItem from '~/projects/components/project_list_item.vue';
-
 import mountComponent from 'spec/helpers/vue_mount_component_helper';
-import { data, ownedProjects } from './mockData.json';
-// TODO: this should be fixture
-const selectedProject = data[0];
+
+loadJSONFixtures('projects.json');
+const projects = getJSONFixture('projects.json');
+const ownedProject = projects[0];
+const selectedProject = projects[1];
 
 const createComponent = project => {
   const Component = Vue.extend(ProjectListItem);
@@ -72,10 +72,9 @@ describe('ProjectListItem', () => {
     describe('template', () => {
       describe('User is project owner', () => {
         let ownedVm;
-        const op = ownedProjects[0];
 
         beforeEach(() => {
-          ownedVm = createComponent(op);
+          ownedVm = createComponent(ownedProject);
         });
 
         afterEach(() => {
@@ -83,7 +82,7 @@ describe('ProjectListItem', () => {
         });
 
         it('renders the owner name for the project namespace', () => {
-          const { owner } = op;
+          const { owner } = ownedProject;
 
           expect(ownedVm.$el.querySelector('.namespace-name').innerText).toBe(`${owner.name} /`);
         });
@@ -112,7 +111,7 @@ describe('ProjectListItem', () => {
           });
         });
 
-        it('renders the project namespace name if it is available', () => {
+        it(`renders the project namespace name if the 'owner' property is not available`, () => {
           expect(vm.$el.querySelector('.namespace-name').innerText).toEqual(
             `${selectedProject.namespace.name} /`,
           );
