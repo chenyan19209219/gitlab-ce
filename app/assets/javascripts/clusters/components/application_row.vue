@@ -244,7 +244,6 @@ export default {
       } else if (this.upgradeRequested && this.upgradeSuccessful) {
         this.$toast.show(this.upgradeSuccessDescription);
       }
-
     },
   },
   methods: {
