@@ -1,18 +1,19 @@
 import Vue from 'vue';
 import ProjectListItem from '~/projects/components/project_list_item.vue';
+import ProjectAccess from '~/projects/components/project_access.vue';
 import mountComponent from 'spec/helpers/vue_mount_component_helper';
+
+// TODO: move to shallow mount / vue test utils ??
 
 loadJSONFixtures('projects.json');
 const projects = getJSONFixture('projects.json');
 const ownedProject = projects[0];
 const selectedProject = projects[1];
 
-const createComponent = project => {
-  const Component = Vue.extend(ProjectListItem);
+const createComponent = (props, defaultComponent = ProjectListItem) => {
+  const Component = Vue.extend(defaultComponent);
 
-  return mountComponent(Component, {
-    project,
-  });
+  return mountComponent(Component, props);
 };
 
 describe('ProjectListItem', () => {
@@ -22,7 +23,7 @@ describe('ProjectListItem', () => {
     beforeEach(() => {
       // const pathname = '/dashboard/projects';
       // spyOn(window.location, 'pathname', 'get').and.returnValue(pathname);
-      vm = createComponent(selectedProject);
+      vm = createComponent({ project: selectedProject });
     });
 
     afterEach(() => {
@@ -74,7 +75,7 @@ describe('ProjectListItem', () => {
         let ownedVm;
 
         beforeEach(() => {
-          ownedVm = createComponent(ownedProject);
+          ownedVm = createComponent({ project: ownedProject });
         });
 
         afterEach(() => {
@@ -104,7 +105,7 @@ describe('ProjectListItem', () => {
 
         it('does not render the description if it is missing', () => {
           ['', null].forEach(description => {
-            const noDescVm = createComponent({ ...selectedProject, description });
+            const noDescVm = createComponent({ project: { ...selectedProject, description } });
 
             expect(noDescVm.$el.querySelector('.description')).toBeNull();
             expect(noDescVm.$el.classList).toContain('no-description');
@@ -118,6 +119,55 @@ describe('ProjectListItem', () => {
         });
       });
 
+      describe('Project access', () => {
+        const defaultAccess = 'Maintainer';
+        beforeEach(() => {
+          vm = createComponent(
+            {
+              isExploreProjectsTab: false,
+              accessLevel: 30,
+              humanAccess: defaultAccess,
+            },
+            ProjectAccess,
+          );
+        });
+
+        afterEach(() => {
+          vm.$destroy();
+        });
+
+        it(`renders if we are not on the explore tab and receive 'accessLevel' and 'humanAccess' props`, () => {
+          expect(vm.showAccessLevel).toBe(true);
+          expect(vm.$el.querySelector('.user-access-role').textContent).toBe(defaultAccess);
+        });
+
+        it(`does not render if 'accessLevel' is 0`, () => {
+          vm = createComponent(
+            {
+              isExploreProjectsTab: false,
+              accessLevel: 0,
+              humanAccess: defaultAccess,
+            },
+            ProjectAccess,
+          );
+
+          expect(vm.showAccessLevel).toBe(false);
+        });
+
+        it(`does not render if we are on the explore project tab`, () => {
+          vm = createComponent(
+            {
+              isExploreProjectsTab: true,
+              accessLevel: 0,
+              humanAccess: defaultAccess,
+            },
+            ProjectAccess,
+          );
+
+          expect(vm.showAccessLevel).toBe(false);
+        });
+      });
+
       describe('Icon container', () => {
         const path = selectedProject.path_with_namespace;
         const urls = {
@@ -127,7 +177,7 @@ describe('ProjectListItem', () => {
         };
 
         it('renders a warning if the project is archived', () => {
-          const archivedVm = createComponent({ ...selectedProject, archived: true });
+          const archivedVm = createComponent({ project: { ...selectedProject, archived: true } });
 
           expect(archivedVm.$el.querySelector('.icon-container .badge').textContent).toBe(
             'archived',

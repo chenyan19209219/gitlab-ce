@@ -3,7 +3,7 @@ import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import Icon from '~/vue_shared/components/icon.vue';
 import ProjectAvatar from './project_avatar.vue';
 import ProjectCounts from './project_counts.vue';
-import ProjectMetadataInfo from './project_metadata_info.vue';
+import ProjectAccess from './project_access.vue';
 import ProjectTitle from './project_title.vue';
 
 /**
@@ -15,11 +15,11 @@ export default {
     TimeAgoTooltip,
     ProjectAvatar,
     ProjectCounts,
-    ProjectMetadataInfo,
+    ProjectAccess,
     ProjectTitle,
   },
   props: {
-    isExplore: {
+    isExploreProjectsTab: {
       type: Boolean,
       default: false,
     },
@@ -156,6 +156,9 @@ export default {
       } = this.permissions;
       return access_level;
     },
+    humanAccess() {
+      return '';
+    },
     avatarSizeClass() {
       return `s${this.size}`;
     },
@@ -199,7 +202,11 @@ export default {
             :project-path="project_path"
             :project-namespace="projectNamespace"
           />
-          <project-metadata-info :is-explore="isExplore" :access-level="accessLevel"/>
+          <project-access
+            :is-explore-projects-tab="isExploreProjectsTab"
+            :access-level="accessLevel"
+            :human-access="humanAccess"
+          />
         </div>
         <div v-if="hasDescription" class="description d-none d-sm-block append-right-default">
           <p data-sourcepos="1:1-1:57" dir="auto">{{project.description}}</p>

@@ -24,7 +24,7 @@ const currentTab = () => {
   return PROJECT_TABS[tab] || PROJECT_TABS.default;
 };
 
-const isExplore = () => {
+const isExploreProjectsTab = () => {
   return currentTab() === PROJECT_TABS.EXPLORE;
 };
 
@@ -41,7 +41,7 @@ export default {
     };
   },
   computed: {
-    isExplore,
+    isExploreProjectsTab,
   },
   created() {
     fetchProjects().then(res => {
@@ -56,7 +56,7 @@ export default {
     <!-- TODO: empty project state -->
     <ul class="projects-list">
       <template v-for="project in projects">
-        <project-list-item :key="project.id" :project="project" :is-explore="isExplore"/>
+        <project-list-item :key="project.id" :project="project" :is-explore="isExploreProjectsTab"/>
       </template>
     </ul>
   </div>
