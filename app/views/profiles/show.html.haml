@@ -75,7 +75,7 @@
         -# https://gitlab.com/gitlab-org/gitlab-ce/issues/60070
         %h5= ("Time zone")
         = dropdown_tag(_("Select a timezone"), options: { toggle_class: 'btn js-timezone-dropdown input-lg', title: _("Select a timezone"), filter: true, placeholder: s_("OfSearchInADropdown|Filter"), data: { data: timezone_data } } )
-        %input.hidden{ :type => 'hidden', :id => 'user_timezone', :name => 'user[timezone]', value: ActiveSupport::TimeZone::MAPPING.key(@user.timezone) }
+        %input.hidden{ :type => 'hidden', :id => 'user_timezone', :name => 'user[timezone]', value: @user.timezone }
 
   %hr
   .row

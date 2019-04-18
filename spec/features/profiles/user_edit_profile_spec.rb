@@ -354,8 +354,9 @@ describe 'User edit profile' do
         expect(tz.value).to eq('Pacific/Tongatapu')
       end
 
-      it 'timezone defaults to UTC' do
-        expect(page.find('.user-time-preferences #user_timezone', visible: false).value).to eq('UTC')
+      it 'timezone defaults to servers default' do
+        timezone_name = Time.zone.tzinfo.name
+        expect(page.find('.user-time-preferences #user_timezone', visible: false).value).to eq(timezone_name)
       end
     end
   end

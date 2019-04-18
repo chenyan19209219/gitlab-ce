@@ -10,7 +10,7 @@ class UserPreference < ApplicationRecord
 
   validates :issue_notes_filter, :merge_request_notes_filter, inclusion: { in: NOTES_FILTERS.values }, presence: true
 
-  default_value_for :timezone, value: 'Etc/UTC', allows_nil: false
+  default_value_for :timezone, value: Time.zone.tzinfo.name, allows_nil: false
   default_value_for :time_display_relative, value: true, allows_nil: false
   default_value_for :time_format_in_24h, value: false, allows_nil: false
 
