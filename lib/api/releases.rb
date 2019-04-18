@@ -34,10 +34,7 @@ module API
         requires :tag_name, type: String, desc: 'The name of the tag', as: :tag
       end
       get ':id/releases/:tag_name', requirements: RELEASE_ENDPOINT_REQUIREMETS do
-        guest_user = user_project.team.guest?(current_user)
-        non_public_project = !user_project.public?
-        forbidden! if guest_user && non_public_project
-        authorize_read_release!
+        authorize_download_code!
 
         present release, with: Entities::Release, current_user: current_user
       end
@@ -136,6 +133,10 @@ module API
 
       def authorize_destroy_release!
         authorize! :destroy_release, release
+      end
+
+      def authorize_download_code!
+        authorize! :download_code, release
       end
 
       def release
