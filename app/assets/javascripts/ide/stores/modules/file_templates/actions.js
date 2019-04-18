@@ -31,6 +31,7 @@ export const fetchTemplateTypes = ({ dispatch, state, rootState }) => {
   const fetchPages = (page = 1, prev = []) =>
     Api.projectTemplates(rootState.currentProjectId, state.selectedTemplateType.key, {
       page,
+      per_page: 100,
     })
       .then(({ data, headers }) => {
         const nextPage = parseInt(normalizeHeaders(headers)['X-NEXT-PAGE'], 10);
