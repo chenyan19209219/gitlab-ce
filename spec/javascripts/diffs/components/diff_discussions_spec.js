@@ -1,32 +1,38 @@
-import Vue from 'vue';
+import { shallowMount, createLocalVue } from '@vue/test-utils';
 import DiffDiscussions from '~/diffs/components/diff_discussions.vue';
+import NoteableDiscussion from '~/notes/components/noteable_discussion.vue';
+import Icon from '~/vue_shared/components/icon.vue';
 import { createStore } from '~/mr_notes/stores';
-import { createComponentWithStore } from 'spec/helpers/vue_mount_component_helper';
 import '~/behaviors/markdown/render_gfm';
 import discussionsMockData from '../mock_data/diff_discussions';
 
 describe('DiffDiscussions', () => {
-  let vm;
+  let store;
+  let wrapper;
   const getDiscussionsMockData = () => [Object.assign({}, discussionsMockData)];
 
-  function createComponent(props = {}) {
-    const store = createStore();
-
-    vm = createComponentWithStore(Vue.extend(DiffDiscussions), store, {
-      discussions: getDiscussionsMockData(),
-      ...props,
-    }).$mount();
-  }
+  const createComponent = props => {
+    const localVue = createLocalVue();
+    store = createStore();
+    wrapper = shallowMount(localVue.extend(DiffDiscussions), {
+      store,
+      propsData: {
+        discussions: getDiscussionsMockData(),
+        ...props,
+      },
+      localVue,
+    });
+  };
 
   afterEach(() => {
-    vm.$destroy();
+    wrapper.destroy();
   });
 
   describe('template', () => {
     it('should have notes list', () => {
       createComponent();
 
-      expect(vm.$el.querySelectorAll('.discussion .note.timeline-entry').length).toEqual(5);
+      expect(wrapper.find(NoteableDiscussion).exists()).toBe(true);
     });
   });
 
@@ -34,57 +40,71 @@ describe('DiffDiscussions', () => {
     it('renders collapsible discussion button', () => {
       createComponent({ shouldCollapseDiscussions: true });
 
-      expect(vm.$el.querySelector('.js-diff-notes-toggle')).not.toBe(null);
-      expect(vm.$el.querySelector('.js-diff-notes-toggle svg')).not.toBe(null);
-      expect(vm.$el.querySelector('.js-diff-notes-toggle').classList).toContain(
-        'diff-notes-collapse',
-      );
+      expect(wrapper.find('.js-diff-notes-toggle').exists()).toBe(true);
+
+      expect(
+        wrapper
+          .find('.js-diff-notes-toggle')
+          .find(Icon)
+          .exists(),
+      ).toBe(true);
+
+      expect(wrapper.find('.js-diff-notes-toggle').classes('diff-notes-collapse')).toBe(true);
     });
 
     it('dispatches toggleDiscussion when clicking collapse button', () => {
       createComponent({ shouldCollapseDiscussions: true });
+      spyOn(wrapper.vm.$store, 'dispatch').and.stub();
 
-      spyOn(vm.$store, 'dispatch').and.stub();
+      wrapper.find('.js-diff-notes-toggle').trigger('click');
 
-      vm.$el.querySelector('.js-diff-notes-toggle').click();
-
-      expect(vm.$store.dispatch).toHaveBeenCalledWith('toggleDiscussion', {
-        discussionId: vm.discussions[0].id,
+      expect(wrapper.vm.$store.dispatch).toHaveBeenCalledWith('toggleDiscussion', {
+        discussionId: wrapper.vm.discussions[0].id,
       });
     });
 
-    it('renders expand button when discussion is collapsed', done => {
-      createComponent({ shouldCollapseDiscussions: true });
+    it('renders expand button when discussion is collapsed', () => {
+      const discussions = getDiscussionsMockData();
+      discussions[0].expanded = false;
+      createComponent({ discussions, shouldCollapseDiscussions: true });
 
-      vm.discussions[0].expanded = false;
+      expect(
+        wrapper
+          .find('.js-diff-notes-toggle')
+          .text()
+          .trim(),
+      ).toBe('1');
 
-      vm.$nextTick(() => {
-        expect(vm.$el.querySelector('.js-diff-notes-toggle').textContent.trim()).toBe('1');
-        expect(vm.$el.querySelector('.js-diff-notes-toggle').className).toContain(
-          'btn-transparent badge badge-pill',
-        );
-
-        done();
+      ['btn-transparent', 'badge', 'badge-pill'].forEach(c => {
+        expect(wrapper.find('.js-diff-notes-toggle').classes(c)).toBe(true);
       });
     });
 
-    it('hides discussion when collapsed', done => {
-      createComponent({ shouldCollapseDiscussions: true });
+    it('hides discussion when collapsed', () => {
+      const discussions = getDiscussionsMockData();
+      discussions[0].expanded = false;
+      createComponent({ discussions, shouldCollapseDiscussions: true });
 
-      vm.discussions[0].expanded = false;
-
-      vm.$nextTick(() => {
-        expect(vm.$el.querySelector('.note-discussion').style.display).toBe('none');
-
-        done();
-      });
+      expect(wrapper.find(NoteableDiscussion).isVisible()).toBe(false);
     });
 
     it('renders badge on avatar', () => {
-      createComponent({ renderAvatarBadge: true, discussions: [{ ...discussionsMockData }] });
+      createComponent({ renderAvatarBadge: true });
 
-      expect(vm.$el.querySelector('.user-avatar-link .badge-pill')).not.toBe(null);
-      expect(vm.$el.querySelector('.user-avatar-link .badge-pill').textContent.trim()).toBe('1');
+      expect(
+        wrapper
+          .find(NoteableDiscussion)
+          .find('.badge-pill')
+          .exists(),
+      ).toBe(true);
+
+      expect(
+        wrapper
+          .find(NoteableDiscussion)
+          .find('.badge-pill')
+          .text()
+          .trim(),
+      ).toBe('1');
     });
   });
 });

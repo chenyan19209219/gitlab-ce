@@ -4,6 +4,7 @@ import noteableDiscussion from '~/notes/components/noteable_discussion.vue';
 import ReplyPlaceholder from '~/notes/components/discussion_reply_placeholder.vue';
 import ResolveWithIssueButton from '~/notes/components/discussion_resolve_with_issue_button.vue';
 import NoteForm from '~/notes/components/note_form.vue';
+import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import '~/behaviors/markdown/render_gfm';
 import { noteableDataMock, discussionMock, notesDataMock } from '../mock_data';
 import mockDiffFile from '../../diffs/mock_data/diff_file';
@@ -35,8 +36,18 @@ describe('noteable_discussion component', () => {
     wrapper.destroy();
   });
 
-  it('should render user avatar', () => {
-    expect(wrapper.find('.user-avatar-link').exists()).toBe(true);
+  it('should render user avatar for diff discussions', done => {
+    const discussion = { ...discussionMock };
+    discussion.diff_file = mockDiffFile;
+    discussion.diff_discussion = true;
+    wrapper.setProps({ discussion });
+    wrapper.vm
+      .$nextTick()
+      .then(() => {
+        expect(wrapper.find(UserAvatarLink).exists()).toBe(true);
+      })
+      .then(done)
+      .catch(done.fail);
   });
 
   it('should not render discussion header for non diff discussions', () => {
@@ -127,29 +138,6 @@ describe('noteable_discussion component', () => {
           .then(done)
           .catch(done.fail);
       });
-    });
-  });
-
-  describe('componentData', () => {
-    it('should return first note object for placeholder note', () => {
-      const data = {
-        isPlaceholderNote: true,
-        notes: [{ body: 'hello world!' }],
-      };
-
-      const note = wrapper.vm.componentData(data);
-
-      expect(note).toEqual(data.notes[0]);
-    });
-
-    it('should return given note for nonplaceholder notes', () => {
-      const data = {
-        notes: [{ id: 12 }],
-      };
-
-      const note = wrapper.vm.componentData(data);
-
-      expect(note).toEqual(data);
     });
   });
 
