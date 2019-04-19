@@ -240,7 +240,7 @@ module ProjectsHelper
   # rubocop: enable CodeReuse/ActiveRecord
 
   def show_projects?(projects, params)
-    !!(params[:personal] || params[:name] || any_projects?(projects))
+    Feature.enabled?(:project_list_filter_bar) || !!(params[:personal] || params[:name] || any_projects?(projects))
   end
 
   def push_to_create_project_command(user = current_user)
