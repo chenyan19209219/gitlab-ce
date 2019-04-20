@@ -45,11 +45,9 @@ Sidekiq.configure_server do |config|
     ActiveRecord::Base.clear_all_connections!
   end
 
-  if Feature::FlipperFeature.table_exists? && Feature.enabled?(:gitlab_sidekiq_reliable_fetcher)
-    # By default we're going to use Semi Reliable Fetch
-    config.options[:semi_reliable_fetch] = Feature.enabled?(:gitlab_sidekiq_enable_semi_reliable_fetcher, default_enabled: true)
-    Sidekiq::ReliableFetch.setup_reliable_fetch!(config)
-  end
+  # Enable Reliable Fecth in a semi_reliable mode
+  config.options[:semi_reliable_fetch] = true
+  Sidekiq::ReliableFetch.setup_reliable_fetch!(config)
 
   # Sidekiq-cron: load recurring jobs from gitlab.yml
   # UGLY Hack to get nested hash from settingslogic
