@@ -6,12 +6,6 @@ describe Gitlab::Ci::Status::Stage::PlayManual do
   let(:stage) { double('stage') }
   let(:play_manual) { described_class.new(stage) }
 
-  describe '#label' do
-    subject { play_manual.label }
-
-    it { is_expected.to eq('play all manual') }
-  end
-
   describe '#action_icon' do
     subject { play_manual.action_icon }
 
@@ -81,7 +75,7 @@ describe Gitlab::Ci::Status::Stage::PlayManual do
         it { is_expected.to be_truthy }
       end
 
-      context 'and does not have manual buidls' do
+      context 'and does not have manual builds' do
         it { is_expected.to be_falsy }
       end
     end

@@ -150,8 +150,10 @@ class Projects::PipelinesController < Projects::ApplicationController
   def play_all_manual
     return not_found unless pipeline_stage
 
-    ::Ci::PlayStageManualBuildsService.new(@project, current_user)
-      .execute(pipeline_stage)
+    options = { pipeline: pipeline, stage: pipeline_stage }
+
+    ::Ci::PlayStageManualBuildsService.new(@project, current_user, options)
+      .execute
 
     render json: StageSerializer
       .new(project: @project, current_user: @current_user)

@@ -193,10 +193,4 @@ module GitlabRoutingHelper
     project = schedule.project
     take_ownership_project_pipeline_schedule_path(project, schedule, *args)
   end
-
-  # Stages
-  def play_all_project_stage_path(pipeline, stage_name)
-    project = pipeline.project
-    play_all_manual_namespace_project_pipeline_path(project.namespace, project, pipeline, stage: stage_name) # rubocop:disable Cop/ProjectPathHelper
-  end
 end

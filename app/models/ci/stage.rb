@@ -6,6 +6,7 @@ module Ci
     include Importable
     include HasStatus
     include Gitlab::OptimisticLocking
+    include Gitlab::Utils::StrongMemoize
 
     enum status: HasStatus::STATUSES_ENUM
 
@@ -101,7 +102,7 @@ module Ci
     end
 
     def manual_playable?
-      %w[success running failed].include?(status)
+      manual_playable_statuses.include?(status) && with_manual_builds
     end
 
     def has_warnings?
@@ -123,6 +124,18 @@ module Ci
       Gitlab::Ci::Status::Stage::Factory
         .new(self, current_user)
         .fabricate!
+    end
+
+    private
+
+    def manual_playable_statuses
+      %w[success running failed]
+    end
+
+    def with_manual_builds
+      strong_memoize(:manual_builds) do
+        builds.manual.exists?
+      end
     end
   end
 end

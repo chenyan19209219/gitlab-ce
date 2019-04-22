@@ -5,12 +5,6 @@ module Gitlab
     module Status
       module Stage
         class PlayManual < Status::Extended
-          include GitlabRoutingHelper
-
-          def label
-            'play all manual'
-          end
-
           def action_icon
             'play'
           end
@@ -24,7 +18,9 @@ module Gitlab
           end
 
           def action_path
-            play_all_project_stage_path(subject.pipeline, subject.name)
+            pipeline = subject.pipeline
+
+            play_all_manual_project_pipeline_path(pipeline.project, pipeline, subject.name)
           end
 
           def action_method
@@ -32,8 +28,7 @@ module Gitlab
           end
 
           def self.matches?(stage, user)
-            stage.blocked_or_skipped? ||
-              (stage.manual_playable? && stage.builds.manual.exists?)
+            stage.blocked_or_skipped? || stage.manual_playable?
           end
 
           def has_manual_builds?

@@ -272,4 +272,12 @@ describe Ci::LegacyStage do
   def create_job(type, status: 'success', stage: stage_name, **opts)
     create(type, pipeline: pipeline, stage: stage, status: status, **opts)
   end
+
+  describe '#manual_playable?' do
+    def create_manual_builds(stage)
+      create_list(:ci_build, 2, :manual, stage: stage.name, pipeline: stage.pipeline)
+    end
+
+    it_behaves_like 'stage manual builds', :ci_stage
+  end
 end

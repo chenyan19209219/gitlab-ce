@@ -48,7 +48,7 @@ describe StageEntity do
       expect(subject[:title]).to eq 'test: passed'
     end
 
-    it 'does not contain play_all_manual info' do
+    it 'does not contain play_manual_details info' do
       expect(subject[:play_manual_details]).not_to be_present
     end
 
