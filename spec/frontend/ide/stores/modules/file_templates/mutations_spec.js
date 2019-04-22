@@ -12,7 +12,7 @@ describe('IDE file templates mutations', () => {
     state = createState();
   });
 
-  describe(types.REQUEST_TEMPLATE_TYPES, () => {
+  describe(`${types.REQUEST_TEMPLATE_TYPES}`, () => {
     it('sets loading to true', () => {
       state.isLoading = false;
 
@@ -58,7 +58,7 @@ describe('IDE file templates mutations', () => {
     });
   });
 
-  describe(types.SET_SELECTED_TEMPLATE_TYPE, () => {
+  describe(`${types.SET_SELECTED_TEMPLATE_TYPE}`, () => {
     it('sets templates type to selected type', () => {
       state.selectedTemplateType = '';
 
