@@ -166,6 +166,20 @@ describe Projects::Settings::OperationsController do
     end
   end
 
+  context 'metrics dashboard setting' do
+    describe 'PATCH #update' do
+      let(:params) do
+        {
+          metrics_dashboard_setting_attributes: {
+            external_dashboard_url: 'https://gitlab.com'
+          }
+        }
+      end
+
+      it_behaves_like 'PATCH #update'
+    end
+  end
+
   private
 
   def project_params(project, params = {})

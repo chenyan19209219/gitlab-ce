@@ -12,7 +12,11 @@ module Projects
       private
 
       def project_update_params
-        error_tracking_params
+        params.slice(*expected_params).merge(error_tracking_params)
+      end
+
+      def expected_params
+        [:metrics_dashboard_setting_attributes]
       end
 
       def error_tracking_params

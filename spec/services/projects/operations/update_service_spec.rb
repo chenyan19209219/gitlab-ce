@@ -11,6 +11,42 @@ describe Projects::Operations::UpdateService do
   subject { described_class.new(project, user, params) }
 
   describe '#execute' do
+    context 'metrics dashboard setting' do
+      let(:params) do
+        {
+          metrics_dashboard_setting_attributes: {
+            external_dashboard_url: 'http://gitlab.com'
+          }
+        }
+      end
+
+      context 'without existing metrics dashboard setting' do
+        it 'creates a setting' do
+          expect(result[:status]).to eq(:success)
+
+          project.reload
+          expect(project.metrics_dashboard_setting.external_dashboard_url).to eq(
+            'http://gitlab.com'
+          )
+        end
+      end
+
+      context 'with existing metrics dashboard setting' do
+        before do
+          create(:project_metrics_dashboard_setting, project: project)
+        end
+
+        it 'updates the settings' do
+          expect(result[:status]).to eq(:success)
+
+          project.reload
+          expect(project.metrics_dashboard_setting.external_dashboard_url).to eq(
+            'http://gitlab.com'
+          )
+        end
+      end
+    end
+
     context 'error tracking' do
       context 'with existing error tracking setting' do
         let(:params) do
