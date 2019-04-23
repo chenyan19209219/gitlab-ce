@@ -339,6 +339,7 @@ describe Projects::EnvironmentsController do
   describe 'GET #metrics' do
     before do
       allow(controller).to receive(:environment).and_return(environment)
+      stub_feature_flags(environment_metrics_show_multiple_dashboards: false)
     end
 
     context 'when environment has no metrics' do

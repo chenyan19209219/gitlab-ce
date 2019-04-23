@@ -140,12 +140,10 @@ class Projects::EnvironmentsController < Projects::ApplicationController
     # if they aren't there already
     @metrics = environment.metrics || {}
 
-    p dashboard_service.all_dashboards
-
     if Feature.enabled?(:environment_metrics_show_multiple_dashboards, @project)
       json = {
         metrics: @mertrics,
-        dashboards: dashboard_service.all_dashboards
+        dashboards: dashboard_finder.find_all(project, environment)
       }
     end
 
@@ -174,7 +172,7 @@ class Projects::EnvironmentsController < Projects::ApplicationController
     return render_403 unless Feature.enabled?(:environment_metrics_use_prometheus_endpoint, @project)
 
     dashboard = params[:dashboard] if Feature.enabled?(:environment_metrics_show_multiple_dashboards, @project)
-    result = dashboard_service.get_dashboard(dashboard)
+    result = dashboard_finder.find(project, environment, dashboard)
 
     respond_to do |format|
       if result[:status] == :success
@@ -225,8 +223,8 @@ class Projects::EnvironmentsController < Projects::ApplicationController
     params.require([:start, :end])
   end
 
-  def dashboard_service
-    Gitlab::MetricsDashboard::Service.new(@project, @current_user, environment: environment)
+  def dashboard_finder
+    Gitlab::MetricsDashboard::Finder
   end
 
   def search_environment_names
