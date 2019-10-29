@@ -1,1 +1,13 @@
 port: 3000
+   <groupId>com.alibaba.citrus.tool</groupId>
+                <artifactId>autoconfig-maven-plugin</artifactId>
+                <version>1.2</version>
+                <configuration>
+                    <exploding>true</exploding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>autoconfig</goal>
+                        </goals>
