@@ -6,7 +6,7 @@ gem 'rails', '5.0.7.2'
 gem 'nakayoshi_fork', '~> 0.0.4'
 
 # Responders respond_to and respond_with
-gem 'responders', '~> 2.0'
+gem 'responders', '~> 2.4', '>= 2.4.0'
 
 gem 'sprockets', '~> 3.7.0'
 
@@ -18,14 +18,14 @@ gem 'mysql2', '~> 0.4.10', group: :mysql
 gem 'pg', '~> 1.1', group: :postgres
 
 gem 'rugged', '~> 0.28'
-gem 'grape-path-helpers', '~> 1.0'
+gem 'grape-path-helpers', '~> 1.0', '>= 1.0.6'
 
 gem 'faraday', '~> 0.12'
 
 # Authentication libraries
-gem 'devise', '~> 4.4'
-gem 'doorkeeper', '~> 4.3'
-gem 'doorkeeper-openid_connect', '~> 1.5'
+gem 'devise', '~> 4.4', '>= 4.4.3'
+gem 'doorkeeper', '~> 4.3', '>= 4.3.2'
+gem 'doorkeeper-openid_connect', '~> 1.5', '>= 1.5.0'
 gem 'omniauth', '~> 1.8'
 gem 'omniauth-auth0', '~> 2.0.0'
 gem 'omniauth-azure-oauth2', '~> 0.0.9'
@@ -253,7 +253,7 @@ gem 'fast_blank'
 gem 'chronic', '~> 0.10.2'
 gem 'chronic_duration', '~> 0.10.6'
 
-gem 'webpack-rails', '~> 0.9.10'
+gem 'webpack-rails', '~> 0.9.11'
 gem 'rack-proxy', '~> 0.6.0'
 
 gem 'sass-rails', '~> 5.0.6'
@@ -261,7 +261,7 @@ gem 'sass', '~> 3.5'
 gem 'uglifier', '~> 2.7.2'
 
 gem 'addressable', '~> 2.5.2'
-gem 'font-awesome-rails', '~> 4.7'
+gem 'font-awesome-rails', '~> 4.7', '>= 4.7.0.1'
 gem 'gemojione', '~> 3.3'
 gem 'gon', '~> 6.2'
 gem 'request_store', '~> 1.3'
@@ -275,9 +275,9 @@ gem 'premailer-rails', '~> 1.9.7'
 
 # I18n
 gem 'ruby_parser', '~> 3.8', require: false
-gem 'rails-i18n', '~> 5.1'
+gem 'rails-i18n', '~> 5.1', '>= 5.1.1'
 gem 'gettext_i18n_rails', '~> 1.8.0'
-gem 'gettext_i18n_rails_js', '~> 1.3'
+gem 'gettext_i18n_rails_js', '~> 1.3', '>= 1.3.0'
 gem 'gettext', '~> 3.2.2', require: false, group: :development
 
 gem 'batch-loader', '~> 1.2.2'
@@ -332,7 +332,7 @@ group :development, :test do
 
   gem 'database_cleaner', '~> 1.7.0'
   gem 'factory_bot_rails', '~> 4.8.2'
-  gem 'rspec-rails', '~> 3.7.0'
+  gem 'rspec-rails', '~> 3.7.2'
   gem 'rspec-retry', '~> 0.4.5'
   gem 'rspec_profiling', '~> 0.0.5'
   gem 'rspec-set', '~> 0.1.3'
@@ -364,7 +364,7 @@ group :development, :test do
   gem 'benchmark-ips', '~> 2.3.0', require: false
 
   gem 'license_finder', '~> 5.4', require: false
-  gem 'knapsack', '~> 1.17'
+  gem 'knapsack', '~> 1.17', '>= 1.17.0'
 
   gem 'activerecord_sane_schema_dumper', '1.0'
 
@@ -432,5 +432,5 @@ gem 'flipper-active_record', '~> 0.13.0'
 gem 'flipper-active_support_cache_store', '~> 0.13.0'
 
 # Structured logging
-gem 'lograge', '~> 0.5'
+gem 'lograge', '~> 0.10', '>= 0.10.0'
 gem 'grape_logging', '~> 1.7'
