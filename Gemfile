@@ -1,12 +1,12 @@
 source 'https://rubygems.org'
 
-gem 'rails', '5.0.7.2'
+gem 'rails', '5.2.4.2'
 
 # Improves copy-on-write performance for MRI
 gem 'nakayoshi_fork', '~> 0.0.4'
 
 # Responders respond_to and respond_with
-gem 'responders', '~> 2.0'
+gem 'responders', '~> 2.4', '>= 2.4.0'
 
 gem 'sprockets', '~> 3.7.0'
 
@@ -23,9 +23,9 @@ gem 'grape-path-helpers', '~> 1.0'
 gem 'faraday', '~> 0.12'
 
 # Authentication libraries
-gem 'devise', '~> 4.4'
-gem 'doorkeeper', '~> 4.3'
-gem 'doorkeeper-openid_connect', '~> 1.5'
+gem 'devise', '~> 4.4', '>= 4.4.3'
+gem 'doorkeeper', '~> 4.3', '>= 4.3.2'
+gem 'doorkeeper-openid_connect', '~> 1.5', '>= 1.5.0'
 gem 'omniauth', '~> 1.8'
 gem 'omniauth-auth0', '~> 2.0.0'
 gem 'omniauth-azure-oauth2', '~> 0.0.9'
@@ -45,7 +45,7 @@ gem 'rack-oauth2', '~> 1.9.3'
 gem 'jwt', '~> 2.1.0'
 
 # Spam and anti-bot protection
-gem 'recaptcha', '~> 4.11', require: 'recaptcha/rails'
+gem 'recaptcha', '4.13.1'
 gem 'akismet', '~> 2.0'
 
 # Two-factor authentication
@@ -83,7 +83,7 @@ gem 'graphiql-rails', '~> 1.4.10'
 gem 'hashie-forbidden_attributes'
 
 # Pagination
-gem 'kaminari', '~> 1.0'
+gem 'kaminari', '~> 1.0', '>= 1.0.1'
 
 # HAML
 gem 'hamlit', '~> 2.8.8'
@@ -253,7 +253,7 @@ gem 'fast_blank'
 gem 'chronic', '~> 0.10.2'
 gem 'chronic_duration', '~> 0.10.6'
 
-gem 'webpack-rails', '~> 0.9.10'
+gem 'webpack-rails', '~> 0.9.11'
 gem 'rack-proxy', '~> 0.6.0'
 
 gem 'sass-rails', '~> 5.0.6'
@@ -261,9 +261,9 @@ gem 'sass', '~> 3.5'
 gem 'uglifier', '~> 2.7.2'
 
 gem 'addressable', '~> 2.5.2'
-gem 'font-awesome-rails', '~> 4.7'
-gem 'gemojione', '~> 3.3'
-gem 'gon', '~> 6.2'
+gem 'font-awesome-rails', '~> 4.7', '>= 4.7.0.4'
+gem 'gemojione', '~> 3.3', '>= 3.3.0'
+gem 'gon', '~> 6.2', '>= 6.2.0'
 gem 'request_store', '~> 1.3'
 gem 'virtus', '~> 1.0.1'
 gem 'base32', '~> 0.3.0'
@@ -275,9 +275,9 @@ gem 'premailer-rails', '~> 1.9.7'
 
 # I18n
 gem 'ruby_parser', '~> 3.8', require: false
-gem 'rails-i18n', '~> 5.1'
+gem 'rails-i18n', '~> 5.1', '>= 5.1.1'
 gem 'gettext_i18n_rails', '~> 1.8.0'
-gem 'gettext_i18n_rails_js', '~> 1.3'
+gem 'gettext_i18n_rails_js', '~> 1.3', '>= 1.3.0'
 gem 'gettext', '~> 3.2.2', require: false, group: :development
 
 gem 'batch-loader', '~> 1.2.2'
@@ -293,7 +293,7 @@ gem 'peek-redis', '~> 1.2.0'
 # Metrics
 group :metrics do
   gem 'method_source', '~> 0.8', require: false
-  gem 'influxdb', '~> 0.2', require: false
+  gem 'influxdb', '~> 0.2', '>= 0.2.3', require: false
 
   # Prometheus
   gem 'prometheus-client-mmap', '~> 0.9.4'
@@ -332,7 +332,7 @@ group :development, :test do
 
   gem 'database_cleaner', '~> 1.7.0'
   gem 'factory_bot_rails', '~> 4.8.2'
-  gem 'rspec-rails', '~> 3.7.0'
+  gem 'rspec-rails', '~> 3.7.2'
   gem 'rspec-retry', '~> 0.4.5'
   gem 'rspec_profiling', '~> 0.0.5'
   gem 'rspec-set', '~> 0.1.3'
@@ -358,7 +358,7 @@ group :development, :test do
 
   gem 'scss_lint', '~> 0.56.0', require: false
   gem 'haml_lint', '~> 0.28.0', require: false
-  gem 'simplecov', '~> 0.14.0', require: false
+  gem 'simplecov', '~> 0.14.1', require: false
   gem 'bundler-audit', '~> 0.5.0', require: false
 
   gem 'benchmark-ips', '~> 2.3.0', require: false
@@ -380,7 +380,7 @@ group :test do
   gem 'email_spec', '~> 2.2.0'
   gem 'json-schema', '~> 2.8.0'
   gem 'webmock', '~> 3.5.1'
-  gem 'rails-controller-testing'
+  gem 'rails-controller-testing', '>= 1.0.2'
   gem 'sham_rack', '~> 1.3.6'
   gem 'concurrent-ruby', '~> 1.1'
   gem 'test-prof', '~> 0.2.5'
@@ -432,5 +432,5 @@ gem 'flipper-active_record', '~> 0.13.0'
 gem 'flipper-active_support_cache_store', '~> 0.13.0'
 
 # Structured logging
-gem 'lograge', '~> 0.5'
+gem 'lograge', '~> 0.10', '>= 0.10.0'
 gem 'grape_logging', '~> 1.7'
