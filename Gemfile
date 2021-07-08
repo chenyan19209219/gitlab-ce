@@ -97,14 +97,14 @@ gem 'fog-aws', '~> 3.3'
 # Locked until fog-google resolves https://github.com/fog/fog-google/issues/421.
 # Also see config/initializers/fog_core_patch.rb.
 gem 'fog-core', '= 2.1.0'
-gem 'fog-google', '~> 1.8'
+gem 'fog-google', '~> 1.8', '>= 1.8.2'
 gem 'fog-local', '~> 0.6'
 gem 'fog-openstack', '~> 1.0'
 gem 'fog-rackspace', '~> 0.1.1'
 gem 'fog-aliyun', '~> 0.3'
 
 # for Google storage
-gem 'google-api-client', '~> 0.23'
+gem 'google-api-client', '~> 0.23', '>= 0.23.4'
 
 # for aws storage
 gem 'unf', '~> 0.1.4'
@@ -260,7 +260,7 @@ gem 'sass-rails', '~> 5.0.6'
 gem 'sass', '~> 3.5'
 gem 'uglifier', '~> 2.7.2'
 
-gem 'addressable', '~> 2.5.2'
+gem 'addressable', '~> 2.8.0'
 gem 'font-awesome-rails', '~> 4.7'
 gem 'gemojione', '~> 3.3'
 gem 'gon', '~> 6.2'
@@ -387,7 +387,7 @@ group :test do
   gem 'rspec_junit_formatter'
 end
 
-gem 'octokit', '~> 4.9'
+gem 'octokit', '~> 4.9', '>= 4.9.0'
 
 gem 'mail_room', '~> 0.9.1'
 
