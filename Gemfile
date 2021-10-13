@@ -146,8 +146,8 @@ group :unicorn do
 end
 
 group :puma do
-  gem 'puma', '~> 3.12', require: false
-  gem 'puma_worker_killer', require: false
+  gem 'puma', '~> 4.3', '>= 4.3.9', require: false
+  gem 'puma_worker_killer', '>= 0.1.1', require: false
 end
 
 # State machine
