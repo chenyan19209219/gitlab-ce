@@ -138,7 +138,7 @@ gem 'icalendar'
 gem 'diffy', '~> 3.1.0'
 
 # Application server
-gem 'rack', '~> 2.0.7'
+gem 'rack', '~> 2.2.3'
 
 group :unicorn do
   gem 'unicorn', '~> 5.4.1'
