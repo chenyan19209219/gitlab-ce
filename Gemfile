@@ -18,7 +18,7 @@ gem 'mysql2', '~> 0.4.10', group: :mysql
 gem 'pg', '~> 1.1', group: :postgres
 
 gem 'rugged', '~> 0.28'
-gem 'grape-path-helpers', '~> 1.0'
+gem 'grape-path-helpers', '~> 1.0', '>= 1.0.6'
 
 gem 'faraday', '~> 0.12'
 
@@ -39,7 +39,7 @@ gem 'omniauth-oauth2-generic', '~> 0.2.2'
 gem 'omniauth-saml', '~> 1.10'
 gem 'omniauth-shibboleth', '~> 1.3.0'
 gem 'omniauth-twitter', '~> 1.4'
-gem 'omniauth_crowd', '~> 2.2.0'
+gem 'omniauth_crowd', '~> 2.2.3'
 gem 'omniauth-authentiq', '~> 0.3.3'
 gem 'rack-oauth2', '~> 1.9.3'
 gem 'jwt', '~> 2.1.0'
@@ -89,7 +89,7 @@ gem 'kaminari', '~> 1.0', '>= 1.0.1'
 gem 'hamlit', '~> 2.8.8'
 
 # Files attachments
-gem 'carrierwave', '~> 1.3'
+gem 'carrierwave', '~> 1.3', '>= 1.3.1'
 gem 'mini_magick'
 
 # for backups
@@ -113,7 +113,7 @@ gem 'unf', '~> 0.1.4'
 gem 'seed-fu', '~> 2.3.7'
 
 # Markdown and HTML processing
-gem 'html-pipeline', '~> 2.8'
+gem 'html-pipeline', '~> 2.8', '>= 2.8.4'
 gem 'deckar01-task_list', '2.2.0'
 gem 'gitlab-markup', '~> 1.7.0'
 gem 'github-markup', '~> 1.7.0', require: 'github/markup'
@@ -154,16 +154,16 @@ end
 gem 'state_machines-activerecord', '~> 0.5.1'
 
 # Issue tags
-gem 'acts-as-taggable-on', '~> 6.0'
+gem 'acts-as-taggable-on', '~> 6.0', '>= 6.0.0'
 
 # Background jobs
 gem 'sidekiq', '~> 5.2.1'
-gem 'sidekiq-cron', '~> 1.0'
+gem 'sidekiq-cron', '~> 1.0', '>= 1.0.4'
 gem 'redis-namespace', '~> 1.6.0'
 gem 'gitlab-sidekiq-fetcher', '~> 0.4.0', require: 'sidekiq-reliable-fetch'
 
 # Cron Parser
-gem 'fugit', '~> 1.1'
+gem 'fugit', '~> 1.1', '>= 1.1.9'
 
 # HTTP requests
 gem 'httparty', '~> 0.16.4'
@@ -204,7 +204,7 @@ gem 'discordrb-webhooks-blackst0ne', '~> 3.3', require: false
 gem 'hipchat', '~> 1.5.0'
 
 # JIRA integration
-gem 'jira-ruby', '~> 1.4'
+gem 'jira-ruby', '~> 1.4', '>= 1.4.1'
 
 # Flowdock integration
 gem 'flowdock', '~> 0.7'
@@ -323,7 +323,7 @@ end
 
 group :development, :test do
   gem 'bootsnap', '~> 1.4'
-  gem 'bullet', '~> 5.5.0', require: !!ENV['ENABLE_BULLET']
+  gem 'bullet', '~> 5.5.1', require: !!ENV['ENABLE_BULLET']
   gem 'pry-byebug', '~> 3.5.1', platform: :mri
   gem 'pry-rails', '~> 0.3.4'
 
@@ -348,7 +348,7 @@ group :development, :test do
   gem 'capybara-screenshot', '~> 1.0.22'
   gem 'selenium-webdriver', '~> 3.141'
 
-  gem 'spring', '~> 2.0.0'
+  gem 'spring', '~> 2.0.2'
   gem 'spring-commands-rspec', '~> 1.0.4'
 
   gem 'gitlab-styles', '~> 2.5', require: false
@@ -433,4 +433,4 @@ gem 'flipper-active_support_cache_store', '~> 0.13.0'
 
 # Structured logging
 gem 'lograge', '~> 0.10', '>= 0.10.0'
-gem 'grape_logging', '~> 1.7'
+gem 'grape_logging', '~> 1.7', '>= 1.7.0'
