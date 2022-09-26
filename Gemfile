@@ -18,7 +18,7 @@ gem 'mysql2', '~> 0.4.10', group: :mysql
 gem 'pg', '~> 1.1', group: :postgres
 
 gem 'rugged', '~> 0.28'
-gem 'grape-path-helpers', '~> 1.0'
+gem 'grape-path-helpers', '~> 1.0', '>= 1.0.6'
 
 gem 'faraday', '~> 0.12'
 
@@ -364,7 +364,7 @@ group :development, :test do
   gem 'benchmark-ips', '~> 2.3.0', require: false
 
   gem 'license_finder', '~> 5.4', require: false
-  gem 'knapsack', '~> 1.17'
+  gem 'knapsack', '~> 1.17', '>= 1.17.0'
 
   gem 'activerecord_sane_schema_dumper', '1.0'
 
