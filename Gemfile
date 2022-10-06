@@ -260,7 +260,7 @@ gem 'sass-rails', '~> 5.0.6'
 gem 'sass', '~> 3.5'
 gem 'uglifier', '~> 2.7.2'
 
-gem 'addressable', '~> 2.5.2'
+gem 'addressable', '~> 2.8.1'
 gem 'font-awesome-rails', '~> 4.7', '>= 4.7.0.1'
 gem 'gemojione', '~> 3.3'
 gem 'gon', '~> 6.2', '>= 6.2.0'
