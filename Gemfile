@@ -18,7 +18,7 @@ gem 'mysql2', '~> 0.4.10', group: :mysql
 gem 'pg', '~> 1.1', group: :postgres
 
 gem 'rugged', '~> 0.28'
-gem 'grape-path-helpers', '~> 1.0'
+gem 'grape-path-helpers', '~> 1.0', '>= 1.0.6'
 
 gem 'faraday', '~> 0.12'
 
@@ -26,19 +26,19 @@ gem 'faraday', '~> 0.12'
 gem 'devise', '~> 4.4', '>= 4.4.3'
 gem 'doorkeeper', '~> 4.3', '>= 4.3.2'
 gem 'doorkeeper-openid_connect', '~> 1.5', '>= 1.5.0'
-gem 'omniauth', '~> 1.8'
+gem 'omniauth', '~> 2.1', '>= 2.1.0'
 gem 'omniauth-auth0', '~> 2.0.0'
-gem 'omniauth-azure-oauth2', '~> 0.0.9'
+gem 'omniauth-azure-oauth2', '~> 0.0.10'
 gem 'omniauth-cas3', '~> 1.1.4'
 gem 'omniauth-facebook', '~> 4.0.0'
-gem 'omniauth-github', '~> 1.3'
-gem 'omniauth-gitlab', '~> 1.0.2'
+gem 'omniauth-github', '~> 2.0', '>= 2.0.0'
+gem 'omniauth-gitlab', '~> 3.0.0'
 gem 'omniauth-google-oauth2', '~> 0.6.0'
 gem 'omniauth-kerberos', '~> 0.3.0', group: :kerberos
 gem 'omniauth-oauth2-generic', '~> 0.2.2'
-gem 'omniauth-saml', '~> 1.10'
+gem 'omniauth-saml', '~> 2.0', '>= 2.0.0'
 gem 'omniauth-shibboleth', '~> 1.3.0'
-gem 'omniauth-twitter', '~> 1.4'
+gem 'omniauth-twitter', '~> 1.4', '>= 1.4.0'
 gem 'omniauth_crowd', '~> 2.2.0'
 gem 'omniauth-authentiq', '~> 0.3.3'
 gem 'rack-oauth2', '~> 1.9.3'
@@ -67,7 +67,7 @@ gem 'gpgme', '~> 2.0.18'
 # LDAP Auth
 # GitLab fork with several improvements to original library. For full list of changes
 # see https://github.com/intridea/omniauth-ldap/compare/master...gitlabhq:master
-gem 'gitlab_omniauth-ldap', '~> 2.1.1', require: 'omniauth-ldap'
+gem 'gitlab_omniauth-ldap', '~> 2.2.0', require: 'omniauth-ldap'
 gem 'net-ldap'
 
 # API
@@ -138,7 +138,7 @@ gem 'icalendar'
 gem 'diffy', '~> 3.1.0'
 
 # Application server
-gem 'rack', '~> 2.0.7'
+gem 'rack', '~> 3.0.0'
 
 group :unicorn do
   gem 'unicorn', '~> 5.4.1'
@@ -157,8 +157,8 @@ gem 'state_machines-activerecord', '~> 0.5.1'
 gem 'acts-as-taggable-on', '~> 6.0'
 
 # Background jobs
-gem 'sidekiq', '~> 5.2.1'
-gem 'sidekiq-cron', '~> 1.0'
+gem 'sidekiq', '~> 5.2.5'
+gem 'sidekiq-cron', '~> 1.0', '>= 1.0.4'
 gem 'redis-namespace', '~> 1.6.0'
 gem 'gitlab-sidekiq-fetcher', '~> 0.4.0', require: 'sidekiq-reliable-fetch'
 
@@ -398,7 +398,7 @@ gem 'ruby-prof', '~> 0.17.0'
 gem 'rbtrace', '~> 0.4', require: false
 
 # OAuth
-gem 'oauth2', '~> 1.4'
+gem 'oauth2', '~> 1.4', '>= 1.4.11'
 
 # Health check
 gem 'health_check', '~> 2.6.0'
@@ -433,4 +433,4 @@ gem 'flipper-active_support_cache_store', '~> 0.13.0'
 
 # Structured logging
 gem 'lograge', '~> 0.10', '>= 0.10.0'
-gem 'grape_logging', '~> 1.7'
+gem 'grape_logging', '~> 1.7', '>= 1.7.0'
