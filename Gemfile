@@ -8,7 +8,7 @@ gem 'nakayoshi_fork', '~> 0.0.4'
 # Responders respond_to and respond_with
 gem 'responders', '~> 2.4', '>= 2.4.0'
 
-gem 'sprockets', '~> 3.7.0'
+gem 'sprockets', '~> 4.2.0'
 
 # Default values for AR models
 gem 'gitlab-default_value_for', '~> 3.1.1', require: 'default_value_for'
@@ -256,7 +256,7 @@ gem 'chronic_duration', '~> 0.10.6'
 gem 'webpack-rails', '~> 0.9.11'
 gem 'rack-proxy', '~> 0.6.0'
 
-gem 'sass-rails', '~> 5.0.6'
+gem 'sass-rails', '~> 6.0.0'
 gem 'sass', '~> 3.5'
 gem 'uglifier', '~> 2.7.2'
 
