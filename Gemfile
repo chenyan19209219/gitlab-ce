@@ -8,7 +8,7 @@ gem 'nakayoshi_fork', '~> 0.0.4'
 # Responders respond_to and respond_with
 gem 'responders', '~> 2.4', '>= 2.4.0'
 
-gem 'sprockets', '~> 3.7.0'
+gem 'sprockets', '~> 3.7.2'
 
 # Default values for AR models
 gem 'gitlab-default_value_for', '~> 3.1.1', require: 'default_value_for'
@@ -18,7 +18,7 @@ gem 'mysql2', '~> 0.4.10', group: :mysql
 gem 'pg', '~> 1.1', group: :postgres
 
 gem 'rugged', '~> 0.28'
-gem 'grape-path-helpers', '~> 1.0'
+gem 'grape-path-helpers', '~> 1.0', '>= 1.0.6'
 
 gem 'faraday', '~> 0.12'
 
@@ -26,20 +26,20 @@ gem 'faraday', '~> 0.12'
 gem 'devise', '~> 4.4', '>= 4.4.3'
 gem 'doorkeeper', '~> 4.3', '>= 4.3.2'
 gem 'doorkeeper-openid_connect', '~> 1.5', '>= 1.5.0'
-gem 'omniauth', '~> 1.8'
+gem 'omniauth', '~> 1.9', '>= 1.9.0'
 gem 'omniauth-auth0', '~> 2.0.0'
-gem 'omniauth-azure-oauth2', '~> 0.0.9'
+gem 'omniauth-azure-oauth2', '~> 0.0.10'
 gem 'omniauth-cas3', '~> 1.1.4'
 gem 'omniauth-facebook', '~> 4.0.0'
-gem 'omniauth-github', '~> 1.3'
-gem 'omniauth-gitlab', '~> 1.0.2'
+gem 'omniauth-github', '~> 1.3', '>= 1.3.0'
+gem 'omniauth-gitlab', '~> 1.0.3'
 gem 'omniauth-google-oauth2', '~> 0.6.0'
 gem 'omniauth-kerberos', '~> 0.3.0', group: :kerberos
 gem 'omniauth-oauth2-generic', '~> 0.2.2'
-gem 'omniauth-saml', '~> 1.10'
+gem 'omniauth-saml', '~> 1.10', '>= 1.10.0'
 gem 'omniauth-shibboleth', '~> 1.3.0'
-gem 'omniauth-twitter', '~> 1.4'
-gem 'omniauth_crowd', '~> 2.2.0'
+gem 'omniauth-twitter', '~> 1.4', '>= 1.4.0'
+gem 'omniauth_crowd', '~> 2.2.3'
 gem 'omniauth-authentiq', '~> 0.3.3'
 gem 'rack-oauth2', '~> 1.9.3'
 gem 'jwt', '~> 2.1.0'
@@ -93,11 +93,11 @@ gem 'carrierwave', '~> 1.3'
 gem 'mini_magick'
 
 # for backups
-gem 'fog-aws', '~> 3.3'
+gem 'fog-aws', '~> 3.3', '>= 3.3.0'
 # Locked until fog-google resolves https://github.com/fog/fog-google/issues/421.
 # Also see config/initializers/fog_core_patch.rb.
 gem 'fog-core', '= 2.1.0'
-gem 'fog-google', '~> 1.8'
+gem 'fog-google', '~> 1.8', '>= 1.8.2'
 gem 'fog-local', '~> 0.6'
 gem 'fog-openstack', '~> 1.0'
 gem 'fog-rackspace', '~> 0.1.1'
@@ -113,7 +113,7 @@ gem 'unf', '~> 0.1.4'
 gem 'seed-fu', '~> 2.3.7'
 
 # Markdown and HTML processing
-gem 'html-pipeline', '~> 2.8'
+gem 'html-pipeline', '~> 2.8', '>= 2.8.4'
 gem 'deckar01-task_list', '2.2.0'
 gem 'gitlab-markup', '~> 1.7.0'
 gem 'github-markup', '~> 1.7.0', require: 'github/markup'
@@ -128,7 +128,7 @@ gem 'asciidoctor-plantuml', '0.0.8'
 gem 'rouge', '~> 3.1'
 gem 'truncato', '~> 0.7.11'
 gem 'bootstrap_form', '~> 4.2.0'
-gem 'nokogiri', '~> 1.10.1'
+gem 'nokogiri', '~> 1.10.5'
 gem 'escape_utils', '~> 1.1'
 
 # Calendar rendering
@@ -138,7 +138,7 @@ gem 'icalendar'
 gem 'diffy', '~> 3.1.0'
 
 # Application server
-gem 'rack', '~> 2.0.7'
+gem 'rack', '~> 2.0.9', '>= 2.0.9.3'
 
 group :unicorn do
   gem 'unicorn', '~> 5.4.1'
@@ -157,8 +157,8 @@ gem 'state_machines-activerecord', '~> 0.5.1'
 gem 'acts-as-taggable-on', '~> 6.0'
 
 # Background jobs
-gem 'sidekiq', '~> 5.2.1'
-gem 'sidekiq-cron', '~> 1.0'
+gem 'sidekiq', '~> 5.2.5'
+gem 'sidekiq-cron', '~> 1.0', '>= 1.0.4'
 gem 'redis-namespace', '~> 1.6.0'
 gem 'gitlab-sidekiq-fetcher', '~> 0.4.0', require: 'sidekiq-reliable-fetch'
 
@@ -225,11 +225,11 @@ gem 'ruby-fogbugz', '~> 0.2.1'
 gem 'kubeclient', '~> 4.2.2'
 
 # Sanitize user input
-gem 'sanitize', '~> 4.6'
+gem 'sanitize', '~> 4.6', '>= 4.6.6'
 gem 'babosa', '~> 1.0.2'
 
 # Sanitizes SVG input
-gem 'loofah', '~> 2.2'
+gem 'loofah', '~> 2.2', '>= 2.2.3'
 
 # Working with license
 gem 'licensee', '~> 8.9'
@@ -318,7 +318,7 @@ group :development do
   gem 'binding_of_caller', '~> 0.8.0'
 
   # thin instead webrick
-  gem 'thin', '~> 1.7.0'
+  gem 'thin', '~> 1.7.2'
 end
 
 group :development, :test do
@@ -398,7 +398,7 @@ gem 'ruby-prof', '~> 0.17.0'
 gem 'rbtrace', '~> 0.4', require: false
 
 # OAuth
-gem 'oauth2', '~> 1.4'
+gem 'oauth2', '~> 1.4', '>= 1.4.1'
 
 # Health check
 gem 'health_check', '~> 2.6.0'
@@ -433,4 +433,4 @@ gem 'flipper-active_support_cache_store', '~> 0.13.0'
 
 # Structured logging
 gem 'lograge', '~> 0.10', '>= 0.10.0'
-gem 'grape_logging', '~> 1.7'
+gem 'grape_logging', '~> 1.7', '>= 1.7.0'
