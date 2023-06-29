@@ -1,12 +1,12 @@
 source 'https://rubygems.org'
 
-gem 'rails', '5.0.7.2'
+gem 'rails', '6.1.7.4'
 
 # Improves copy-on-write performance for MRI
 gem 'nakayoshi_fork', '~> 0.0.4'
 
 # Responders respond_to and respond_with
-gem 'responders', '~> 2.4', '>= 2.4.0'
+gem 'responders', '~> 3.0', '>= 3.0.0'
 
 gem 'sprockets', '~> 3.7.0'
 
@@ -23,9 +23,9 @@ gem 'grape-path-helpers', '~> 1.0'
 gem 'faraday', '~> 0.12'
 
 # Authentication libraries
-gem 'devise', '~> 4.4', '>= 4.4.3'
-gem 'doorkeeper', '~> 4.3', '>= 4.3.2'
-gem 'doorkeeper-openid_connect', '~> 1.5', '>= 1.5.0'
+gem 'devise', '~> 4.7', '>= 4.7.0'
+gem 'doorkeeper', '~> 4.4', '>= 4.4.0'
+gem 'doorkeeper-openid_connect', '~> 1.5', '>= 1.5.1'
 gem 'omniauth', '~> 1.8'
 gem 'omniauth-auth0', '~> 2.0.0'
 gem 'omniauth-azure-oauth2', '~> 0.0.9'
@@ -49,7 +49,7 @@ gem 'recaptcha', '~> 4.11', require: 'recaptcha/rails'
 gem 'akismet', '~> 2.0'
 
 # Two-factor authentication
-gem 'devise-two-factor', '~> 3.0.0'
+gem 'devise-two-factor', '~> 4.0.0'
 gem 'rqrcode-rails3', '~> 0.1.7'
 gem 'attr_encrypted', '~> 3.1.0'
 gem 'u2f', '~> 0.2.1'
@@ -77,7 +77,7 @@ gem 'rack-cors', '~> 1.0.0', require: 'rack/cors'
 
 # GraphQL API
 gem 'graphql', '~> 1.8.0'
-gem 'graphiql-rails', '~> 1.4.10'
+gem 'graphiql-rails', '~> 1.4.11'
 
 # Disable strong_params so that Mash does not respond to :permitted?
 gem 'hashie-forbidden_attributes'
@@ -127,7 +127,7 @@ gem 'asciidoctor', '~> 1.5.8'
 gem 'asciidoctor-plantuml', '0.0.8'
 gem 'rouge', '~> 3.1'
 gem 'truncato', '~> 0.7.11'
-gem 'bootstrap_form', '~> 4.2.0'
+gem 'bootstrap_form', '~> 4.3.0'
 gem 'nokogiri', '~> 1.10.1'
 gem 'escape_utils', '~> 1.1'
 
@@ -256,14 +256,14 @@ gem 'chronic_duration', '~> 0.10.6'
 gem 'webpack-rails', '~> 0.9.11'
 gem 'rack-proxy', '~> 0.6.0'
 
-gem 'sass-rails', '~> 5.0.6'
+gem 'sass-rails', '~> 5.0.8'
 gem 'sass', '~> 3.5'
 gem 'uglifier', '~> 2.7.2'
 
 gem 'addressable', '~> 2.5.2'
-gem 'font-awesome-rails', '~> 4.7', '>= 4.7.0.1'
+gem 'font-awesome-rails', '~> 4.7', '>= 4.7.0.6'
 gem 'gemojione', '~> 3.3'
-gem 'gon', '~> 6.2', '>= 6.2.0'
+gem 'gon', '~> 6.2', '>= 6.2.1'
 gem 'request_store', '~> 1.3'
 gem 'virtus', '~> 1.0.1'
 gem 'base32', '~> 0.3.0'
@@ -271,19 +271,19 @@ gem 'base32', '~> 0.3.0'
 # Sentry integration
 gem 'sentry-raven', '~> 2.7'
 
-gem 'premailer-rails', '~> 1.9.7'
+gem 'premailer-rails', '~> 1.10.3'
 
 # I18n
 gem 'ruby_parser', '~> 3.8', require: false
-gem 'rails-i18n', '~> 5.1', '>= 5.1.1'
+gem 'rails-i18n', '~> 6.0', '>= 6.0.0'
 gem 'gettext_i18n_rails', '~> 1.8.0'
-gem 'gettext_i18n_rails_js', '~> 1.3', '>= 1.3.0'
+gem 'gettext_i18n_rails_js', '~> 1.3', '>= 1.3.1'
 gem 'gettext', '~> 3.2.2', require: false, group: :development
 
 gem 'batch-loader', '~> 1.2.2'
 
 # Perf bar
-gem 'peek', '~> 1.0.1'
+gem 'peek', '~> 1.1.0'
 gem 'peek-gc', '~> 0.0.2'
 gem 'peek-mysql2', '~> 1.2.0', group: :mysql
 gem 'peek-pg', '~> 1.3.0', group: :postgres
@@ -310,7 +310,7 @@ group :development do
   gem 'foreman', '~> 0.84.0'
   gem 'brakeman', '~> 4.2', require: false
 
-  gem 'letter_opener_web', '~> 1.3.0'
+  gem 'letter_opener_web', '~> 1.3.1'
   gem 'rblineprof', '~> 0.3.6', platform: :mri, require: false
 
   # Better errors handler
@@ -331,10 +331,10 @@ group :development, :test do
   gem 'fuubar', '~> 2.2.0'
 
   gem 'database_cleaner', '~> 1.7.0'
-  gem 'factory_bot_rails', '~> 4.8.2'
-  gem 'rspec-rails', '~> 3.7.2'
+  gem 'factory_bot_rails', '~> 4.10.0'
+  gem 'rspec-rails', '~> 3.8.0'
   gem 'rspec-retry', '~> 0.4.5'
-  gem 'rspec_profiling', '~> 0.0.5'
+  gem 'rspec_profiling', '~> 0.0.6'
   gem 'rspec-set', '~> 0.1.3'
   gem 'rspec-parameterized', require: false
 
@@ -380,7 +380,7 @@ group :test do
   gem 'email_spec', '~> 2.2.0'
   gem 'json-schema', '~> 2.8.0'
   gem 'webmock', '~> 3.5.1'
-  gem 'rails-controller-testing'
+  gem 'rails-controller-testing', '>= 1.0.3'
   gem 'sham_rack', '~> 1.3.6'
   gem 'concurrent-ruby', '~> 1.1'
   gem 'test-prof', '~> 0.2.5'
@@ -401,7 +401,7 @@ gem 'rbtrace', '~> 0.4', require: false
 gem 'oauth2', '~> 1.4'
 
 # Health check
-gem 'health_check', '~> 2.6.0'
+gem 'health_check', '~> 2.7.0'
 
 # System information
 gem 'vmstat', '~> 2.3.0'
@@ -432,5 +432,5 @@ gem 'flipper-active_record', '~> 0.13.0'
 gem 'flipper-active_support_cache_store', '~> 0.13.0'
 
 # Structured logging
-gem 'lograge', '~> 0.10', '>= 0.10.0'
+gem 'lograge', '~> 0.11', '>= 0.11.0'
 gem 'grape_logging', '~> 1.7'
