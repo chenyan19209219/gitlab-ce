@@ -119,7 +119,7 @@
     "tiptap": "^1.8.0",
     "tiptap-commands": "^1.4.0",
     "tiptap-extensions": "^1.8.0",
-    "underscore": "^1.9.0",
+    "underscore": "^1.12.1",
     "url-loader": "^1.1.2",
     "visibilityjs": "^1.2.4",
     "vue": "^2.6.10",
