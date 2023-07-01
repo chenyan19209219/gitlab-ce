@@ -135,7 +135,7 @@ gem 'escape_utils', '~> 1.1'
 gem 'icalendar'
 
 # Diffs
-gem 'diffy', '~> 3.1.0'
+gem 'diffy', '~> 3.4.2'
 
 # Application server
 gem 'rack', '~> 2.0.7'
