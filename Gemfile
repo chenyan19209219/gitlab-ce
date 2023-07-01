@@ -83,7 +83,7 @@ gem 'graphiql-rails', '~> 1.4.11'
 gem 'hashie-forbidden_attributes'
 
 # Pagination
-gem 'kaminari', '~> 1.0', '>= 1.0.1'
+gem 'kaminari', '~> 1.2'
 
 # HAML
 gem 'hamlit', '~> 2.8.8'
