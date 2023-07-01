@@ -470,7 +470,9 @@ GEM
     mime-types (3.2.2)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2018.0812)
-    mimemagic (0.3.2)
+    mimemagic (0.3.10)
+      nokogiri (~> 1)
+      rake
     mini_magick (4.8.0)
     mini_mime (1.0.1)
     mini_portile2 (2.4.0)
@@ -680,7 +682,7 @@ GEM
       ffi (>= 1.0.6)
       msgpack (>= 0.4.3)
       optimist (>= 3.0.0)
-    rdoc (6.0.4)
+    rdoc (6.3.2)
     re2 (1.1.1)
     recaptcha (4.13.1)
       json
@@ -1114,7 +1116,7 @@ DEPENDENCIES
   raindrops (~> 0.18)
   rblineprof (~> 0.3.6)
   rbtrace (~> 0.4)
-  rdoc (~> 6.0)
+  rdoc (~> 6.3)
   re2 (~> 1.1.1)
   recaptcha (~> 4.11)
   redis (~> 3.2)
