@@ -117,7 +117,7 @@ gem 'html-pipeline', '~> 2.8'
 gem 'deckar01-task_list', '2.2.0'
 gem 'gitlab-markup', '~> 1.7.0'
 gem 'github-markup', '~> 1.7.0', require: 'github/markup'
-gem 'commonmarker', '~> 0.17'
+gem 'commonmarker', '~> 0.23', '>= 0.23.10'
 gem 'RedCloth', '~> 4.3.2'
 gem 'rdoc', '~> 6.0'
 gem 'org-ruby', '~> 0.9.12'
@@ -418,9 +418,9 @@ group :ed25519 do
 end
 
 # Gitaly GRPC client
-gem 'gitaly-proto', '~> 1.19.0', require: 'gitaly'
+gem 'gitaly-proto', '~> 1.19.1', require: 'gitaly'
 
-gem 'grpc', '~> 1.15.0'
+gem 'grpc', '~> 1.53.2'
 
 gem 'google-protobuf', '~> 3.6'
 
