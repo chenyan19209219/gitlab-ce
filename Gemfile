@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rails', '6.1.7.4'
+gem 'rails', '7.1.0'
 
 # Improves copy-on-write performance for MRI
 gem 'nakayoshi_fork', '~> 0.0.4'
@@ -49,7 +49,7 @@ gem 'recaptcha', '~> 4.11', require: 'recaptcha/rails'
 gem 'akismet', '~> 2.0'
 
 # Two-factor authentication
-gem 'devise-two-factor', '~> 4.0.0'
+gem 'devise-two-factor', '~> 5.0.0'
 gem 'rqrcode-rails3', '~> 0.1.7'
 gem 'attr_encrypted', '~> 3.1.0'
 gem 'u2f', '~> 0.2.1'
@@ -83,7 +83,7 @@ gem 'graphiql-rails', '~> 1.4.11'
 gem 'hashie-forbidden_attributes'
 
 # Pagination
-gem 'kaminari', '~> 1.0', '>= 1.0.1'
+gem 'kaminari', '~> 1.1', '>= 1.1.0'
 
 # HAML
 gem 'hamlit', '~> 2.8.8'
@@ -261,7 +261,7 @@ gem 'sass', '~> 3.5'
 gem 'uglifier', '~> 2.7.2'
 
 gem 'addressable', '~> 2.5.2'
-gem 'font-awesome-rails', '~> 4.7', '>= 4.7.0.6'
+gem 'font-awesome-rails', '~> 4.7', '>= 4.7.0.8'
 gem 'gemojione', '~> 3.3'
 gem 'gon', '~> 6.2', '>= 6.2.1'
 gem 'request_store', '~> 1.3'
@@ -275,7 +275,7 @@ gem 'premailer-rails', '~> 1.10.3'
 
 # I18n
 gem 'ruby_parser', '~> 3.8', require: false
-gem 'rails-i18n', '~> 6.0', '>= 6.0.0'
+gem 'rails-i18n', '~> 7.0', '>= 7.0.1'
 gem 'gettext_i18n_rails', '~> 1.8.0'
 gem 'gettext_i18n_rails_js', '~> 1.3', '>= 1.3.1'
 gem 'gettext', '~> 3.2.2', require: false, group: :development
@@ -401,7 +401,7 @@ gem 'rbtrace', '~> 0.4', require: false
 gem 'oauth2', '~> 1.4'
 
 # Health check
-gem 'health_check', '~> 2.7.0'
+gem 'health_check', '~> 2.8.0'
 
 # System information
 gem 'vmstat', '~> 2.3.0'
