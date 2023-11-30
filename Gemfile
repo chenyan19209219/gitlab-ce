@@ -89,7 +89,7 @@ gem 'kaminari', '~> 1.0', '>= 1.0.1'
 gem 'hamlit', '~> 2.8.8'
 
 # Files attachments
-gem 'carrierwave', '~> 1.3'
+gem 'carrierwave', '~> 2.2', '>= 2.2.5'
 gem 'mini_magick'
 
 # for backups
