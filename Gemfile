@@ -166,7 +166,7 @@ gem 'gitlab-sidekiq-fetcher', '~> 0.4.0', require: 'sidekiq-reliable-fetch'
 gem 'fugit', '~> 1.1'
 
 # HTTP requests
-gem 'httparty', '~> 0.16.4'
+gem 'httparty', '~> 0.21.0'
 
 # Colored output to console
 gem 'rainbow', '~> 3.0'
@@ -201,13 +201,13 @@ gem 'connection_pool', '~> 2.0'
 gem 'discordrb-webhooks-blackst0ne', '~> 3.3', require: false
 
 # HipChat integration
-gem 'hipchat', '~> 1.5.0'
+gem 'hipchat', '~> 1.5.2'
 
 # JIRA integration
 gem 'jira-ruby', '~> 1.4'
 
 # Flowdock integration
-gem 'flowdock', '~> 0.7'
+gem 'flowdock', '~> 0.7', '>= 0.7.1'
 
 # Slack integration
 gem 'slack-notifier', '~> 1.5.1'
